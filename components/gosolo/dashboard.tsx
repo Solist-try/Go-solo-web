@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { AuthorLine, Frame, TextLink } from "@/components/gosolo/pieces";
-import { NextStep } from "@/components/gosolo/next-step";
 import { useCatalog, useGoSolo } from "@/lib/gosolo";
 import { formatRelative } from "@/lib/format";
+import { EVERYDAY_ACTIONS, EXPANSION_ACTIONS } from "@/lib/suggest";
 
 export function Dashboard() {
   const { user, world } = useGoSolo();
@@ -121,7 +121,18 @@ export function Dashboard() {
         )}
       </section>
 
-      <NextStep />
+      <section className="mt-20" aria-labelledby="next-actions">
+        <h2 id="next-actions" className="font-serif text-3xl tracking-tight text-ink sm:text-4xl">
+          Suggested next actions
+        </h2>
+        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-soft">
+          A life grows on a trip and on a Tuesday. Pick one from each when you can.
+        </p>
+        <div className="mt-8 grid gap-4 lg:grid-cols-2">
+          <ActionLane title="Out in the world" tone="bg-gold/70" actions={EXPANSION_ACTIONS} />
+          <ActionLane title="In ordinary life" tone="bg-sage/80" actions={EVERYDAY_ACTIONS} />
+        </div>
+      </section>
 
       <div className="mt-20 max-w-xl">
         <p className="text-sm text-ink-soft">Later, not now</p>
@@ -144,5 +155,31 @@ export function Dashboard() {
         </ul>
       </div>
     </Frame>
+  );
+}
+
+function ActionLane({
+  title,
+  tone,
+  actions,
+}: {
+  title: string;
+  tone: string;
+  actions: { title: string; body: string; href: string }[];
+}) {
+  return (
+    <div className={`rounded-[28px] p-7 ${tone}`}>
+      <h3 className="font-serif text-3xl tracking-tight text-ink">{title}</h3>
+      <ul className="mt-6 space-y-5">
+        {actions.map((action) => (
+          <li key={action.href}>
+            <Link href={action.href} className="font-serif text-2xl leading-snug tracking-tight text-ink">
+              {action.title}
+            </Link>
+            <p className="mt-1 text-base leading-relaxed text-ink">{action.body}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

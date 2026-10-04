@@ -75,6 +75,48 @@ export function AboutPage() {
         </div>
       </section>
 
+      <section className="mt-20" aria-labelledby="two-kinds-title">
+        <h2 id="two-kinds-title" className="font-serif text-4xl tracking-tight text-ink sm:text-5xl">
+          Two Kinds Of Growth
+        </h2>
+        <div className="mt-6 max-w-3xl space-y-4 text-lg leading-relaxed text-ink sm:text-xl">
+          <p>Go Solo helps people build meaningful lives on their own terms.</p>
+          <p>Sometimes that means taking a trip. Sometimes that means learning how to enjoy a quiet Tuesday evening.</p>
+          <p>Both matter. Both belong here.</p>
+        </div>
+        <div className="mt-8 grid gap-4 lg:grid-cols-2">
+          <div className="rounded-[28px] bg-gold/70 p-7">
+            <h3 className="font-serif text-3xl tracking-tight">Life expansion</h3>
+            <ul className="mt-4 grid gap-2 sm:grid-cols-2 text-lg">
+              {["Travel", "New experiences", "Learning", "Events", "Exploration", "Creativity", "Adventure"].map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-[28px] bg-clay/70 p-7">
+            <h3 className="font-serif text-3xl tracking-tight">Everyday living</h3>
+            <ul className="mt-4 grid gap-2 sm:grid-cols-2 text-lg">
+              {[
+                "Home management",
+                "Routines",
+                "Budgeting",
+                "Cooking",
+                "Friendship",
+                "Wellbeing",
+                "Time management",
+                "Household maintenance",
+                "Self-reliance",
+                "Starting over",
+                "Transition periods",
+                "Emotional resilience",
+              ].map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
       <section className="mt-20" aria-labelledby="beliefs-title">
         <h2 id="beliefs-title" className="font-serif text-4xl tracking-tight text-ink sm:text-5xl">
           What We Believe

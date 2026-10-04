@@ -71,6 +71,20 @@ export function ContentAdmin() {
             onChange={(value) => patch({ comeHere: value.split("\n").map((line) => line.trim()).filter(Boolean) })}
             area
           />
+          <TextField label="Life expansion title" value={draft.expansionTitle} onChange={(expansionTitle) => patch({ expansionTitle })} />
+          <TextField
+            label="Life expansion, one per line"
+            value={draft.expansion.join("\n")}
+            onChange={(value) => patch({ expansion: value.split("\n").map((line) => line.trim()).filter(Boolean) })}
+            area
+          />
+          <TextField label="Everyday living title" value={draft.everydayTitle} onChange={(everydayTitle) => patch({ everydayTitle })} />
+          <TextField
+            label="Everyday living, one per line"
+            value={draft.everyday.join("\n")}
+            onChange={(value) => patch({ everyday: value.split("\n").map((line) => line.trim()).filter(Boolean) })}
+            area
+          />
         </section>
         <section className="space-y-4">
           <h2 className="font-serif text-3xl">Homepage philosophy</h2>
