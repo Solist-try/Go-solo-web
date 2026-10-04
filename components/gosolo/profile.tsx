@@ -4,13 +4,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Frame, PageIntro, Panel, PersonAvatar } from "@/components/gosolo/pieces";
 import { NextStep } from "@/components/gosolo/next-step";
-import { getSeed, getWaypoint } from "@/lib/catalog";
 import { formatMonthYear, formatRelative, interestLabel } from "@/lib/format";
-import { useGoSolo } from "@/lib/gosolo";
+import { useCatalog, useGoSolo } from "@/lib/gosolo";
 import { INTENTIONS } from "@/lib/types";
 
 export function ProfileView({ profileId }: { profileId?: string }) {
   const { user, world } = useGoSolo();
+  const { getSeed, getWaypoint } = useCatalog();
   const router = useRouter();
   const id = profileId || user?.id;
   const profile = world.profiles.find((item) => item.id === id);

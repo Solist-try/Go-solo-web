@@ -6,6 +6,7 @@ import type {
   Partnership,
   Profile,
   Reaction,
+  SkillConnection,
   SkillOffer,
   SkillRequest,
   UserSeed,
@@ -84,6 +85,16 @@ export const communityProfiles: Profile[] = [
     interests: ["creativity", "travel", "learning"],
     createdAt: "2025-12-09T10:00:00.000Z",
   },
+  {
+    ...baseProfile,
+    id: "eden",
+    displayName: "Eden Cho",
+    bio: "First month in a city where I do not know the bakery yet.",
+    location: "Portland",
+    intentions: ["connection", "curiosity"],
+    interests: ["travel", "walking", "books"],
+    createdAt: "2026-10-01T15:00:00.000Z",
+  },
 ];
 
 export const communityMemberships: Membership[] = [
@@ -96,6 +107,7 @@ export const communityMemberships: Membership[] = [
   { userId: "noor", waypointId: "independence-lab", joinedAt: "2026-03-02T10:00:00.000Z" },
   { userId: "samira", waypointId: "solo-among-others", joinedAt: "2025-12-10T10:00:00.000Z" },
   { userId: "samira", waypointId: "emotional-clarity", joinedAt: "2026-01-08T10:00:00.000Z" },
+  { userId: "eden", waypointId: "solo-among-others", joinedAt: "2026-10-01T15:30:00.000Z" },
 ];
 
 export const communityUserSeeds: UserSeed[] = [
@@ -132,6 +144,42 @@ export const communityUserSeeds: UserSeed[] = [
       },
     ],
   },
+  {
+    id: "us-samira-museum",
+    userId: "samira",
+    seedId: "museum-sentence",
+    status: "completed",
+    goal: "Go once, and write the sentence before I talk myself out of it.",
+    startedAt: "2026-08-01T10:00:00.000Z",
+    checkIns: [],
+  },
+  {
+    id: "us-leo-ticket",
+    userId: "leo",
+    seedId: "ticket-for-one",
+    status: "active",
+    goal: "A film on a Thursday.",
+    startedAt: "2026-09-21T10:00:00.000Z",
+    checkIns: [],
+  },
+  {
+    id: "us-asha-walk",
+    userId: "asha",
+    seedId: "walk-unknown",
+    status: "active",
+    goal: "",
+    startedAt: "2026-09-18T10:00:00.000Z",
+    checkIns: [],
+  },
+  {
+    id: "us-eden-walk",
+    userId: "eden",
+    seedId: "walk-unknown",
+    status: "active",
+    goal: "Learn one street well enough to stop checking the map.",
+    startedAt: "2026-10-01T16:00:00.000Z",
+    checkIns: [],
+  },
 ];
 
 export const communityPartnerships: Partnership[] = [
@@ -154,6 +202,23 @@ export const communityPartnerships: Partnership[] = [
     status: "seeking",
     createdAt: "2026-09-14T10:00:00.000Z",
     checkIns: [],
+  },
+  {
+    id: "p-leo-samira",
+    seedId: "neighbor",
+    seekerId: "leo",
+    partnerId: "samira",
+    goal: "One conversation a week with no plan to become anything else.",
+    status: "matched",
+    createdAt: "2026-08-02T10:00:00.000Z",
+    checkIns: [
+      {
+        id: "ci-match-1",
+        at: "2026-09-20T10:00:00.000Z",
+        note: "We both went. We did not perform it.",
+        userId: "leo",
+      },
+    ],
   },
 ];
 
@@ -212,6 +277,17 @@ export const communityRequests: SkillRequest[] = [
   },
 ];
 
+export const communityConnections: SkillConnection[] = [
+  {
+    id: "connect-leo-mira",
+    fromUserId: "leo",
+    toUserId: "mira",
+    offerId: "offer-mira",
+    note: "I would like to walk with a camera for an hour.",
+    createdAt: "2026-09-12T10:00:00.000Z",
+  },
+];
+
 export const communityStories: OutTherePost[] = [
   {
     id: "story-mira",
@@ -267,6 +343,18 @@ export const communityStories: OutTherePost[] = [
     seedId: "walk-no-podcast",
     waypointId: "emotional-clarity",
     createdAt: "2026-10-01T16:00:00.000Z",
+  },
+  {
+    id: "story-eden",
+    authorId: "eden",
+    title: "The bakery street",
+    whatDidYouDo: "I walked until I found a bakery, bought one thing, and ate it on the curb.",
+    expecting: "I thought I would feel new and obvious.",
+    actuallyHappened: "The street did not require a story from me. I know the way back.",
+    wouldDoAgain: "yes",
+    seedId: "walk-unknown",
+    waypointId: "solo-among-others",
+    createdAt: "2026-10-03T18:00:00.000Z",
   },
   {
     id: "story-leo",

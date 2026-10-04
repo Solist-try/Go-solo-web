@@ -113,8 +113,9 @@ function SectionChip({
 }
 
 export function CampfireDetail({ id }: { id: string }) {
-  const { world, user, comment } = useGoSolo();
+  const { world, user, comment, desk } = useGoSolo();
   const post = world.campfire.find((item) => item.id === id);
+  const locked = Boolean(desk.campfireModeration[id]?.locked);
   const [body, setBody] = useState("");
   if (!post) {
     return (
@@ -154,7 +155,9 @@ export function CampfireDetail({ id }: { id: string }) {
           </article>
         ))}
       </div>
-      {user ? (
+      {locked ? (
+        <p className="mt-8 text-lg text-ink-soft">This conversation is resting. The replies above can stay.</p>
+      ) : user ? (
         <form
           className="mt-8 space-y-4"
           onSubmit={(event) => {

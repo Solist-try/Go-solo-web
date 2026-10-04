@@ -9,7 +9,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { SEEDS, WAYPOINTS, getSeed } from "@/lib/catalog";
+import { defaultAdmin, mergeAdmin, STEWARD_EMAIL, STEWARD_ID, STEWARD_PASSWORD_HASH, type AdminState, type SiteContent } from "@/lib/admin/state";
+import { applyMembers, presentWorld, resolveSeeds, resolveWaypoints } from "@/lib/admin/resolve";
 import {
   createId,
   hashPassword,
@@ -28,6 +29,7 @@ import {
   signIn,
   signUp,
 } from "@/lib/supabase/data";
+import { loadDesk, loadSiteContent, persistDesk } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import {
   emptyPersisted,
@@ -38,7 +40,9 @@ import {
   type PersistedState,
   type Profile,
   type ReactionKind,
+  type Seed,
   type SeedStatus,
+  type Waypoint,
   type World,
   type WouldAgain,
 } from "@/lib/types";
@@ -66,14 +70,22 @@ type CampfireInput = {
   outThereId?: string;
 };
 
+type StoredState = PersistedState & { admin: AdminState };
+
 type GoSoloValue = {
   ready: boolean;
   mode: Mode;
   schemaError: string | null;
   user: Profile | null;
   world: World;
-  seeds: typeof SEEDS;
-  waypoints: typeof WAYPOINTS;
+  library: World;
+  seeds: Seed[];
+  waypoints: Waypoint[];
+  desk: AdminState;
+  content: SiteContent;
+  isAdmin: boolean;
+  updateDesk: (updater: (admin: AdminState) => AdminState) => void;
+  notifyMember: (userId: string, title: string, body: string) => void;
   register: (email: string, password: string) => Promise<{ error?: string; needsVerification?: boolean }>;
   login: (
     email: string,
@@ -112,6 +124,53 @@ type GoSoloValue = {
 
 const GoSoloContext = createContext<GoSoloValue | null>(null);
 
+function withSteward(state: StoredState): StoredState {
+  const admin = mergeAdmin(state.admin);
+  const existing = state.profiles.find((profile) => profile.email === STEWARD_EMAIL);
+  if (state.accounts.some((account) => account.email === STEWARD_EMAIL)) {
+    return {
+      ...state,
+      admin,
+      profiles: state.profiles.map((profile) =>
+        profile.email === STEWARD_EMAIL
+          ? { ...profile, role: "admin", emailVerified: true, onboardingComplete: true, status: profile.status ?? "active" }
+          : profile,
+      ),
+    };
+  }
+  return {
+    ...state,
+    admin,
+    accounts: [
+      ...state.accounts,
+      { id: STEWARD_ID, email: STEWARD_EMAIL, passwordHash: STEWARD_PASSWORD_HASH, resetToken: null },
+    ],
+    profiles: [
+      ...state.profiles,
+      {
+        id: existing?.id ?? STEWARD_ID,
+        email: STEWARD_EMAIL,
+        displayName: existing?.displayName || "Steward",
+        bio: existing?.bio || "Keeps the room calm.",
+        location: existing?.location ?? "",
+        avatarUrl: existing?.avatarUrl ?? "",
+        intentions: existing?.intentions?.length ? existing.intentions : ["curiosity"],
+        interests: existing?.interests?.length ? existing.interests : ["walking"],
+        onboardingComplete: true,
+        emailVerified: true,
+        showLocation: false,
+        showWaypoints: false,
+        notifyReplies: true,
+        notifyWaypoints: false,
+        notifyCheckins: false,
+        createdAt: existing?.createdAt ?? "2026-01-01T00:00:00.000Z",
+        role: "admin",
+        status: "active",
+      },
+    ],
+  };
+}
+
 function blankProfile(id: string, email: string): Profile {
   return {
     id,
@@ -149,22 +208,57 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [mode, setMode] = useState<Mode>("demo");
   const [schemaError, setSchemaError] = useState<string | null>(null);
-  const [persisted, setPersisted] = useState<PersistedState>(emptyPersisted);
+  const [persisted, setPersisted] = useState<StoredState>(() => withSteward({ ...emptyPersisted(), admin: defaultAdmin() }));
   const [remote, setRemote] = useState<World>(emptyWorld);
+  const [remoteAdmin, setRemoteAdmin] = useState<AdminState>(defaultAdmin);
   const [userId, setUserId] = useState<string | null>(null);
   const persistedRef = useRef(persisted);
   const userIdRef = useRef(userId);
+  const deskRef = useRef<AdminState>(defaultAdmin());
+  const modeRef = useRef<Mode>("demo");
 
   function setSession(id: string | null) {
     userIdRef.current = id;
     setUserId(id);
   }
 
-  function commit(updater: (state: PersistedState) => PersistedState) {
+  function commit(updater: (state: StoredState) => StoredState) {
     const next = updater(persistedRef.current);
     persistedRef.current = next;
     setPersisted(next);
     writeStorage(next);
+    deskRef.current = mergeAdmin(next.admin);
+  }
+
+  function notifyMember(userId: string, title: string, body: string) {
+    if (!persistedRef.current.profiles.some((profile) => profile.id === userId)) return;
+    commit((state) => ({
+      ...state,
+      notifications: [
+        {
+          id: crypto.randomUUID(),
+          userId,
+          title,
+          body,
+          href: "/dashboard",
+          read: false,
+          createdAt: new Date().toISOString(),
+        },
+        ...state.notifications,
+      ],
+    }));
+  }
+
+  function updateDesk(updater: (admin: AdminState) => AdminState) {
+    const next = updater(mergeAdmin(deskRef.current));
+    deskRef.current = next;
+    if (modeRef.current === "supabase") {
+      setRemoteAdmin(next);
+      const supabase = getSupabase();
+      if (supabase) void persistDesk(supabase, next);
+      return;
+    }
+    commit((state) => ({ ...state, admin: next }));
   }
 
   async function refreshRemote(nextUserId = userIdRef.current) {
@@ -193,11 +287,21 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
             } = await supabase.auth.getUser();
             if (user) await ensureProfile(supabase, user);
             const loaded = await loadWorld(supabase, user);
+            let desk = defaultAdmin();
+            const content = await loadSiteContent(supabase);
+            if (content) desk = { ...desk, content };
+            if (user) {
+              const saved = await loadDesk(supabase);
+              if (saved) desk = content ? { ...saved, content: saved.content.heroTitle ? saved.content : content } : saved;
+            }
             if (cancelled) return;
+            deskRef.current = mergeAdmin(desk);
+            setRemoteAdmin(deskRef.current);
             setRemote(loaded);
             userIdRef.current = user?.id ?? null;
             setUserId(user?.id ?? null);
           }
+          modeRef.current = "supabase";
           if (!cancelled) setSchemaError(null);
         } catch (error) {
           if (!cancelled) {
@@ -213,14 +317,16 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const stored = readStorage(emptyPersisted());
-      const next = { ...emptyPersisted(), ...stored, version: 1 as const };
+      const stored = readStorage(emptyPersisted()) as StoredState;
+      const next = withSteward({ ...emptyPersisted(), ...stored, admin: mergeAdmin(stored.admin), version: 1 });
       const cookieId = readSessionCookie();
       const session = next.accounts.some((account) => account.id === cookieId) ? cookieId : null;
       if (cookieId && !session) writeSessionCookie(null);
       if (cancelled) return;
       setPersisted(next);
       persistedRef.current = next;
+      deskRef.current = next.admin;
+      modeRef.current = "demo";
       setSession(session);
       setMode("demo");
       setReady(true);
@@ -231,10 +337,25 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const world = useMemo(
-    () => (mode === "demo" ? buildView(persisted, true) : remote),
-    [mode, persisted, remote],
+  const desk = useMemo(
+    () => (mode === "demo" ? mergeAdmin(persisted.admin) : remoteAdmin),
+    [mode, persisted, remoteAdmin],
   );
+
+  const library = useMemo(() => {
+    const base = mode === "demo" ? buildView(persisted, true) : remote;
+    const removed = new Set(desk.removedMemberIds);
+    return {
+      ...base,
+      profiles: applyMembers(base.profiles, desk),
+      stories: base.stories.filter((story) => !removed.has(story.authorId)),
+      campfire: base.campfire.filter((post) => !removed.has(post.authorId)),
+    };
+  }, [mode, persisted, remote, desk]);
+
+  const world = useMemo(() => presentWorld(library, desk), [library, desk]);
+  const seeds = useMemo(() => resolveSeeds(desk), [desk]);
+  const waypoints = useMemo(() => resolveWaypoints(desk), [desk]);
 
   const user = world.profiles.find((profile) => profile.id === userId) ?? null;
 
@@ -282,6 +403,16 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
       const result = await signIn(supabase, normalized, password);
       if (result.error) return { error: result.error };
       const profile = await refreshRemote();
+      if (profile?.status === "suspended") {
+        await supabase.auth.signOut();
+        setSession(null);
+        return { error: "This account is paused. Write to the steward if that surprises you." };
+      }
+      if (profile?.status === "deactivated") {
+        await supabase.auth.signOut();
+        setSession(null);
+        return { error: "This account is resting. Write to the steward if you want it opened again." };
+      }
       return {
         emailVerified: profile?.emailVerified ?? Boolean(profile),
         onboardingComplete: profile?.onboardingComplete ?? false,
@@ -292,9 +423,16 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
     if (!account || account.passwordHash !== passwordHash) {
       return { error: "That email and password do not match." };
     }
+    const profile = persistedRef.current.profiles.find((item) => item.id === account.id);
+    const status = mergeAdmin(persistedRef.current.admin).memberStatus[account.id] ?? profile?.status;
+    if (status === "suspended") {
+      return { error: "This account is paused. Write to the steward if that surprises you." };
+    }
+    if (status === "deactivated") {
+      return { error: "This account is resting. Write to the steward if you want it opened again." };
+    }
     setSession(account.id);
     writeSessionCookie(account.id);
-    const profile = persistedRef.current.profiles.find((item) => item.id === account.id);
     return {
       emailVerified: profile?.emailVerified ?? false,
       onboardingComplete: profile?.onboardingComplete ?? false,
@@ -497,7 +635,8 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
       (item) => item.userId === id && item.seedId === seedId && item.status === "active",
     );
     if (existing) return;
-    const seed = getSeed(seedId);
+    const seed = resolveSeeds(mergeAdmin(deskRef.current)).find((item) => item.id === seedId);
+    if (!seed) return;
     if (mode === "supabase") {
       const supabase = getSupabase();
       if (!supabase) return;
@@ -931,6 +1070,7 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
     const id = userIdRef.current;
     const text = body.trim();
     if (!id || !text) return;
+    if (targetType === "campfire" && mergeAdmin(deskRef.current).campfireModeration[targetId]?.locked) return;
     const source =
       targetType === "campfire"
         ? world.campfire.find((post) => post.id === targetId)
@@ -1046,8 +1186,14 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
     schemaError,
     user,
     world,
-    seeds: SEEDS,
-    waypoints: WAYPOINTS,
+    library,
+    seeds,
+    waypoints,
+    desk,
+    content: desk.content,
+    isAdmin: user?.role === "admin",
+    updateDesk,
+    notifyMember,
     register,
     login,
     logout,
@@ -1083,4 +1229,18 @@ export function useGoSolo() {
   const value = useContext(GoSoloContext);
   if (!value) throw new Error("useGoSolo must be used within GoSoloProvider");
   return value;
+}
+
+export function useCatalog() {
+  const { seeds, waypoints } = useGoSolo();
+  return {
+    getSeed(id?: string) {
+      if (!id) return undefined;
+      return seeds.find((seed) => seed.id === id);
+    },
+    getWaypoint(idOrSlug?: string) {
+      if (!idOrSlug) return undefined;
+      return waypoints.find((waypoint) => waypoint.id === idOrSlug || waypoint.slug === idOrSlug);
+    },
+  };
 }

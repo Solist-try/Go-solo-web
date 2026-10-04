@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { isMemberPath } from "@/lib/catalog";
+import { isAdminPath, isMemberPath } from "@/lib/catalog";
 
 const AUTH_PAGES = ["/login", "/register"];
 
@@ -40,7 +40,7 @@ export async function proxy(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user && isMemberPath(path)) {
+    if (!user && (isMemberPath(path) || isAdminPath(path))) {
       const login = new URL("/login", request.url);
       login.searchParams.set("next", path);
       return redirectWithCookies(login, response);
@@ -54,7 +54,7 @@ export async function proxy(request: NextRequest) {
   }
 
   const session = request.cookies.get("gosolo_session")?.value;
-  if (!session && isMemberPath(path)) {
+  if (!session && (isMemberPath(path) || isAdminPath(path))) {
     const login = new URL("/login", request.url);
     login.searchParams.set("next", path);
     return NextResponse.redirect(login);

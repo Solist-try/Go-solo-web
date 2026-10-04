@@ -4,7 +4,7 @@ import Link from "next/link";
 import { AuthorLine, Frame, PageIntro, Panel, PrimaryLink, pill } from "@/components/gosolo/pieces";
 import { NextStep } from "@/components/gosolo/next-step";
 import { Button } from "@/components/ui/button";
-import { getWaypoint } from "@/lib/catalog";
+import { useCatalog } from "@/lib/gosolo";
 import { formatRelative } from "@/lib/format";
 import { useGoSolo } from "@/lib/gosolo";
 
@@ -37,6 +37,7 @@ export function WaypointIndex() {
 }
 
 export function WaypointDetail({ slug }: { slug: string }) {
+  const { getWaypoint } = useCatalog();
   const waypoint = getWaypoint(slug);
   const { user, world, joinWaypoint, leaveWaypoint, seeds } = useGoSolo();
   if (!waypoint) {
@@ -52,7 +53,7 @@ export function WaypointDetail({ slug }: { slug: string }) {
   const members = world.memberships
     .filter((item) => item.waypointId === waypoint.id)
     .map((item) => world.profiles.find((profile) => profile.id === item.userId))
-    .filter((profile) => profile && (profile.showWaypoints || profile.id === user?.id));
+    .filter((profile) => profile && profile.status !== "deactivated" && (profile.showWaypoints || profile.id === user?.id));
   const conversations = world.campfire.filter((post) => post.waypointId === waypoint.id).slice(0, 3);
   const stories = world.stories.filter((story) => story.waypointId === waypoint.id).slice(0, 3);
   const related = seeds.filter((seed) => seed.waypoints.includes(waypoint.id)).slice(0, 4);

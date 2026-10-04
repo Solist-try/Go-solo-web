@@ -1,71 +1,52 @@
+"use client";
+
 import Link from "next/link";
 import { pill } from "@/components/gosolo/pieces";
 import { Button } from "@/components/ui/button";
-import { SEEDS, WAYPOINTS } from "@/lib/catalog";
+import { useGoSolo } from "@/lib/gosolo";
 import { SEED_CATEGORIES } from "@/lib/types";
 
-const phrases = [
-  { text: "Try the thing.", tone: "bg-sage" },
-  { text: "Take the trip.", tone: "bg-clay" },
-  { text: "Paint the room orange.", tone: "bg-gold" },
-];
-
-const steps = [
-  {
-    mark: "🌱",
-    name: "Find a Seed",
-    body: "Small possibilities worth exploring.",
-    tone: "bg-sage",
-  },
-  {
-    mark: "🚶",
-    name: "Go Out There",
-    body: "Try something. See what happens.",
-    tone: "bg-clay",
-  },
-  {
-    mark: "🔥",
-    name: "Return to Campfire",
-    body: "Share stories and experiences.",
-    tone: "bg-gold",
-  },
-  {
-    mark: "🧭",
-    name: "Visit a Waypoint",
-    body: "Meet people walking similar terrain.",
-    tone: "bg-mist",
-  },
-];
+const phraseTones = ["bg-sage", "bg-clay", "bg-gold"];
+const stepTones = ["bg-sage", "bg-clay", "bg-gold", "bg-mist"];
 
 export function HomePage() {
-  const featured = ["ticket-for-one", "meal-for-you", "one-witness"].map((id) =>
-    SEEDS.find((seed) => seed.id === id),
-  );
+  const { content, seeds, waypoints, desk } = useGoSolo();
+  const featuredIds = desk.featuredSeedIds.length
+    ? desk.featuredSeedIds
+    : ["ticket-for-one", "meal-for-you", "one-witness"];
+  const featured = featuredIds
+    .map((id) => seeds.find((seed) => seed.id === id))
+    .filter((seed) => seed != null)
+    .slice(0, 3);
+  const phrases = content.phrases.map((text, index) => ({
+    text,
+    tone: phraseTones[index % phraseTones.length],
+  }));
+  const steps = content.steps.map((step, index) => ({
+    ...step,
+    tone: stepTones[index % stepTones.length],
+  }));
 
   return (
     <>
       <section className="mx-auto grid w-full max-w-6xl items-end gap-14 px-5 pt-16 pb-8 sm:px-8 sm:pt-24 lg:grid-cols-12 lg:pt-28">
         <div className="lg:col-span-7">
-          <p className="text-sm text-ink-soft">Go Solo. Not Alone.</p>
-          <p className="mt-3 text-sm text-ink-soft">A calm home for an independent life</p>
+          <p className="text-sm text-ink-soft">{content.heroTagline}</p>
+          <p className="mt-3 text-sm text-ink-soft">{content.heroEyebrow}</p>
           <h1 className="mt-6 font-serif text-6xl leading-[0.98] tracking-tight text-balance text-ink sm:text-7xl md:text-8xl">
-            Hello, Vagabond.
+            {content.heroTitle}
           </h1>
           <p className="mt-6 max-w-xl font-serif text-3xl leading-snug tracking-tight text-ink sm:text-4xl">
-            Your life doesn&apos;t have to wait.
+            {content.heroSubhead}
           </p>
-          <p className="mt-8 max-w-xl text-lg leading-relaxed text-ink">
-            Try the thing. Take the trip. Learn the skill. Eat the weird food. Paint the room orange.
-          </p>
-          <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink-soft">
-            Go Solo helps people explore, connect and grow while living independently.
-          </p>
+          <p className="mt-8 max-w-xl text-lg leading-relaxed text-ink">{content.heroSupport}</p>
+          <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink-soft">{content.heroLede}</p>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             <Button asChild className={pill}>
-              <Link href="/register">Join Go Solo</Link>
+              <Link href="/register">{content.heroPrimary}</Link>
             </Button>
             <Button asChild variant="outline" className={`${pill} bg-transparent`}>
-              <Link href="/seeds">Explore Seeds</Link>
+              <Link href="/seeds">{content.heroSecondary}</Link>
             </Button>
           </div>
         </div>
@@ -84,34 +65,28 @@ export function HomePage() {
       <section id="philosophy" className="scroll-mt-24 mx-auto grid w-full max-w-6xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-12 lg:py-28">
         <div className="lg:col-span-5">
           <h2 className="font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">
-            Stop waiting for company before you begin.
+            {content.philosophyTitle}
           </h2>
         </div>
         <div className="space-y-6 text-lg leading-relaxed text-ink lg:col-span-6 lg:col-start-7">
-          <p>
-            Many people postpone experiences because they are waiting for a partner, for friends, for
-            schedules to align, or for permission.
-          </p>
-          <p>Go Solo exists for the life that&apos;s happening now.</p>
-          <p>This is not a place to perform.</p>
-          <p className="text-ink-soft">It is a home base for people who are out there living.</p>
-          <p className="font-serif text-3xl leading-snug tracking-tight text-ink">
-            You can live alone without being alone.
-          </p>
+          {content.philosophyParagraphs.map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
+          <p className="font-serif text-3xl leading-snug tracking-tight text-ink">{content.philosophyClose}</p>
         </div>
       </section>
 
       <section className="mx-auto w-full max-w-6xl px-5 pb-8 sm:px-8">
         <p className="max-w-3xl font-serif text-4xl leading-tight tracking-tight text-ink sm:text-6xl">
-          Living alone is not the problem.
-          <span className="mt-3 block text-ink-soft">Living on hold is.</span>
+          {content.belief}
+          <span className="mt-3 block text-ink-soft">{content.beliefSecond}</span>
         </p>
       </section>
 
       <section id="how-it-works" className="scroll-mt-24 bg-white/50">
         <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 lg:py-28">
           <h2 className="max-w-2xl font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">
-            A bigger life starts small.
+            {content.howTitle}
           </h2>
           <ul className="mt-12 grid gap-4 sm:grid-cols-2">
             {steps.map((step) => (
@@ -132,8 +107,7 @@ export function HomePage() {
           <div className="max-w-2xl">
             <h2 className="font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">Seeds</h2>
             <p className="mt-4 text-lg leading-relaxed text-ink-soft">
-              Seeds are small actions that make life bigger. Not goals. Not productivity. Not
-              self-improvement. Possibilities.
+              {content.seedsIntro}
             </p>
           </div>
           <Button asChild variant="outline" className={`${pill} bg-transparent`}>
@@ -259,7 +233,7 @@ export function HomePage() {
             </p>
           </div>
           <ul className="mt-10 grid gap-4 lg:grid-cols-3">
-            {WAYPOINTS.map((waypoint) => (
+            {waypoints.map((waypoint) => (
               <li key={waypoint.id}>
                 <Link href={`/waypoints/${waypoint.slug}`} className="block h-full rounded-[28px] bg-background p-7 shadow-soft">
                   <h3 className="font-serif text-3xl leading-tight tracking-tight text-ink">{waypoint.name}</h3>
@@ -275,23 +249,10 @@ export function HomePage() {
       <section id="coming-soon" className="scroll-mt-24 mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 lg:py-28">
         <h2 className="font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">Coming later</h2>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-soft">
-          These are on the horizon. They are not open, and they will not ask for your attention yet.
+          {content.comingSoonIntro}
         </p>
         <ul className="mt-10 grid gap-4 lg:grid-cols-3">
-          {[
-            {
-              title: "Experiences",
-              body: "Museum visits, theatre nights, workshops, walks, and day trips. Real rooms, when the time is right.",
-            },
-            {
-              title: "Partnerships",
-              body: "Solo-friendly restaurants, museums, travel, and learning. Opportunities with no plus-one required.",
-            },
-            {
-              title: "First Night Kits",
-              body: "A moving kit. A starting-over kit. A travel kit. Companions for the first night of a new chapter.",
-            },
-          ].map((item) => (
+          {content.comingSoon.map((item) => (
             <li key={item.title} className="rounded-[28px] border border-dashed border-ink/15 bg-white/40 p-7">
               <p className="text-sm text-ink-soft">Coming soon</p>
               <h3 className="mt-3 font-serif text-3xl text-ink">{item.title}</h3>
