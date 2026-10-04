@@ -166,7 +166,7 @@ export type AdminState = {
 export function defaultContent(): SiteContent {
   return {
     heroTagline: "Go Solo. Not Alone.",
-    heroEyebrow: "A calm home for an independent life",
+    heroEyebrow: "",
     heroTitle: "Hello, Vagabond.",
     heroSubhead: "Your life doesn't have to wait.",
     heroSupport:

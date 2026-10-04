@@ -32,7 +32,6 @@ export function HomePage() {
       <section className="mx-auto grid w-full max-w-6xl items-end gap-14 px-5 pt-16 pb-8 sm:px-8 sm:pt-24 lg:grid-cols-12 lg:pt-28">
         <div className="lg:col-span-7">
           <p className="text-sm text-ink-soft">{content.heroTagline}</p>
-          <p className="mt-3 text-sm text-ink-soft">{content.heroEyebrow}</p>
           <h1 className="mt-6 font-serif text-6xl leading-[0.98] tracking-tight text-balance text-ink sm:text-7xl md:text-8xl">
             {content.heroTitle}
           </h1>
