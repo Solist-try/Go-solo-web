@@ -41,7 +41,7 @@ export const communityProfiles: Profile[] = [
     bio: "New city, old habit of waiting for company before I cook. Learning to set the table anyway.",
     location: "Chicago",
     intentions: ["starting-over", "connection"],
-    interests: ["cooking", "home-diy", "community"],
+    interests: ["cooking", "diy", "walking"],
     createdAt: "2026-01-18T10:00:00.000Z",
   },
   {
@@ -71,7 +71,7 @@ export const communityProfiles: Profile[] = [
     bio: "Building home systems that make living alone feel like a craft, not a gap.",
     location: "Amman",
     intentions: ["confidence", "first-time-alone"],
-    interests: ["home-diy", "personal-growth", "cooking"],
+    interests: ["diy", "personal-growth", "cooking"],
     createdAt: "2026-03-01T10:00:00.000Z",
   },
   {
@@ -81,7 +81,7 @@ export const communityProfiles: Profile[] = [
     bio: "Pottery on Tuesdays. Museums when the week needs a different room. I go alone and stay longer than I planned.",
     location: "Brooklyn",
     intentions: ["adventure", "confidence"],
-    interests: ["creativity", "community", "travel"],
+    interests: ["creativity", "travel", "learning"],
     createdAt: "2025-12-09T10:00:00.000Z",
   },
 ];

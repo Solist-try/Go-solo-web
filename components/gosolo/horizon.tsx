@@ -6,7 +6,7 @@ const pages = {
     title: "Experiences",
     lede: "Future real-world meetups and activities. Not open yet.",
     items: [
-      ["Museum visits", "A room you enter without arranging a group first."],
+      ["Museum visits", "A room you can enter on your own."],
       ["Theatre nights", "One ticket, a good seat, no need to narrate the evening."],
       ["Workshops", "Hands busy, conversation optional."],
       ["Walks", "A route, a time, and the freedom to be quiet."],

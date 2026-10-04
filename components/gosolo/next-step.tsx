@@ -19,7 +19,7 @@ export function NextStep({ compact = false }: { compact?: boolean }) {
 
   return (
     <Panel tone="gold" className={compact ? "mt-10" : "mt-16"}>
-      <p className="text-sm text-ink-soft">One small thing</p>
+      <p className="text-sm text-ink-soft">Suggested next step</p>
       <h2 className="mt-3 font-serif text-4xl leading-tight tracking-tight text-ink">{step.title}</h2>
       <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink">{step.body}</p>
       <div className="mt-8">

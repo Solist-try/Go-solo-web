@@ -7,10 +7,9 @@ const interestCategory: Record<string, SeedCategory> = {
   nature: "wellbeing",
   creativity: "creativity",
   books: "growth",
-  "home-diy": "home",
+  diy: "home",
   cooking: "home",
   "personal-growth": "growth",
-  community: "connection",
   learning: "growth",
 };
 

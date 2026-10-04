@@ -2,8 +2,8 @@ export const INTENTIONS = [
   { id: "connection", label: "More connection" },
   { id: "adventure", label: "More adventure" },
   { id: "accountability", label: "Accountability" },
-  { id: "starting-over", label: "Starting over" },
   { id: "confidence", label: "Building confidence" },
+  { id: "starting-over", label: "Starting over" },
   { id: "first-time-alone", label: "Living alone for the first time" },
   { id: "meeting-people", label: "Meeting people" },
   { id: "curiosity", label: "Curiosity" },
@@ -11,15 +11,14 @@ export const INTENTIONS = [
 
 export const INTERESTS = [
   { id: "travel", label: "Travel" },
-  { id: "creativity", label: "Creativity" },
   { id: "books", label: "Books" },
-  { id: "walking", label: "Walking" },
-  { id: "home-diy", label: "Home & DIY" },
-  { id: "cooking", label: "Cooking" },
-  { id: "personal-growth", label: "Personal Growth" },
-  { id: "community", label: "Community" },
-  { id: "learning", label: "Learning" },
+  { id: "creativity", label: "Creativity" },
   { id: "nature", label: "Nature" },
+  { id: "learning", label: "Learning" },
+  { id: "cooking", label: "Cooking" },
+  { id: "walking", label: "Walking" },
+  { id: "diy", label: "DIY" },
+  { id: "personal-growth", label: "Personal Growth" },
 ] as const;
 
 export const SEED_CATEGORIES = [

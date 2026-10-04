@@ -33,8 +33,7 @@ export function SeedIndex() {
   return (
     <Frame>
       <PageIntro eyebrow="Possibility" title="Seeds">
-        Small actions that make life bigger. Not productivity. Not a program for becoming a better
-        person. A way to stop waiting.
+        Small possibilities worth exploring. Not goals. Not productivity. Not self-improvement.
       </PageIntro>
       <div className="mt-8 flex flex-wrap gap-2" role="group" aria-label="Filter seeds">
         <FilterChip current={category === "all"} onClick={() => setCategory("all")}>
@@ -291,11 +290,11 @@ export function SeedDetail({ id }: { id: string }) {
 
       {user && seed.kind === "skill-swap" ? (
         <Panel className="mt-4">
-          <h2 className="font-serif text-3xl">Offer or ask</h2>
+          <h2 className="font-serif text-3xl">Offer a skill. Learn a skill.</h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <label className="block space-y-2">
               <span className="text-sm">Skill</span>
-              <Input className={fieldClass} value={skill} onChange={(event) => setSkill(event.target.value)} placeholder="Gardening, languages, a weeknight soup" />
+              <Input className={fieldClass} value={skill} onChange={(event) => setSkill(event.target.value)} placeholder="Photography" />
             </label>
             <label className="block space-y-2 sm:col-span-2">
               <span className="text-sm">A little about it</span>
@@ -329,7 +328,7 @@ export function SeedDetail({ id }: { id: string }) {
                 }
               }}
             >
-              Ask for this
+              Learn this
             </Button>
           </div>
           <p className="mt-6 text-sm leading-relaxed text-ink-soft">
@@ -367,7 +366,7 @@ function SkillBoard() {
   return (
     <div className="mt-4 grid gap-4 lg:grid-cols-2">
       <Panel tone="gold">
-        <h2 className="font-serif text-3xl">Offered</h2>
+        <h2 className="font-serif text-3xl">Offer a skill</h2>
         <ul className="mt-5 space-y-5">
           {world.offers.map((offer) => (
             <li key={offer.id}>
@@ -382,7 +381,7 @@ function SkillBoard() {
         </ul>
       </Panel>
       <Panel tone="mist">
-        <h2 className="font-serif text-3xl">Asked for</h2>
+        <h2 className="font-serif text-3xl">Learn a skill</h2>
         <ul className="mt-5 space-y-5">
           {world.requests.map((request) => (
             <li key={request.id}>

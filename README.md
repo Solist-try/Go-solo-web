@@ -2,9 +2,11 @@
 
 A calm home for people living independently.
 
-You can live alone without being alone.
+Go Solo. Not Alone.
 
-The product loop is Seed, Out There, Campfire, Connection, and a new Seed. It is not a feed, a forum, or a popularity system.
+Go Solo helps people build bigger lives while living independently. Living alone is not the problem. Living on hold is.
+
+The path is a Seed, then Out There, then Campfire, then a Waypoint, then another Seed. There are no popularity counts and no rankings.
 
 ## Stack
 
@@ -34,7 +36,7 @@ Without Supabase environment variables, Go Solo keeps accounts in this browser a
    - your production `/auth/callback`
 6. Restart the dev server.
 
-The app then uses Supabase Auth for registration, login, logout, email verification, and password reset. Profiles, interests, waypoints, seeds, SAME partnerships, skill swaps, Out There posts, campfire threads, comments, reactions, and notifications are stored in Postgres with row-level security. Profile photos go to the `avatars` bucket created by the migration.
+The app then uses Supabase Auth for registration, login, logout, email verification, and password reset. Profiles, interests, waypoints, seeds, SAME partnerships, skill swaps, Out There posts, campfire posts, comments, reactions, and notifications are stored in Postgres with row-level security. Profile photos go to the `avatars` bucket created by the migration.
 
 Protected routes are enforced in `proxy.ts`. Member pages also wait until email verification and onboarding are complete.
 

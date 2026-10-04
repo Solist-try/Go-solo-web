@@ -136,7 +136,7 @@ export function RegisterForm() {
   return (
     <AuthFrame
       title="Join Go Solo."
-      lede="Create an account, then tell us a little about what brings you here. No feed to perform for."
+      lede="Create an account, then tell us a little about what brings you here."
     >
       <form onSubmit={onSubmit} className="space-y-5">
         <label className="block space-y-2">

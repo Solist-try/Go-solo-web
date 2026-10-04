@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AuthorLine, Frame, Panel, TextLink } from "@/components/gosolo/pieces";
+import { AuthorLine, Frame, TextLink } from "@/components/gosolo/pieces";
 import { NextStep } from "@/components/gosolo/next-step";
 import { getSeed, getWaypoint } from "@/lib/catalog";
 import { formatRelative } from "@/lib/format";
@@ -29,98 +29,101 @@ export function Dashboard() {
       <p className="mt-6 max-w-2xl font-serif text-3xl leading-snug tracking-tight text-ink sm:text-4xl">
         What&apos;s calling to you today?
       </p>
-      <div className="mt-10">
-        <NextStep compact />
-      </div>
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <Panel tone="sage">
-          <h2 className="font-serif text-3xl text-ink">Current seed</h2>
-          {currentSeed ? (
-            <div className="mt-4">
-              <p className="text-lg leading-relaxed">{currentSeed.title}</p>
-              <p className="mt-2 text-ink-soft">{currentSeed.prompt}</p>
-              <div className="mt-6">
-                <TextLink href={`/seeds/${currentSeed.id}`}>Stay with this seed</TextLink>
-              </div>
-            </div>
-          ) : (
-            <div className="mt-4">
-              <p className="text-lg leading-relaxed text-ink">Nothing is planted yet. That is a fine place to start.</p>
-              <div className="mt-6">
-                <TextLink href="/seeds">Find a seed</TextLink>
-              </div>
-            </div>
-          )}
-        </Panel>
-        <Panel tone="mist">
-          <h2 className="font-serif text-3xl text-ink">My waypoints</h2>
-          {mine.length > 0 ? (
-            <ul className="mt-4 space-y-3">
-              {mine.map((item) => {
-                const waypoint = getWaypoint(item.waypointId);
-                if (!waypoint) return null;
-                return (
-                  <li key={item.waypointId}>
-                    <Link href={`/waypoints/${waypoint.slug}`} className="text-lg underline decoration-ink/15 underline-offset-4">
-                      {waypoint.name}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <p className="mt-4 text-lg leading-relaxed">
-              You have not chosen a waypoint yet.{" "}
-              <TextLink href="/waypoints">See the three</TextLink>
+
+      <section className="mt-20 max-w-3xl">
+        <h2 className="font-serif text-3xl tracking-tight text-ink sm:text-4xl">Current Seed</h2>
+        {currentSeed ? (
+          <div className="mt-6">
+            <Link href={`/seeds/${currentSeed.id}`} className="font-serif text-4xl leading-tight tracking-tight text-ink">
+              {currentSeed.title}
+            </Link>
+            <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink-soft">{currentSeed.prompt}</p>
+          </div>
+        ) : (
+          <div className="mt-6">
+            <p className="max-w-xl text-lg leading-relaxed text-ink">
+              Nothing is planted yet. A seed is a small possibility, waiting for you to try it.
             </p>
-          )}
-        </Panel>
-      </div>
-      <Panel className="mt-4">
+            <div className="mt-6">
+              <TextLink href="/seeds">Find a Seed</TextLink>
+            </div>
+          </div>
+        )}
+      </section>
+
+      <section className="mt-20">
         <div className="flex items-end justify-between gap-4">
-          <h2 className="font-serif text-3xl text-ink">Latest from Out There</h2>
+          <h2 className="font-serif text-3xl tracking-tight text-ink sm:text-4xl">Recent Out There Stories</h2>
           <TextLink href="/out-there">All stories</TextLink>
         </div>
-        <ul className="mt-6 space-y-6">
+        <ul className="mt-8 space-y-10">
           {stories.length === 0 ? (
             <li className="text-lg text-ink-soft">No stories yet. The world is still large.</li>
           ) : (
             stories.map((story) => (
-              <li key={story.id} className="border-t border-ink/5 pt-6 first:border-0 first:pt-0">
+              <li key={story.id}>
                 <AuthorLine
                   profile={names.get(story.authorId)}
                   meta={formatRelative(story.createdAt)}
                   href={`/profile/${story.authorId}`}
                 />
-                <Link href={`/out-there/${story.id}`} className="mt-4 block font-serif text-3xl leading-tight text-ink">
+                <Link href={`/out-there/${story.id}`} className="mt-4 block max-w-3xl font-serif text-4xl leading-tight tracking-tight text-ink">
                   {story.title}
                 </Link>
               </li>
             ))
           )}
         </ul>
-      </Panel>
-      <Panel tone="clay" className="mt-4">
+      </section>
+
+      <section className="mt-20 max-w-3xl">
         <div className="flex items-end justify-between gap-4">
-          <h2 className="font-serif text-3xl text-ink">Campfire</h2>
+          <h2 className="font-serif text-3xl tracking-tight text-ink sm:text-4xl">Campfire Activity</h2>
           <TextLink href="/campfire">Pull up a chair</TextLink>
         </div>
-        <ul className="mt-6 space-y-5">
+        <ul className="mt-8 space-y-8">
           {fires.length === 0 ? (
-            <li className="text-lg">The chairs are here. The first thing said can be ordinary.</li>
+            <li className="text-lg text-ink-soft">The chairs are here. The first thing said can be ordinary.</li>
           ) : (
             fires.map((post) => (
               <li key={post.id}>
-                <Link href={`/campfire/${post.id}`} className="font-serif text-2xl leading-tight text-ink">
+                <Link href={`/campfire/${post.id}`} className="font-serif text-3xl leading-tight tracking-tight text-ink">
                   {post.title}
                 </Link>
-                <p className="mt-2 line-clamp-2 text-ink">{post.body}</p>
+                <p className="mt-3 line-clamp-2 text-lg leading-relaxed text-ink-soft">{post.body}</p>
               </li>
             ))
           )}
         </ul>
-      </Panel>
-      <div className="mt-16 max-w-xl">
+      </section>
+
+      <section className="mt-20 max-w-3xl">
+        <h2 className="font-serif text-3xl tracking-tight text-ink sm:text-4xl">Your Waypoints</h2>
+        {mine.length > 0 ? (
+          <ul className="mt-8 space-y-4">
+            {mine.map((item) => {
+              const waypoint = getWaypoint(item.waypointId);
+              if (!waypoint) return null;
+              return (
+                <li key={item.waypointId}>
+                  <Link href={`/waypoints/${waypoint.slug}`} className="font-serif text-3xl tracking-tight text-ink">
+                    {waypoint.name}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="mt-6 text-lg leading-relaxed text-ink">
+            You have not chosen a waypoint yet.{" "}
+            <TextLink href="/waypoints">Visit a Waypoint</TextLink>
+          </p>
+        )}
+      </section>
+
+      <NextStep />
+
+      <div className="mt-20 max-w-xl">
         <p className="text-sm text-ink-soft">Later, not now</p>
         <ul className="mt-3 space-y-2 text-ink-soft">
           <li>

@@ -10,26 +10,30 @@ const phrases = [
   { text: "Paint the room orange.", tone: "bg-gold" },
 ];
 
-const loop = [
+const steps = [
   {
-    name: "Seed",
-    body: "A small action that makes life bigger. Not a productivity system. A possibility.",
+    mark: "🌱",
+    name: "Find a Seed",
+    body: "Small possibilities worth exploring.",
+    tone: "bg-sage",
   },
   {
-    name: "Out There",
-    body: "You go. Then you tell the truth about what you expected and what actually happened.",
+    mark: "🚶",
+    name: "Go Out There",
+    body: "Try something. See what happens.",
+    tone: "bg-clay",
   },
   {
-    name: "Campfire",
-    body: "You come back and sit with other people who are living it too. Not a forum. A chair.",
+    mark: "🔥",
+    name: "Return to Campfire",
+    body: "Share stories and experiences.",
+    tone: "bg-gold",
   },
   {
-    name: "Connection",
-    body: "A waypoint, a skill, or one person walking the same week. No audience required.",
-  },
-  {
-    name: "New Seed",
-    body: "The next thing you no longer need permission to try.",
+    mark: "🧭",
+    name: "Visit a Waypoint",
+    body: "Meet people walking similar terrain.",
+    tone: "bg-mist",
   },
 ];
 
@@ -42,7 +46,8 @@ export function HomePage() {
     <>
       <section className="mx-auto grid w-full max-w-6xl items-end gap-14 px-5 pt-16 pb-8 sm:px-8 sm:pt-24 lg:grid-cols-12 lg:pt-28">
         <div className="lg:col-span-7">
-          <p className="text-sm text-ink-soft">A calm home for an independent life</p>
+          <p className="text-sm text-ink-soft">Go Solo. Not Alone.</p>
+          <p className="mt-3 text-sm text-ink-soft">A calm home for an independent life</p>
           <h1 className="mt-6 font-serif text-6xl leading-[0.98] tracking-tight text-balance text-ink sm:text-7xl md:text-8xl">
             Hello, Vagabond.
           </h1>
@@ -85,33 +90,40 @@ export function HomePage() {
         <div className="space-y-6 text-lg leading-relaxed text-ink lg:col-span-6 lg:col-start-7">
           <p>
             Many people postpone experiences because they are waiting for a partner, for friends, for
-            schedules to align, for permission.
+            schedules to align, or for permission.
           </p>
-          <p>Go Solo is the permission.</p>
-          <p className="text-ink-soft">
-            It is not a feed and it is not a stage. It is a home you can leave, to take the trip or
-            learn the skill or eat the weird food, and return to without performing any of it.
-          </p>
+          <p>Go Solo exists for the life that&apos;s happening now.</p>
+          <p>This is not a place to perform.</p>
+          <p className="text-ink-soft">It is a home base for people who are out there living.</p>
           <p className="font-serif text-3xl leading-snug tracking-tight text-ink">
             You can live alone without being alone.
           </p>
         </div>
       </section>
 
+      <section className="mx-auto w-full max-w-6xl px-5 pb-8 sm:px-8">
+        <p className="max-w-3xl font-serif text-4xl leading-tight tracking-tight text-ink sm:text-6xl">
+          Living alone is not the problem.
+          <span className="mt-3 block text-ink-soft">Living on hold is.</span>
+        </p>
+      </section>
+
       <section id="how-it-works" className="scroll-mt-24 bg-white/50">
         <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 lg:py-28">
           <h2 className="max-w-2xl font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">
-            How a life gets bigger
+            A bigger life starts small.
           </h2>
-          <ol className="mt-12 grid gap-4">
-            {loop.map((step, index) => (
-              <li key={step.name} className="grid gap-3 rounded-[28px] bg-background px-6 py-7 sm:grid-cols-12 sm:items-baseline sm:px-8">
-                <span className="text-sm text-ink-soft sm:col-span-2">0{index + 1}</span>
-                <h3 className="font-serif text-3xl tracking-tight text-ink sm:col-span-3">{step.name}</h3>
-                <p className="text-lg leading-relaxed text-ink-soft sm:col-span-7">{step.body}</p>
+          <ul className="mt-12 grid gap-4 sm:grid-cols-2">
+            {steps.map((step) => (
+              <li key={step.name} className={`${step.tone} rounded-[28px] px-7 py-8`}>
+                <p className="text-3xl" aria-hidden="true">
+                  {step.mark}
+                </p>
+                <h3 className="mt-6 font-serif text-3xl tracking-tight text-ink">{step.name}</h3>
+                <p className="mt-3 text-lg leading-relaxed text-ink">{step.body}</p>
               </li>
             ))}
-          </ol>
+          </ul>
         </div>
       </section>
 
@@ -120,8 +132,8 @@ export function HomePage() {
           <div className="max-w-2xl">
             <h2 className="font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">Seeds</h2>
             <p className="mt-4 text-lg leading-relaxed text-ink-soft">
-              Small actions that make life bigger. Adventure, connection, creativity, home, growth,
-              and wellbeing. Possibility, not a self-improvement program.
+              Seeds are small actions that make life bigger. Not goals. Not productivity. Not
+              self-improvement. Possibilities.
             </p>
           </div>
           <Button asChild variant="outline" className={`${pill} bg-transparent`}>

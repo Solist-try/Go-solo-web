@@ -306,17 +306,16 @@ create policy "members update their avatar" on storage.objects
 
 insert into public.interests (slug, label) values
   ('travel', 'Travel'),
-  ('creativity', 'Creativity'),
   ('books', 'Books'),
-  ('walking', 'Walking'),
-  ('home-diy', 'Home & DIY'),
-  ('cooking', 'Cooking'),
-  ('personal-growth', 'Personal Growth'),
-  ('community', 'Community'),
+  ('creativity', 'Creativity'),
+  ('nature', 'Nature'),
   ('learning', 'Learning'),
-  ('nature', 'Nature');
+  ('cooking', 'Cooking'),
+  ('walking', 'Walking'),
+  ('diy', 'DIY'),
+  ('personal-growth', 'Personal Growth');
 
 insert into public.waypoints (id, slug, name, summary, description, focus) values
   ('independence-lab', 'independence-lab', 'Independence Lab', 'Routines, home systems, self-reliance, and confidence.', 'A waypoint for the life that happens after the door closes. The small systems, the ordinary courage, and the confidence that comes from trusting your own hands.', array['Routines', 'Home systems', 'Self-reliance', 'Confidence']),
-  ('solo-among-others', 'solo-among-others', 'Solo Among Others', 'Friendship, belonging, social confidence, and community.', 'For the stretch between solitude and other people. How to belong without disappearing, and how to be out in the world without waiting for a plus-one.', array['Friendship', 'Belonging', 'Social confidence', 'Community']),
+  ('solo-among-others', 'solo-among-others', 'Solo Among Others', 'Friendship, belonging, social confidence, and companionship.', 'For the stretch between solitude and other people. How to belong without disappearing, and how to be out in the world without waiting for a plus-one.', array['Friendship', 'Belonging', 'Social confidence', 'Companionship']),
   ('emotional-clarity', 'emotional-clarity', 'Emotional Clarity', 'Reflection, identity, change, and growth.', 'A slower circle. Identity, change, and the sentences that only arrive when you stop performing them. Nothing here needs to be optimized.', array['Reflection', 'Identity', 'Change', 'Growth']);

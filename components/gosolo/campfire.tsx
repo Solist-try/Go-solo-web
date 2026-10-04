@@ -31,7 +31,7 @@ export function CampfireIndex() {
     <Frame>
       <PageIntro eyebrow="A shared campfire" title="Pull up a chair.">
         What&apos;s on your mind? Questions, thoughts, reflections, daily life, stories, celebrations,
-        and challenges. Companionship, not a forum.
+        and challenges. A chair to return to after you have been out there.
       </PageIntro>
       <div className="mt-8">
         <PrimaryLink href="/campfire/new">Say something</PrimaryLink>

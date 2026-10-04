@@ -14,10 +14,10 @@ export const WAYPOINTS: Waypoint[] = [
     id: "solo-among-others",
     slug: "solo-among-others",
     name: "Solo Among Others",
-    summary: "Friendship, belonging, social confidence, and community.",
+    summary: "Friendship, belonging, social confidence, and companionship.",
     description:
       "For the stretch between solitude and other people. How to belong without disappearing, and how to be out in the world without waiting for a plus-one.",
-    focus: ["Friendship", "Belonging", "Social confidence", "Community"],
+    focus: ["Friendship", "Belonging", "Social confidence", "Companionship"],
   },
   {
     id: "emotional-clarity",
@@ -91,7 +91,7 @@ export const SEEDS: Seed[] = [
     title: "Trade a skill",
     description: "Offer what you know. Ask for what you have been postponing.",
     prompt:
-      "Offer something you know well enough to share for an hour. Ask for something you have been waiting to learn. Languages, photography, gardening, DIY, cooking, budgeting. Small is perfect.",
+      "Offer something you know well enough to share for an hour. Ask for something you have been waiting to learn. Photography, gardening, DIY, cooking, budgeting, languages. Small is perfect.",
     category: "connection",
     kind: "skill-swap",
     timeframe: "One exchange",

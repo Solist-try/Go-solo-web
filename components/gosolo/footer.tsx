@@ -12,19 +12,16 @@ export function SiteFooter() {
       <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
         {home ? (
           <div id="manifesto" className="max-w-3xl">
-            <p className="text-sm text-ink-soft">A small manifesto</p>
+            <p className="text-sm text-ink-soft">Go Solo. Not Alone.</p>
             <div className="mt-6 space-y-6 font-serif text-3xl leading-snug tracking-tight text-ink sm:text-4xl">
-              <p>Go Solo is a quiet place for people who are done postponing their lives.</p>
-              <p>
-                You do not need a partner, a crowd, or a perfect week. You need a small opening, and
-                somewhere to come back to when you have been out in the world.
-              </p>
-              <p>Sit down. Tell the truth about what happened. Stay near people who are also beginning.</p>
+              <p>Go Solo helps people build bigger lives while living independently.</p>
+              <p>Living alone is not the problem. Living on hold is.</p>
+              <p>You can live alone without being alone.</p>
             </div>
           </div>
         ) : (
           <p className="max-w-xl font-serif text-3xl leading-snug tracking-tight text-ink">
-            You can live alone without being alone.
+            Go Solo. Not Alone.
           </p>
         )}
         <div className="mt-12 flex flex-col gap-6 text-sm text-ink-soft sm:flex-row sm:items-end sm:justify-between">

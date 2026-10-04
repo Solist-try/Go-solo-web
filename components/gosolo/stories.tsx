@@ -144,7 +144,7 @@ export function StoryDetail({ id }: { id: string }) {
           <li>
             {discussion ? (
               <Link href={`/campfire/${discussion.id}`} className="underline decoration-ink/20 underline-offset-4">
-                Campfire discussion
+                At the campfire
               </Link>
             ) : (
               <Link

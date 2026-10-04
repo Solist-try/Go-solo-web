@@ -21,6 +21,7 @@ export function categoryLabel(id?: string) {
 }
 
 export function interestLabel(id: string) {
+  if (id === "home-diy") return "DIY";
   return labelFrom(INTERESTS, id);
 }
 
