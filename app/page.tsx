@@ -4,7 +4,7 @@ import { HomePage } from "@/components/gosolo/home";
 export const metadata: Metadata = {
   title: "Go Solo",
   description:
-    "Hello, Vagabond. Your life doesn't have to wait. Go Solo helps people explore, connect and grow while living independently.",
+    "Go Solo helps people build meaningful lives on their own terms. Sometimes that means a trip. Sometimes that means a quiet Tuesday. Both belong here.",
 };
 
 export default function Page() {

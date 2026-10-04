@@ -32,7 +32,7 @@ export function SeedIndex() {
   return (
     <Frame>
       <PageIntro eyebrow="Possibility" title="Seeds">
-        Small possibilities worth exploring. Not goals. Not productivity. Not self-improvement.
+        Small actions for a life of your own. A trip, a meal plan, a repair, a friend. Possibilities, at the size of a week.
       </PageIntro>
       <div className="mt-8 flex flex-wrap gap-2" role="group" aria-label="Filter seeds">
         <FilterChip current={category === "all"} onClick={() => setCategory("all")}>

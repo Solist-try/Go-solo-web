@@ -55,13 +55,14 @@ export function suggestNext(input: {
 
   if (myStories.length === 0) {
     const current = seeds.find((seed) => seed.id === active[0]?.seedId);
+    const atHome = current && ["home", "practical-life", "wellbeing"].includes(current.category);
     return {
-      title: "Go out there",
+      title: atHome ? "Bring the ordinary day back" : "Go out there",
       body: current
-        ? `When you try “${current.title}”, bring the story back. What you expected and what happened both belong.`
-        : "When you try the thing, bring the story back. Expectation and reality both belong.",
+        ? `When you try “${current.title}”, tell the truth about it. A trip and a Tuesday both belong.`
+        : "When you try the thing, tell the truth about it. A trip and a Tuesday both belong.",
       href: current ? `/out-there/new?seed=${current.id}` : "/out-there/new",
-      cta: "Share an experience",
+      cta: "Share what happened",
     };
   }
 
@@ -85,8 +86,56 @@ export function suggestNext(input: {
 
   return {
     title: "Try something new",
-    body: "The loop begins again. What else have you been postponing?",
+    body: "The loop begins again. It might be a neighbourhood, or it might be the kitchen.",
     href: "/seeds",
     cta: "Plant another seed",
   };
 }
+
+export const EXPANSION_ACTIONS: NextStep[] = [
+  {
+    title: "Visit a new neighbourhood",
+    body: "Walk a street you usually only pass through.",
+    href: "/seeds/walk-unknown",
+    cta: "Begin",
+  },
+  {
+    title: "Try a local workshop",
+    body: "Say yes to one listing, even if nobody else's calendar is free.",
+    href: "/seeds/local-yes",
+    cta: "Begin",
+  },
+  {
+    title: "Visit a museum",
+    body: "Stay until one sentence arrives, then leave with it.",
+    href: "/seeds/museum-sentence",
+    cta: "Begin",
+  },
+];
+
+export const EVERYDAY_ACTIONS: NextStep[] = [
+  {
+    title: "Create a morning routine",
+    body: "One kinder setup, used for seven days.",
+    href: "/seeds/morning-system",
+    cta: "Begin",
+  },
+  {
+    title: "Review your budget",
+    body: "An hour with what comes in and what must go out.",
+    href: "/seeds/budget-month",
+    cta: "Begin",
+  },
+  {
+    title: "Cook a new recipe",
+    body: "Make a meal you have been saving for company.",
+    href: "/seeds/meal-for-you",
+    cta: "Begin",
+  },
+  {
+    title: "Reorganise a room",
+    body: "Move one thing so the room fits the life you have.",
+    href: "/seeds/room-for-this-life",
+    cta: "Begin",
+  },
+];
