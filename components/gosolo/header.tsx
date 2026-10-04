@@ -185,7 +185,7 @@ export function SiteHeader() {
               <SheetHeader>
                 <SheetTitle className="font-serif text-3xl">Go Solo</SheetTitle>
               </SheetHeader>
-              <nav aria-label="Mobile" className="flex flex-col gap-2 px-4">
+              <nav aria-label="Mobile" className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-4 pb-8">
                 {(user?.onboardingComplete
                   ? [...memberLinks, ["/settings", "Settings"] as const]
                   : user
