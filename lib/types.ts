@@ -93,6 +93,10 @@ export type ReactionKind = (typeof REACTIONS)[number]["id"];
 export type WouldAgain = (typeof WOULD_AGAIN)[number]["id"];
 export type SeedStatus = "active" | "resting" | "completed";
 export type TargetType = "out-there" | "campfire";
+export type MemberRole = "member" | "admin";
+export type MemberStatus = "active" | "suspended" | "deactivated";
+export type SeedDifficulty = "gentle" | "steady" | "brave";
+export type WaypointColour = "sage" | "clay" | "gold" | "mist";
 
 export type Profile = {
   id: string;
@@ -111,6 +115,8 @@ export type Profile = {
   notifyWaypoints: boolean;
   notifyCheckins: boolean;
   createdAt: string;
+  role?: MemberRole;
+  status?: MemberStatus;
 };
 
 export type Account = {
@@ -127,6 +133,8 @@ export type Waypoint = {
   summary: string;
   description: string;
   focus: string[];
+  colour?: WaypointColour;
+  icon?: string;
 };
 
 export type Seed = {
@@ -138,6 +146,7 @@ export type Seed = {
   kind: SeedKind;
   timeframe: string;
   waypoints: string[];
+  difficulty?: SeedDifficulty;
 };
 
 export type CheckIn = {
@@ -211,6 +220,9 @@ export type OutTherePost = {
   seedId?: string;
   waypointId?: string;
   createdAt: string;
+  hidden?: boolean;
+  pinned?: boolean;
+  featured?: boolean;
 };
 
 export type CampfirePost = {
@@ -224,6 +236,10 @@ export type CampfirePost = {
   seedId?: string;
   outThereId?: string;
   createdAt: string;
+  hidden?: boolean;
+  pinned?: boolean;
+  featured?: boolean;
+  locked?: boolean;
 };
 
 export type Comment = {

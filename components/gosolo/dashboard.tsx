@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { AuthorLine, Frame, TextLink } from "@/components/gosolo/pieces";
 import { NextStep } from "@/components/gosolo/next-step";
-import { getSeed, getWaypoint } from "@/lib/catalog";
+import { useCatalog, useGoSolo } from "@/lib/gosolo";
 import { formatRelative } from "@/lib/format";
-import { useGoSolo } from "@/lib/gosolo";
 
 export function Dashboard() {
   const { user, world } = useGoSolo();
+  const { getSeed, getWaypoint } = useCatalog();
   if (!user) return null;
   const names = new Map(world.profiles.map((profile) => [profile.id, profile]));
   const active = world.userSeeds

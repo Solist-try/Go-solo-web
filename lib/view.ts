@@ -1,6 +1,7 @@
 import {
   communityCampfire,
   communityComments,
+  communityConnections,
   communityMemberships,
   communityOffers,
   communityPartnerships,
@@ -39,7 +40,7 @@ export function buildView(persisted: PersistedState, includeCommunity: boolean):
     partnerships: [...communityPartnerships, ...persisted.partnerships],
     offers: [...communityOffers, ...persisted.offers],
     requests: [...communityRequests, ...persisted.requests],
-    connections: persisted.connections,
+    connections: [...communityConnections, ...persisted.connections],
     stories: sortByNewest([...communityStories, ...persisted.stories]),
     campfire: sortByNewest([...communityCampfire, ...persisted.campfire]),
     comments: [...communityComments, ...persisted.comments],

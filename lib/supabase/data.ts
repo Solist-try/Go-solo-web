@@ -69,6 +69,8 @@ export function profileFromRow(row: Row, interests: string[] = []): Profile {
     notifyWaypoints: Boolean(row.notify_waypoints),
     notifyCheckins: row.notify_checkins !== false,
     createdAt: asString(row.created_at, new Date().toISOString()),
+    role: row.role === "admin" ? "admin" : "member",
+    status: row.status === "suspended" || row.status === "deactivated" ? row.status : "active",
   };
 }
 

@@ -17,9 +17,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { getSeed, getWaypoint } from "@/lib/catalog";
+import { useCatalog, useGoSolo } from "@/lib/gosolo";
 import { categoryLabel, formatRelative } from "@/lib/format";
-import { useGoSolo } from "@/lib/gosolo";
 import { SEED_CATEGORIES, type SeedCategory } from "@/lib/types";
 import { visibleSeeking } from "@/lib/view";
 
@@ -93,6 +92,7 @@ function FilterChip({
 }
 
 export function SeedDetail({ id }: { id: string }) {
+  const { getSeed, getWaypoint } = useCatalog();
   const seed = getSeed(id);
   const {
     user,

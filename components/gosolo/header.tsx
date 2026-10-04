@@ -48,7 +48,7 @@ function isActive(pathname: string, href: string) {
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const { ready, user, world, logout, markNotificationsRead, schemaError } = useGoSolo();
+  const { ready, user, world, logout, markNotificationsRead, schemaError, isAdmin } = useGoSolo();
   const [open, setOpen] = useState(false);
   const notes = useMemo(
     () => world.notifications.filter((note) => note.userId === user?.id),
@@ -56,12 +56,18 @@ export function SiteHeader() {
   );
   const unread = notes.some((note) => !note.read);
 
-  const links = user?.onboardingComplete
-    ? memberLinks
-    : [
-        ["/seeds", "Seeds"],
-        ["/waypoints", "Waypoints"],
-      ];
+  const onDesk = pathname.startsWith("/admin");
+  const links: { href: string; label: string }[] = (
+    onDesk
+      ? [["/dashboard", "Member home"]]
+      : user?.onboardingComplete
+        ? memberLinks
+        : [
+            ["/seeds", "Seeds"],
+            ["/waypoints", "Waypoints"],
+          ]
+  ).map(([href, label]) => ({ href, label }));
+  if (isAdmin && !onDesk) links.push({ href: "/admin", label: "Steward" });
 
   return (
     <header className="sticky top-0 z-40 border-b border-ink/5 bg-background/90 backdrop-blur-md">
@@ -69,7 +75,7 @@ export function SiteHeader() {
         <Wordmark />
         <nav aria-label="Primary" className="hidden items-center gap-1 lg:flex">
           {ready &&
-            links.map(([href, label]) => (
+            links.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
@@ -198,6 +204,16 @@ export function SiteHeader() {
                     {label}
                   </Link>
                 ))}
+                {isAdmin && !onDesk ? (
+                  <Link href="/admin" onClick={() => setOpen(false)} className="rounded-[24px] px-4 py-4 text-2xl font-serif text-ink hover:bg-white">
+                    Steward
+                  </Link>
+                ) : null}
+                {onDesk ? (
+                  <Link href="/dashboard" onClick={() => setOpen(false)} className="rounded-[24px] px-4 py-4 text-2xl font-serif text-ink hover:bg-white">
+                    Member home
+                  </Link>
+                ) : null}
                 {user ? (
                   <button
                     type="button"

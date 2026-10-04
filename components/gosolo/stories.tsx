@@ -17,9 +17,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { getSeed, getWaypoint } from "@/lib/catalog";
 import { againLabel, describeReactions, formatRelative } from "@/lib/format";
-import { useGoSolo } from "@/lib/gosolo";
+import { useCatalog, useGoSolo } from "@/lib/gosolo";
 import { REACTIONS, WOULD_AGAIN, type WouldAgain } from "@/lib/types";
 
 export function StoryIndex() {
@@ -76,6 +75,7 @@ export function StoryIndex() {
 
 export function StoryDetail({ id }: { id: string }) {
   const { world, user, reactToStory } = useGoSolo();
+  const { getSeed, getWaypoint } = useCatalog();
   const story = world.stories.find((item) => item.id === id);
   if (!story) {
     return (
@@ -180,6 +180,7 @@ export function StoryForm() {
   const params = useSearchParams();
   const router = useRouter();
   const { createStory, user, world } = useGoSolo();
+  const { getSeed, getWaypoint } = useCatalog();
   const [title, setTitle] = useState("");
   const [what, setWhat] = useState("");
   const [expecting, setExpecting] = useState("");

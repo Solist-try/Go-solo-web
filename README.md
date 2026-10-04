@@ -50,3 +50,12 @@ Protected routes are enforced in `proxy.ts`. Member pages also wait until email 
 - `/experiences`, `/partnerships`, `/first-night-kits` are marked coming soon and stay closed
 
 There are no follower counts, like counts, or rankings. Reactions are named: Inspired me, I relate, Interesting perspective.
+
+## Steward desk
+
+The preview includes a steward account:
+
+- Email: `steward@gosolo.example`
+- Password: `gosolo-steward`
+
+Sign in, then open Steward. The desk reads the room, edits seeds and waypoints, moderates Out There and Campfire, and changes the public words. In the preview those words live in this browser. With Supabase, run `supabase/migrations/0002_admin.sql` and set `profiles.role` to `admin` for the steward.

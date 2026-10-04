@@ -239,6 +239,12 @@ export function getWaypoint(idOrSlug: string) {
   return WAYPOINTS.find((waypoint) => waypoint.id === idOrSlug || waypoint.slug === idOrSlug);
 }
 
+export const ADMIN_PREFIX = "/admin";
+
+export function isAdminPath(pathname: string) {
+  return pathname === ADMIN_PREFIX || pathname.startsWith(`${ADMIN_PREFIX}/`);
+}
+
 export const MEMBER_PREFIXES = [
   "/dashboard",
   "/onboarding",

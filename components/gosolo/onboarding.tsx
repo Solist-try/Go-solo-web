@@ -6,7 +6,6 @@ import { ChoiceGrid, Frame, PageIntro, Panel, fieldClass, areaClass, pill } from
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { WAYPOINTS } from "@/lib/catalog";
 import { useGoSolo } from "@/lib/gosolo";
 import { INTENTIONS, INTERESTS } from "@/lib/types";
 
@@ -34,7 +33,7 @@ export function OnboardingFlow() {
 }
 
 function OnboardingForm({ user }: { user: NonNullable<ReturnType<typeof useGoSolo>["user"]> }) {
-  const { world, updateProfile, setInterests, joinWaypoint, leaveWaypoint, completeOnboarding } = useGoSolo();
+  const { world, waypoints: catalogWaypoints, updateProfile, setInterests, joinWaypoint, leaveWaypoint, completeOnboarding } = useGoSolo();
   const router = useRouter();
   const [step, setStep] = useState(2);
   const [intentions, setIntentions] = useState(user.intentions);
@@ -185,7 +184,7 @@ function OnboardingForm({ user }: { user: NonNullable<ReturnType<typeof useGoSol
         {step === 5 ? (
           <ChoiceGrid
             label="Waypoints"
-            options={WAYPOINTS.map((waypoint) => ({
+            options={catalogWaypoints.map((waypoint) => ({
               id: waypoint.id,
               label: waypoint.name,
               hint: waypoint.summary,
