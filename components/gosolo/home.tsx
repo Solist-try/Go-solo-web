@@ -13,7 +13,7 @@ export function HomePage() {
   const { content, seeds, waypoints, desk } = useGoSolo();
   const featuredIds = desk.featuredSeedIds.length
     ? desk.featuredSeedIds
-    : ["ticket-for-one", "meal-for-you", "one-witness"];
+    : ["ticket-for-one", "sunday-reset", "old-friend"];
   const featured = featuredIds
     .map((id) => seeds.find((seed) => seed.id === id))
     .filter((seed) => seed != null)
@@ -32,7 +32,6 @@ export function HomePage() {
       <section className="mx-auto grid w-full max-w-6xl items-end gap-14 px-5 pt-16 pb-8 sm:px-8 sm:pt-24 lg:grid-cols-12 lg:pt-28">
         <div className="lg:col-span-7">
           <p className="text-sm text-ink-soft">{content.heroTagline}</p>
-          <p className="mt-3 text-sm text-ink-soft">{content.heroEyebrow}</p>
           <h1 className="mt-6 font-serif text-6xl leading-[0.98] tracking-tight text-balance text-ink sm:text-7xl md:text-8xl">
             {content.heroTitle}
           </h1>
@@ -99,6 +98,28 @@ export function HomePage() {
               </li>
             ))}
           </ul>
+        </div>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <div className="rounded-[28px] bg-gold/70 p-7 sm:p-8">
+            <h3 className="font-serif text-3xl tracking-tight text-ink">{content.expansionTitle}</h3>
+            <ul className="mt-5 grid gap-2 sm:grid-cols-2">
+              {content.expansion.map((item) => (
+                <li key={item} className="text-lg text-ink">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-[28px] bg-clay/70 p-7 sm:p-8">
+            <h3 className="font-serif text-3xl tracking-tight text-ink">{content.everydayTitle}</h3>
+            <ul className="mt-5 grid gap-2 sm:grid-cols-2">
+              {content.everyday.map((item) => (
+                <li key={item} className="text-lg text-ink">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 

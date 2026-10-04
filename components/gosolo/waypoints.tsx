@@ -13,8 +13,7 @@ export function WaypointIndex() {
   return (
     <Frame>
       <PageIntro title="Waypoints">
-        Places where people exploring similar parts of life gather, share experiences, and continue
-        their journey. Joining and leaving is simple.
+        Rooms for practical life and for the life you want to grow into. Home, friendship, and the seasons of starting over. Joining and leaving is simple.
       </PageIntro>
       <ul className="mt-10 grid gap-4 lg:grid-cols-3">
         {waypoints.map((waypoint) => (

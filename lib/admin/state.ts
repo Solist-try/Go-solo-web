@@ -75,6 +75,10 @@ export type SiteContent = {
   together: string[];
   comeHereTitle: string;
   comeHere: string[];
+  expansionTitle: string;
+  expansion: string[];
+  everydayTitle: string;
+  everyday: string[];
   howTitle: string;
   howIntro: string;
   steps: HowStep[];
@@ -162,22 +166,23 @@ export type AdminState = {
 export function defaultContent(): SiteContent {
   return {
     heroTagline: "Go Solo. Not Alone.",
-    heroEyebrow: "A calm home for an independent life",
+    heroEyebrow: "",
     heroTitle: "Hello, Vagabond.",
     heroSubhead: "Your life doesn't have to wait.",
-    heroSupport: "Try the thing. Take the trip. Learn the skill. Eat the weird food. Paint the room orange.",
-    heroLede: "Go Solo helps people explore, connect and grow while living independently.",
+    heroSupport:
+      "Go Solo helps people build meaningful lives on their own terms. Sometimes that means taking a trip. Sometimes that means learning how to enjoy a quiet Tuesday evening.",
+    heroLede: "Both matter. Both belong here.",
     heroPrimary: "Join Go Solo",
     heroSecondary: "Explore Seeds",
-    phrases: ["Try the thing.", "Take the trip.", "Paint the room orange."],
-    philosophyTitle: "Stop waiting for company before you begin.",
+    phrases: ["Take the trip.", "Keep the Tuesday.", "Both belong here."],
+    philosophyTitle: "A companion for independent living.",
     philosophyParagraphs: [
-      "Many people postpone experiences because they are waiting for a partner, for friends, for schedules to align, or for permission.",
-      "Go Solo exists for the life that's happening now.",
-      "This is not a place to perform.",
-      "It is a home base for people who are out there living.",
+      "Go Solo is a companion for independent living. It is here for the trip and for the ordinary week.",
+      "The aim is a life that feels intentional, connected, capable, sustainable, and expansive. The aim is not to make every day exciting.",
+      "A member might take a solo trip to Poland. Another might finally build a household routine that reduces stress. Both are a life growing larger.",
+      "This is a home base for people who are out there living, and for people who are learning how to keep a home.",
     ],
-    philosophyClose: "You can live alone without being alone.",
+    philosophyClose: "Both matter. Both belong here.",
     belief: "Living alone is not the problem.",
     beliefSecond: "Living on hold is.",
     whatTitle: "What Is Go Solo?",
@@ -197,6 +202,23 @@ export function defaultContent(): SiteContent {
       "Share real-world experiences",
       "Connect with people on similar journeys",
     ],
+    expansionTitle: "Life expansion",
+    expansion: ["Travel", "New experiences", "Learning", "Events", "Exploration", "Creativity", "Adventure"],
+    everydayTitle: "Everyday living",
+    everyday: [
+      "Home management",
+      "Routines",
+      "Budgeting",
+      "Cooking",
+      "Friendship",
+      "Wellbeing",
+      "Time management",
+      "Household maintenance",
+      "Self-reliance",
+      "Starting over",
+      "Transition periods",
+      "Emotional resilience",
+    ],
     howTitle: "How Go Solo Works",
     howIntro: "Life gets bigger one small step at a time.",
     steps: [
@@ -205,7 +227,7 @@ export function defaultContent(): SiteContent {
         name: "Find a Seed",
         body: "Choose something new to try.",
         linesLabel: "Examples",
-        lines: ["Learn a skill", "Take a solo day trip", "Start a new routine"],
+        lines: ["Learn a skill", "Take a solo day trip", "Start a new routine", "Review a month of spending"],
         href: "/seeds",
         hrefLabel: "Browse seeds",
       },
@@ -214,7 +236,7 @@ export function defaultContent(): SiteContent {
         name: "Go Out There",
         body: "Try it in real life.",
         linesLabel: "",
-        lines: ["The goal isn't perfection.", "The goal is experience."],
+        lines: ["The goal isn't perfection.", "The goal is experience.", "A trip counts. A Tuesday routine counts."],
         href: "/out-there",
         hrefLabel: "Read what people tried",
       },
@@ -238,9 +260,9 @@ export function defaultContent(): SiteContent {
       },
     ],
     seedsIntro:
-      "Seeds are small actions that make life bigger. Not goals. Not productivity. Not self-improvement. Possibilities.",
+      "Seeds are small actions for a life of your own. Some take you out into the world. Some are the meal, the budget, the repair, and the friend you have been meaning to call.",
     manifesto: [
-      "Go Solo helps people build bigger lives while living independently.",
+      "Go Solo helps people build meaningful lives on their own terms.",
       "Living alone is not the problem. Living on hold is.",
       "You can live alone without being alone.",
     ],
@@ -368,6 +390,8 @@ export function mergeAdmin(stored?: Partial<AdminState> | null): AdminState {
   content.waitingFor = stored.content?.waitingFor?.length ? stored.content.waitingFor : base.content.waitingFor;
   content.together = stored.content?.together?.length ? stored.content.together : base.content.together;
   content.comeHere = stored.content?.comeHere?.length ? stored.content.comeHere : base.content.comeHere;
+  content.expansion = stored.content?.expansion?.length ? stored.content.expansion : base.content.expansion;
+  content.everyday = stored.content?.everyday?.length ? stored.content.everyday : base.content.everyday;
   content.manifesto = stored.content?.manifesto?.length ? stored.content.manifesto : base.content.manifesto;
   content.comingSoon = stored.content?.comingSoon?.length ? stored.content.comingSoon : base.content.comingSoon;
   content.emails = stored.content?.emails?.length ? stored.content.emails : base.content.emails;

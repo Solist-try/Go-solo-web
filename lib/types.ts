@@ -52,6 +52,16 @@ export const SEED_CATEGORIES = [
     label: "Wellbeing",
     line: "Give your days a little more room to breathe.",
   },
+  {
+    id: "practical-life",
+    label: "Practical Life",
+    line: "Meals, money, repairs, and the routines that hold a week together.",
+  },
+  {
+    id: "relationships",
+    label: "Relationships",
+    line: "A friend, a coffee, a local group, a way back into community.",
+  },
 ] as const;
 
 export const CAMPFIRE_SECTIONS = [

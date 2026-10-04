@@ -4,7 +4,7 @@ import { HomePage } from "@/components/gosolo/home";
 export const metadata: Metadata = {
   title: "Go Solo",
   description:
-    "Go Solo is a community and home base for people who live independently and want to do more with their lives. Find a seed, try it, share what happened, and meet people on a similar path.",
+    "Go Solo helps people build meaningful lives on their own terms. Sometimes that means a trip. Sometimes that means a quiet Tuesday. Both belong here.",
 };
 
 export default function Page() {

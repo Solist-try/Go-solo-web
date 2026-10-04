@@ -31,7 +31,6 @@ export function ContentAdmin() {
         <section className="space-y-4">
           <h2 className="font-serif text-3xl">Homepage hero</h2>
           <TextField label="Tagline" value={draft.heroTagline} onChange={(heroTagline) => patch({ heroTagline })} />
-          <TextField label="Eyebrow" value={draft.heroEyebrow} onChange={(heroEyebrow) => patch({ heroEyebrow })} />
           <TextField label="Headline" value={draft.heroTitle} onChange={(heroTitle) => patch({ heroTitle })} />
           <TextField label="Subhead" value={draft.heroSubhead} onChange={(heroSubhead) => patch({ heroSubhead })} />
           <TextField label="Supporting copy" value={draft.heroSupport} onChange={(heroSupport) => patch({ heroSupport })} area />
@@ -69,6 +68,20 @@ export function ContentAdmin() {
             label="People come here to, one per line"
             value={draft.comeHere.join("\n")}
             onChange={(value) => patch({ comeHere: value.split("\n").map((line) => line.trim()).filter(Boolean) })}
+            area
+          />
+          <TextField label="Life expansion title" value={draft.expansionTitle} onChange={(expansionTitle) => patch({ expansionTitle })} />
+          <TextField
+            label="Life expansion, one per line"
+            value={draft.expansion.join("\n")}
+            onChange={(value) => patch({ expansion: value.split("\n").map((line) => line.trim()).filter(Boolean) })}
+            area
+          />
+          <TextField label="Everyday living title" value={draft.everydayTitle} onChange={(everydayTitle) => patch({ everydayTitle })} />
+          <TextField
+            label="Everyday living, one per line"
+            value={draft.everyday.join("\n")}
+            onChange={(value) => patch({ everyday: value.split("\n").map((line) => line.trim()).filter(Boolean) })}
             area
           />
         </section>
