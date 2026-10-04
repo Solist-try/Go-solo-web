@@ -14,8 +14,23 @@ export function ReadingRoom() {
         <p className="mt-6 text-xl leading-relaxed text-ink-soft sm:text-2xl">
           Collected ideas, reflections and resources for independent living.
         </p>
+        <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink">
+          This room is as important as Out There. Many people arrive looking for practical help before they are ready for a trip.
+        </p>
+        <ul className="mt-8 max-w-2xl space-y-2 text-lg text-ink">
+          {[
+            "How do I live independently?",
+            "How do I make friends?",
+            "How do I create routines?",
+            "How do I manage a household?",
+            "How do I build confidence?",
+            "How do I do things alone?",
+          ].map((question) => (
+            <li key={question}>{question}</li>
+          ))}
+        </ul>
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft">
-          A quiet library beside the campfire. Practical guidance for the trip and for the ordinary week. Read what is useful, then go live.
+          A quiet library beside the campfire. Practical, grounded, and useful. Read what helps, then go live.
         </p>
       </header>
       <div className="mt-14 space-y-16">

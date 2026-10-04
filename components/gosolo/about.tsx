@@ -61,6 +61,11 @@ export function AboutPage() {
             timing, or the right circumstances.
           </p>
           <p>Go Solo explores what happens when we stop waiting.</p>
+          <p>
+            Go Solo helps people build meaningful lives without relying on the constant availability of
+            partners, family, friends or built-in support systems.
+          </p>
+          <p>Go Solo helps people build lives that work, whether or not somebody else shows up.</p>
         </div>
       </header>
 

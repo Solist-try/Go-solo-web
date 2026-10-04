@@ -41,6 +41,11 @@ export type ComingSoonCard = {
   body: string;
 };
 
+export type Pillar = {
+  name: string;
+  body: string;
+};
+
 export type HowStep = {
   mark: string;
   name: string;
@@ -52,6 +57,7 @@ export type HowStep = {
 };
 
 export type SiteContent = {
+  contentRevision: number;
   heroTagline: string;
   heroEyebrow: string;
   heroTitle: string;
@@ -61,6 +67,13 @@ export type SiteContent = {
   heroPrimary: string;
   heroSecondary: string;
   phrases: string[];
+  balanceIntro: string;
+  balanceItems: string[];
+  balanceClose: string;
+  whoTitle: string;
+  who: string[];
+  pillars: Pillar[];
+  pillarNote: string;
   philosophyTitle: string;
   philosophyParagraphs: string[];
   philosophyClose: string;
@@ -165,42 +178,79 @@ export type AdminState = {
 
 export function defaultContent(): SiteContent {
   return {
+    contentRevision: 3,
     heroTagline: "Go Solo. Not Alone.",
     heroEyebrow: "",
     heroTitle: "Hello, Vagabond.",
     heroSubhead: "Your life doesn't have to wait.",
-    heroSupport:
-      "Go Solo helps people build meaningful lives on their own terms. Sometimes that means taking a trip. Sometimes that means learning how to enjoy a quiet Tuesday evening.",
-    heroLede: "Both matter. Both belong here.",
+    heroSupport: "Go Solo helps people build lives that work, whether or not somebody else shows up.",
+    heroLede: "",
     heroPrimary: "Join Go Solo",
     heroSecondary: "Explore Seeds",
-    phrases: ["Take the trip.", "Keep the Tuesday.", "Both belong here."],
-    philosophyTitle: "A companion for independent living.",
-    philosophyParagraphs: [
-      "Go Solo is a companion for independent living. It is here for the trip and for the ordinary week.",
-      "The aim is a life that feels intentional, connected, capable, sustainable, and expansive. The aim is not to make every day exciting.",
-      "A member might take a solo trip to Poland. Another might finally build a household routine that reduces stress. Both are a life growing larger.",
-      "This is a home base for people who are out there living, and for people who are learning how to keep a home.",
+    phrases: ["Try the thing.", "Take the trip.", "Paint the room orange."],
+    balanceIntro: "Sometimes the thing is",
+    balanceItems: [
+      "Taking a trip.",
+      "Going to a bar alone.",
+      "Cooking for one.",
+      "Learning a practical skill.",
+      "Creating a routine.",
+      "Starting over.",
+      "Making a new friend.",
     ],
-    philosophyClose: "Both matter. Both belong here.",
+    balanceClose: "Both belong here.",
+    whoTitle: "This is for people who are",
+    who: [
+      "Living alone",
+      "Living independently",
+      "Starting over",
+      "Relocating",
+      "Experiencing life transitions",
+      "Building new routines",
+      "Creating social lives from scratch",
+      "Learning how to do things on their own",
+    ],
+    pillars: [
+      { name: "Support", body: "Encouragement, practical advice, and a place to come back to." },
+      { name: "Confidence", body: "Practice for the things you have been waiting to do on your own." },
+      { name: "Action", body: "A small seed, tried in real life, then told truthfully." },
+      { name: "Connection", body: "Friends, coffee, a local room, and people on a similar stretch of life." },
+      { name: "Expansion", body: "Travel, learning, and a wider life that can grow from a steady week." },
+    ],
+    pillarNote: "Support comes first. Action comes second. Adventure comes later.",
+    philosophyTitle: "A supportive companion.",
+    philosophyParagraphs: [
+      "Many parts of modern life are designed around pairs, families or groups.",
+      "Go Solo is a home base for people building a life that works whether or not somebody else shows up. It offers practical guidance, encouragement, connection, and stories.",
+      "Adventure is one expression of independence. Everyday life is another. A trip can belong here. So can cooking for one, a new routine, and a friend you make from scratch.",
+    ],
+    philosophyClose: "Support comes first. Action comes second. Adventure comes later.",
     belief: "Living alone is not the problem.",
     beliefSecond: "Living on hold is.",
     whatTitle: "What Is Go Solo?",
     whatBody:
-      "Go Solo is a community for people who live independently and want to do more with their lives.",
-    waitingIntro: "Many of us postpone experiences while waiting for:",
-    waitingFor: ["The right person", "The right timing", "Matching schedules", "More confidence"],
-    whatBridge: "Go Solo helps people stop waiting.",
+      "Go Solo helps people build meaningful lives without relying on the constant availability of partners, family, friends or built-in support systems.",
+    waitingIntro:
+      "Many parts of modern life are designed around pairs, families or groups. People often postpone life because they:",
+    waitingFor: [
+      "Have nobody to go with",
+      "Do not know how to do something alone",
+      "Need encouragement",
+      "Need accountability",
+      "Need practical advice",
+      "Need human connection",
+    ],
+    whatBridge: "Go Solo helps bridge that gap.",
     togetherIntro: "Together, members:",
     together: ["Try new things", "Share what happened", "Support each other", "Build bigger lives"],
-    comeHereTitle: "People come here to",
+    comeHereTitle: "Come here for",
     comeHere: [
-      "Try new experiences",
-      "Build confidence",
-      "Find accountability",
-      "Exchange skills",
-      "Share real-world experiences",
-      "Connect with people on similar journeys",
+      "A supportive companion",
+      "A home base",
+      "Practical guidance",
+      "Encouragement",
+      "Connection",
+      "Stories",
     ],
     expansionTitle: "Life expansion",
     expansion: ["Travel", "New experiences", "Learning", "Events", "Exploration", "Creativity", "Adventure"],
@@ -260,9 +310,9 @@ export function defaultContent(): SiteContent {
       },
     ],
     seedsIntro:
-      "Seeds are small actions for a life of your own. Some take you out into the world. Some are the meal, the budget, the repair, and the friend you have been meaning to call.",
+      "Seeds help people build confidence and capability. Some are adventures. Some are practical. Some are a way back to other people.",
     manifesto: [
-      "Go Solo helps people build meaningful lives on their own terms.",
+      "Go Solo helps people build lives that work, whether or not somebody else shows up.",
       "Living alone is not the problem. Living on hold is.",
       "You can live alone without being alone.",
     ],
@@ -373,10 +423,30 @@ export function mergeAdmin(stored?: Partial<AdminState> | null): AdminState {
   const base = defaultAdmin();
   if (!stored) return base;
   const content = { ...base.content, ...(stored.content ?? {}) };
-  content.phrases = stored.content?.phrases?.length ? stored.content.phrases : base.content.phrases;
-  content.philosophyParagraphs = stored.content?.philosophyParagraphs?.length
-    ? stored.content.philosophyParagraphs
-    : base.content.philosophyParagraphs;
+  const refreshCopy = (stored.content?.contentRevision ?? 0) < base.content.contentRevision;
+  content.phrases = !refreshCopy && stored.content?.phrases?.length ? stored.content.phrases : base.content.phrases;
+  if (refreshCopy) {
+    content.contentRevision = base.content.contentRevision;
+    content.heroSupport = base.content.heroSupport;
+    content.heroLede = base.content.heroLede;
+    content.balanceIntro = base.content.balanceIntro;
+    content.balanceClose = base.content.balanceClose;
+    content.whoTitle = base.content.whoTitle;
+    content.pillarNote = base.content.pillarNote;
+    content.philosophyTitle = base.content.philosophyTitle;
+    content.philosophyClose = base.content.philosophyClose;
+    content.whatTitle = base.content.whatTitle;
+    content.whatBody = base.content.whatBody;
+    content.waitingIntro = base.content.waitingIntro;
+    content.whatBridge = base.content.whatBridge;
+    content.togetherIntro = base.content.togetherIntro;
+    content.comeHereTitle = base.content.comeHereTitle;
+    content.seedsIntro = base.content.seedsIntro;
+  }
+  content.philosophyParagraphs =
+    !refreshCopy && stored.content?.philosophyParagraphs?.length
+      ? stored.content.philosophyParagraphs
+      : base.content.philosophyParagraphs;
   const storedSteps = stored.content?.steps?.length ? stored.content.steps : base.content.steps;
   content.steps = storedSteps.map((step) => ({
     mark: step.mark,
@@ -387,12 +457,15 @@ export function mergeAdmin(stored?: Partial<AdminState> | null): AdminState {
     href: step.href ?? "",
     hrefLabel: step.hrefLabel ?? "",
   }));
-  content.waitingFor = stored.content?.waitingFor?.length ? stored.content.waitingFor : base.content.waitingFor;
-  content.together = stored.content?.together?.length ? stored.content.together : base.content.together;
-  content.comeHere = stored.content?.comeHere?.length ? stored.content.comeHere : base.content.comeHere;
+  content.waitingFor = !refreshCopy && stored.content?.waitingFor?.length ? stored.content.waitingFor : base.content.waitingFor;
+  content.together = !refreshCopy && stored.content?.together?.length ? stored.content.together : base.content.together;
+  content.comeHere = !refreshCopy && stored.content?.comeHere?.length ? stored.content.comeHere : base.content.comeHere;
+  content.balanceItems = !refreshCopy && stored.content?.balanceItems?.length ? stored.content.balanceItems : base.content.balanceItems;
+  content.who = !refreshCopy && stored.content?.who?.length ? stored.content.who : base.content.who;
+  content.pillars = !refreshCopy && stored.content?.pillars?.length ? stored.content.pillars : base.content.pillars;
   content.expansion = stored.content?.expansion?.length ? stored.content.expansion : base.content.expansion;
   content.everyday = stored.content?.everyday?.length ? stored.content.everyday : base.content.everyday;
-  content.manifesto = stored.content?.manifesto?.length ? stored.content.manifesto : base.content.manifesto;
+  content.manifesto = !refreshCopy && stored.content?.manifesto?.length ? stored.content.manifesto : base.content.manifesto;
   content.comingSoon = stored.content?.comingSoon?.length ? stored.content.comingSoon : base.content.comingSoon;
   content.emails = stored.content?.emails?.length ? stored.content.emails : base.content.emails;
   content.founderLetter = stored.content?.founderLetter?.length

@@ -31,9 +31,39 @@ export function SeedIndex() {
 
   return (
     <Frame>
-      <PageIntro eyebrow="Possibility" title="Seeds">
-        Small actions for a life of your own. A trip, a meal plan, a repair, a friend. Possibilities, at the size of a week.
+      <PageIntro eyebrow="Confidence and capability" title="Seeds">
+        Seeds are not only adventures. They are small ways to build confidence and capability, whether the next step is a day trip, a meal, or a friend.
       </PageIntro>
+      <div className="mt-10 grid gap-4 lg:grid-cols-3">
+        <SeedGroup
+          title="Adventure"
+          items={[
+            ["/seeds/ticket-for-one", "Take a day trip"],
+            ["/seeds/museum-sentence", "Visit a museum"],
+            ["/seeds/table-for-one", "Try a new restaurant"],
+            ["/seeds/local-yes", "Attend an event"],
+          ]}
+        />
+        <SeedGroup
+          title="Practical"
+          items={[
+            ["/seeds/sunday-reset", "Create a weekly reset routine"],
+            ["/seeds/meal-for-you", "Cook one new meal"],
+            ["/seeds/household-repair", "Learn a household repair"],
+            ["/seeds/refresh-home", "Organise your home"],
+            ["/seeds/budget-month", "Review your monthly finances"],
+          ]}
+        />
+        <SeedGroup
+          title="Connection"
+          items={[
+            ["/seeds/old-friend", "Reach out to an old friend"],
+            ["/seeds/coffee-invite", "Invite somebody for coffee"],
+            ["/seeds/local-group", "Attend a local meetup"],
+            ["/seeds/reconnect", "Reconnect with your community"],
+          ]}
+        />
+      </div>
       <div className="mt-8 flex flex-wrap gap-2" role="group" aria-label="Filter seeds">
         <FilterChip current={category === "all"} onClick={() => setCategory("all")}>
           All
@@ -67,6 +97,23 @@ export function SeedIndex() {
         </Panel>
       )}
     </Frame>
+  );
+}
+
+function SeedGroup({ title, items }: { title: string; items: [string, string][] }) {
+  return (
+    <section className="rounded-[28px] bg-white/80 p-6 shadow-soft">
+      <h2 className="font-serif text-3xl tracking-tight text-ink">{title}</h2>
+      <ul className="mt-4 space-y-3">
+        {items.map(([href, label]) => (
+          <li key={href}>
+            <Link href={href} className="text-lg underline decoration-ink/20 underline-offset-4">
+              {label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

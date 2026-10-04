@@ -39,7 +39,9 @@ export function HomePage() {
             {content.heroSubhead}
           </p>
           <p className="mt-8 max-w-xl text-lg leading-relaxed text-ink">{content.heroSupport}</p>
-          <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink-soft">{content.heroLede}</p>
+          {content.heroLede ? (
+            <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink-soft">{content.heroLede}</p>
+          ) : null}
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             <Button asChild className={pill}>
               <Link href="/register">{content.heroPrimary}</Link>
@@ -59,6 +61,37 @@ export function HomePage() {
             </p>
           ))}
         </div>
+      </section>
+
+      <section id="sometimes" className="mx-auto w-full max-w-6xl px-5 py-8 sm:px-8">
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="rounded-[28px] bg-gold/70 p-7 sm:p-8">
+            <p className="text-lg text-ink">{content.balanceIntro}</p>
+            <p className="mt-4 font-serif text-4xl leading-tight tracking-tight text-ink">{content.balanceItems[0]}</p>
+          </div>
+          <div className="rounded-[28px] bg-sage/80 p-7 sm:p-8">
+            <p className="text-lg text-ink">{content.balanceIntro}</p>
+            <ul className="mt-4 space-y-2 text-lg text-ink">
+              {content.balanceItems.slice(1).map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <p className="mt-8 font-serif text-4xl tracking-tight text-ink sm:text-5xl">{content.balanceClose}</p>
+      </section>
+
+      <section id="pillars" className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8">
+        <p className="max-w-2xl text-lg leading-relaxed text-ink">{content.pillarNote}</p>
+        <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {content.pillars.map((pillar, index) => (
+            <li key={pillar.name} className="rounded-[28px] bg-white/80 p-6 shadow-soft">
+              <p className="text-sm text-ink-soft">{index + 1}</p>
+              <h2 className="mt-3 font-serif text-3xl tracking-tight text-ink">{pillar.name}</h2>
+              <p className="mt-3 text-base leading-relaxed text-ink">{pillar.body}</p>
+            </li>
+          ))}
+        </ol>
       </section>
 
       <section id="what-is" className="scroll-mt-24 mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
@@ -88,6 +121,16 @@ export function HomePage() {
               ))}
             </ul>
           </div>
+        </div>
+        <div className="mt-4 rounded-[28px] bg-white/80 p-7 shadow-soft sm:p-8">
+          <h3 className="font-serif text-3xl tracking-tight text-ink">{content.whoTitle}</h3>
+          <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+            {content.who.map((item) => (
+              <li key={item} className="text-lg text-ink">
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
         <div className="mt-4 rounded-[28px] bg-mist/80 p-7 sm:p-8">
           <h3 className="font-serif text-3xl tracking-tight text-ink">{content.comeHereTitle}</h3>
