@@ -248,8 +248,6 @@ export function isAdminPath(pathname: string) {
 export const MEMBER_PREFIXES = [
   "/dashboard",
   "/onboarding",
-  "/out-there",
-  "/campfire",
   "/profile",
   "/settings",
   "/experiences",
@@ -257,7 +255,13 @@ export const MEMBER_PREFIXES = [
   "/first-night-kits",
 ];
 
+/** Visitors can read these rooms. Writing in them still asks for an account. */
+const MEMBER_WRITE_PATHS = ["/out-there/new", "/campfire/new"];
+
 export function isMemberPath(pathname: string) {
+  if (MEMBER_WRITE_PATHS.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))) {
+    return true;
+  }
   return MEMBER_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );

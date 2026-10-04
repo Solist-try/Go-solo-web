@@ -22,12 +22,24 @@ import {
 import { useGoSolo } from "@/lib/gosolo";
 import { cn } from "@/lib/utils";
 
+const publicLinks = [
+  ["/about", "About"],
+  ["/seeds", "Seeds"],
+  ["/out-there", "Out There"],
+  ["/campfire", "Campfire"],
+  ["/waypoints", "Waypoints"],
+  ["/reading-room", "Reading Room"],
+  ["/contact", "Contact"],
+  ["/register", "Join"],
+] as const;
+
 const memberLinks = [
   ["/dashboard", "Dashboard"],
   ["/seeds", "Seeds"],
   ["/out-there", "Out There"],
   ["/campfire", "Campfire"],
   ["/waypoints", "Waypoints"],
+  ["/reading-room", "Reading Room"],
   ["/profile", "Profile"],
 ] as const;
 
@@ -62,18 +74,17 @@ export function SiteHeader() {
       ? [["/dashboard", "Member home"]]
       : user?.onboardingComplete
         ? memberLinks
-        : [
-            ["/seeds", "Seeds"],
-            ["/waypoints", "Waypoints"],
-          ]
+        : user
+          ? publicLinks.filter(([href]) => href !== "/register")
+          : publicLinks
   ).map(([href, label]) => ({ href, label }));
   if (isAdmin && !onDesk) links.push({ href: "/admin", label: "Steward" });
 
   return (
     <header className="sticky top-0 z-40 border-b border-ink/5 bg-background/90 backdrop-blur-md">
-      <div className="mx-auto flex h-20 w-full max-w-6xl items-center justify-between gap-4 px-5 sm:px-8">
+      <div className="mx-auto flex min-h-20 w-full max-w-7xl items-center justify-between gap-3 px-5 py-3 sm:px-8">
         <Wordmark />
-        <nav aria-label="Primary" className="hidden items-center gap-1 lg:flex">
+        <nav aria-label="Primary" className="hidden flex-wrap items-center justify-end gap-0.5 lg:flex">
           {ready &&
             links.map(({ href, label }) => (
               <Link
@@ -81,7 +92,7 @@ export function SiteHeader() {
                 href={href}
                 aria-current={isActive(pathname, href) ? "page" : undefined}
                 className={cn(
-                  "rounded-full px-4 py-2 text-base text-ink-soft hover:text-ink",
+                  "rounded-full px-3 py-2 text-sm text-ink-soft hover:text-ink",
                   isActive(pathname, href) && "bg-white text-ink shadow-soft",
                 )}
               >
@@ -133,12 +144,12 @@ export function SiteHeader() {
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button asChild variant="ghost" className={cn(pill, "hidden sm:inline-flex")}>
+              <Button asChild variant="ghost" className={cn(pill, "hidden xl:inline-flex")}>
                 <Link href="/settings">Settings</Link>
               </Button>
               <Button
                 variant="outline"
-                className={cn(pill, "hidden bg-transparent sm:inline-flex")}
+                className={cn(pill, "hidden bg-transparent xl:inline-flex")}
                 onClick={() => void logout()}
               >
                 Log out
@@ -160,14 +171,9 @@ export function SiteHeader() {
             </>
           ) : null}
           {ready && !user ? (
-            <>
-              <Button asChild variant="ghost" className={cn(pill, "hidden sm:inline-flex")}>
-                <Link href="/login">Log in</Link>
-              </Button>
-              <Button asChild className={cn(pill, "hidden sm:inline-flex")}>
-                <Link href="/register">Join Go Solo</Link>
-              </Button>
-            </>
+            <Button asChild variant="ghost" className={cn(pill, "hidden lg:inline-flex")}>
+              <Link href="/login">Log in</Link>
+            </Button>
           ) : null}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
@@ -179,21 +185,15 @@ export function SiteHeader() {
               <SheetHeader>
                 <SheetTitle className="font-serif text-3xl">Go Solo</SheetTitle>
               </SheetHeader>
-              <nav aria-label="Mobile" className="flex flex-col gap-2 px-4">
+              <nav aria-label="Mobile" className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-4 pb-8">
                 {(user?.onboardingComplete
                   ? [...memberLinks, ["/settings", "Settings"] as const]
                   : user
                     ? [
-                        ["/seeds", "Seeds"],
-                        ["/waypoints", "Waypoints"],
-                        [user.emailVerified ? "/onboarding" : "/verify-email", "Continue"],
+                        ...publicLinks.filter(([href]) => href !== "/register"),
+                        [user.emailVerified ? "/onboarding" : "/verify-email", "Continue"] as const,
                       ]
-                    : [
-                        ["/seeds", "Seeds"],
-                        ["/waypoints", "Waypoints"],
-                        ["/login", "Log in"],
-                        ["/register", "Join Go Solo"],
-                      ]
+                    : [...publicLinks.filter(([href]) => href !== "/register"), ["/login", "Log in"] as const, ["/register", "Join"] as const]
                 ).map(([href, label]) => (
                   <Link
                     key={href}

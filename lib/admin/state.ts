@@ -69,6 +69,19 @@ export type SiteContent = {
   comingSoonIntro: string;
   comingSoon: ComingSoonCard[];
   emails: EmailTemplate[];
+  founderName: string;
+  founderPhoto: string;
+  founderBio: string;
+  founderLetter: string[];
+  founderEmail: string;
+};
+
+export type HouseLetter = {
+  id: string;
+  name: string;
+  email: string;
+  body: string;
+  createdAt: string;
 };
 
 export type PostModeration = {
@@ -128,6 +141,7 @@ export type AdminState = {
   warnings: WarningNote[];
   reports: DeskReport[];
   journal: JournalEntry[];
+  letters: HouseLetter[];
   settings: DeskSettings;
 };
 
@@ -181,6 +195,16 @@ export function defaultContent(): SiteContent {
         body: "A moving kit. A starting-over kit. A travel kit. Companions for the first night of a new chapter.",
       },
     ],
+    founderName: "",
+    founderPhoto: "",
+    founderBio:
+      "I live on my own. I started Go Solo because I was tired of treating that as a reason to postpone the rest of life.",
+    founderLetter: [
+      "Hello. If you are reading this, you have found the person behind the place.",
+      "I still answer what comes in. There is no team standing between a note and a reply, and there is no one else tending the campfire when the day is quiet.",
+      "Some parts of a life are better with company. Many parts are perfectly good to begin alone. I built this so those two things could sit in the same room.",
+    ],
+    founderEmail: "",
     emails: [
       {
         id: "welcome",
@@ -246,6 +270,7 @@ export function defaultAdmin(): AdminState {
       },
     ],
     journal: [],
+    letters: [],
     settings: {
       note: "Keep the room habitable. Measure action, not performance.",
       warnTemplate: "A steward read what you shared and is asking for a gentler version. Nothing here needs to expose someone's private life.",
@@ -270,10 +295,14 @@ export function mergeAdmin(stored?: Partial<AdminState> | null): AdminState {
   content.manifesto = stored.content?.manifesto?.length ? stored.content.manifesto : base.content.manifesto;
   content.comingSoon = stored.content?.comingSoon?.length ? stored.content.comingSoon : base.content.comingSoon;
   content.emails = stored.content?.emails?.length ? stored.content.emails : base.content.emails;
+  content.founderLetter = stored.content?.founderLetter?.length
+    ? stored.content.founderLetter
+    : base.content.founderLetter;
   return {
     ...base,
     ...stored,
     content,
+    letters: stored.letters ?? [],
     settings: { ...base.settings, ...(stored.settings ?? {}) },
     seedEdits: asRecord(stored.seedEdits),
     customSeeds: stored.customSeeds ?? [],

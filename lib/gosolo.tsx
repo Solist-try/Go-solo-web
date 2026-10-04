@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { defaultAdmin, mergeAdmin, STEWARD_EMAIL, STEWARD_ID, STEWARD_PASSWORD_HASH, type AdminState, type SiteContent } from "@/lib/admin/state";
+import { defaultAdmin, mergeAdmin, note, STEWARD_EMAIL, STEWARD_ID, STEWARD_PASSWORD_HASH, type AdminState, type SiteContent } from "@/lib/admin/state";
 import { applyMembers, presentWorld, resolveSeeds, resolveWaypoints } from "@/lib/admin/resolve";
 import {
   createId,
@@ -118,6 +118,7 @@ type GoSoloValue = {
   reactToStory: (storyId: string, kind: ReactionKind) => Promise<void>;
   createCampfire: (input: CampfireInput) => Promise<string>;
   comment: (targetType: "out-there" | "campfire", targetId: string, body: string) => Promise<void>;
+  leaveNote: (input: { name: string; email: string; body: string }) => { error?: string };
   markNotificationsRead: () => Promise<void>;
   deleteAccount: () => Promise<{ error?: string }>;
 };
@@ -1180,6 +1181,26 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
     return {};
   }
 
+  function leaveNote(input: { name: string; email: string; body: string }) {
+    const name = input.name.trim();
+    const email = input.email.trim();
+    const body = input.body.trim();
+    if (!name || !email || !body) return { error: "A name, a way back to you, and a few sentences are enough." };
+    updateDesk((admin) =>
+      note(
+        {
+          ...admin,
+          letters: [
+            { id: crypto.randomUUID(), name, email, body, createdAt: new Date().toISOString() },
+            ...admin.letters,
+          ].slice(0, 80),
+        },
+        "A note arrived for the founder.",
+      ),
+    );
+    return {};
+  }
+
   const value: GoSoloValue = {
     ready,
     mode,
@@ -1218,6 +1239,7 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
     reactToStory,
     createCampfire,
     comment,
+    leaveNote,
     markNotificationsRead,
     deleteAccount,
   };
