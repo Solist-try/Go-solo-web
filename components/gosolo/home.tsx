@@ -62,6 +62,82 @@ export function HomePage() {
         </div>
       </section>
 
+      <section id="what-is" className="scroll-mt-24 mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
+        <div className="max-w-3xl">
+          <h2 className="font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">{content.whatTitle}</h2>
+          <p className="mt-6 text-xl leading-relaxed text-ink sm:text-2xl">{content.whatBody}</p>
+        </div>
+        <div className="mt-10 grid gap-4 lg:grid-cols-2">
+          <div className="rounded-[28px] bg-white/80 p-7 shadow-soft sm:p-8">
+            <h3 className="text-lg leading-relaxed text-ink">{content.waitingIntro}</h3>
+            <ul className="mt-5 space-y-3 text-lg text-ink">
+              {content.waitingFor.map((item) => (
+                <li key={item} className="border-t border-ink/10 pt-3">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-[28px] bg-sage/80 p-7 sm:p-8">
+            <p className="font-serif text-3xl leading-snug tracking-tight text-ink">{content.whatBridge}</p>
+            <h3 className="mt-8 text-lg leading-relaxed text-ink">{content.togetherIntro}</h3>
+            <ul className="mt-5 space-y-3 text-lg text-ink">
+              {content.together.map((item) => (
+                <li key={item} className="border-t border-ink/10 pt-3">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <div className="mt-4 rounded-[28px] bg-mist/80 p-7 sm:p-8">
+          <h3 className="font-serif text-3xl tracking-tight text-ink">{content.comeHereTitle}</h3>
+          <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {content.comeHere.map((item) => (
+              <li key={item} className="rounded-[24px] bg-background px-5 py-4 text-lg text-ink">
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section id="how-it-works" className="scroll-mt-24 bg-white/50">
+        <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 sm:py-20">
+          <h2 className="font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">{content.howTitle}</h2>
+          <p className="mt-4 max-w-2xl text-xl leading-relaxed text-ink">{content.howIntro}</p>
+          <ol className="mt-10 grid gap-4 sm:grid-cols-2">
+            {steps.map((step, index) => (
+              <li key={step.name} className={`${step.tone} rounded-[28px] px-7 py-8`}>
+                <p className="text-sm text-ink-soft">Step {index + 1}</p>
+                <p className="mt-4 text-3xl" aria-hidden="true">
+                  {step.mark}
+                </p>
+                <h3 className="mt-4 font-serif text-3xl tracking-tight text-ink">{step.name}</h3>
+                <p className="mt-3 text-lg leading-relaxed text-ink">{step.body}</p>
+                {step.lines.length > 0 ? (
+                  <div className="mt-5">
+                    {step.linesLabel ? <p className="text-sm text-ink-soft">{step.linesLabel}</p> : null}
+                    <ul className={`space-y-2 text-lg text-ink ${step.linesLabel ? "mt-2" : ""}`}>
+                      {step.lines.map((line) => (
+                        <li key={line}>{line}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+                {step.href ? (
+                  <p className="mt-6">
+                    <Link href={step.href} className="text-base underline decoration-ink/20 underline-offset-4">
+                      {step.hrefLabel || step.name}
+                    </Link>
+                  </p>
+                ) : null}
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
       <section id="philosophy" className="scroll-mt-24 mx-auto grid w-full max-w-6xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-12 lg:py-28">
         <div className="lg:col-span-5">
           <h2 className="font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">
@@ -81,25 +157,6 @@ export function HomePage() {
           {content.belief}
           <span className="mt-3 block text-ink-soft">{content.beliefSecond}</span>
         </p>
-      </section>
-
-      <section id="how-it-works" className="scroll-mt-24 bg-white/50">
-        <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 lg:py-28">
-          <h2 className="max-w-2xl font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">
-            {content.howTitle}
-          </h2>
-          <ul className="mt-12 grid gap-4 sm:grid-cols-2">
-            {steps.map((step) => (
-              <li key={step.name} className={`${step.tone} rounded-[28px] px-7 py-8`}>
-                <p className="text-3xl" aria-hidden="true">
-                  {step.mark}
-                </p>
-                <h3 className="mt-6 font-serif text-3xl tracking-tight text-ink">{step.name}</h3>
-                <p className="mt-3 text-lg leading-relaxed text-ink">{step.body}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
       </section>
 
       <section id="seeds" className="scroll-mt-24 mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 lg:py-28">

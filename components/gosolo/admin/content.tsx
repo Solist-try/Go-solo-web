@@ -46,6 +46,33 @@ export function ContentAdmin() {
           />
         </section>
         <section className="space-y-4">
+          <h2 className="font-serif text-3xl">What Go Solo is</h2>
+          <TextField label="Headline" value={draft.whatTitle} onChange={(whatTitle) => patch({ whatTitle })} />
+          <TextField label="Explanation" value={draft.whatBody} onChange={(whatBody) => patch({ whatBody })} area />
+          <TextField label="Waiting line" value={draft.waitingIntro} onChange={(waitingIntro) => patch({ waitingIntro })} />
+          <TextField
+            label="What people wait for, one per line"
+            value={draft.waitingFor.join("\n")}
+            onChange={(value) => patch({ waitingFor: value.split("\n").map((line) => line.trim()).filter(Boolean) })}
+            area
+          />
+          <TextField label="Bridge" value={draft.whatBridge} onChange={(whatBridge) => patch({ whatBridge })} />
+          <TextField label="Together line" value={draft.togetherIntro} onChange={(togetherIntro) => patch({ togetherIntro })} />
+          <TextField
+            label="What members do, one per line"
+            value={draft.together.join("\n")}
+            onChange={(value) => patch({ together: value.split("\n").map((line) => line.trim()).filter(Boolean) })}
+            area
+          />
+          <TextField label="People come here title" value={draft.comeHereTitle} onChange={(comeHereTitle) => patch({ comeHereTitle })} />
+          <TextField
+            label="People come here to, one per line"
+            value={draft.comeHere.join("\n")}
+            onChange={(value) => patch({ comeHere: value.split("\n").map((line) => line.trim()).filter(Boolean) })}
+            area
+          />
+        </section>
+        <section className="space-y-4">
           <h2 className="font-serif text-3xl">Homepage philosophy</h2>
           <TextField label="Headline" value={draft.philosophyTitle} onChange={(philosophyTitle) => patch({ philosophyTitle })} />
           <TextField
@@ -61,6 +88,7 @@ export function ContentAdmin() {
         <section className="space-y-4">
           <h2 className="font-serif text-3xl">How it works</h2>
           <TextField label="Section title" value={draft.howTitle} onChange={(howTitle) => patch({ howTitle })} />
+          <TextField label="Intro" value={draft.howIntro} onChange={(howIntro) => patch({ howIntro })} />
           {draft.steps.map((step, index) => (
             <div key={`${step.mark}-${index}`} className="grid gap-3 rounded-[24px] bg-white/70 p-4 sm:grid-cols-[80px_1fr]">
               <TextField label="Mark" value={step.mark} onChange={(mark) => {
@@ -79,6 +107,16 @@ export function ContentAdmin() {
                   steps[index] = { ...step, body };
                   patch({ steps });
                 }} />
+                <TextField
+                  label={step.linesLabel ? `${step.linesLabel}, one per line` : "Practical lines, one per line"}
+                  value={(step.lines ?? []).join("\n")}
+                  onChange={(value) => {
+                    const steps = draft.steps.slice();
+                    steps[index] = { ...step, lines: value.split("\n").map((line) => line.trim()).filter(Boolean) };
+                    patch({ steps });
+                  }}
+                  area
+                />
               </div>
             </div>
           ))}
