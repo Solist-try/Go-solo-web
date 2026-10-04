@@ -1,0 +1,300 @@
+import Link from "next/link";
+import { pill } from "@/components/gosolo/pieces";
+import { Button } from "@/components/ui/button";
+import { SEEDS, WAYPOINTS } from "@/lib/catalog";
+import { SEED_CATEGORIES } from "@/lib/types";
+
+const phrases = [
+  { text: "Try the thing.", tone: "bg-sage" },
+  { text: "Take the trip.", tone: "bg-clay" },
+  { text: "Paint the room orange.", tone: "bg-gold" },
+];
+
+const loop = [
+  {
+    name: "Seed",
+    body: "A small action that makes life bigger. Not a productivity system. A possibility.",
+  },
+  {
+    name: "Out There",
+    body: "You go. Then you tell the truth about what you expected and what actually happened.",
+  },
+  {
+    name: "Campfire",
+    body: "You come back and sit with other people who are living it too. Not a forum. A chair.",
+  },
+  {
+    name: "Connection",
+    body: "A waypoint, a skill, or one person walking the same week. No audience required.",
+  },
+  {
+    name: "New Seed",
+    body: "The next thing you no longer need permission to try.",
+  },
+];
+
+export function HomePage() {
+  const featured = ["ticket-for-one", "meal-for-you", "one-witness"].map((id) =>
+    SEEDS.find((seed) => seed.id === id),
+  );
+
+  return (
+    <>
+      <section className="mx-auto grid w-full max-w-6xl items-end gap-14 px-5 pt-16 pb-8 sm:px-8 sm:pt-24 lg:grid-cols-12 lg:pt-28">
+        <div className="lg:col-span-7">
+          <p className="text-sm text-ink-soft">A calm home for an independent life</p>
+          <h1 className="mt-6 font-serif text-6xl leading-[0.98] tracking-tight text-balance text-ink sm:text-7xl md:text-8xl">
+            Hello, Vagabond.
+          </h1>
+          <p className="mt-6 max-w-xl font-serif text-3xl leading-snug tracking-tight text-ink sm:text-4xl">
+            Your life doesn&apos;t have to wait.
+          </p>
+          <p className="mt-8 max-w-xl text-lg leading-relaxed text-ink">
+            Try the thing. Take the trip. Learn the skill. Eat the weird food. Paint the room orange.
+          </p>
+          <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink-soft">
+            Go Solo helps people explore, connect and grow while living independently.
+          </p>
+          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+            <Button asChild className={pill}>
+              <Link href="/register">Join Go Solo</Link>
+            </Button>
+            <Button asChild variant="outline" className={`${pill} bg-transparent`}>
+              <Link href="/seeds">Explore Seeds</Link>
+            </Button>
+          </div>
+        </div>
+        <div className="flex flex-col gap-4 lg:col-span-5">
+          {phrases.map((phrase) => (
+            <p
+              key={phrase.text}
+              className={`${phrase.tone} rounded-[28px] px-7 py-8 font-serif text-3xl leading-tight tracking-tight text-ink sm:text-4xl`}
+            >
+              {phrase.text}
+            </p>
+          ))}
+        </div>
+      </section>
+
+      <section id="philosophy" className="scroll-mt-24 mx-auto grid w-full max-w-6xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-12 lg:py-28">
+        <div className="lg:col-span-5">
+          <h2 className="font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">
+            Stop waiting for company before you begin.
+          </h2>
+        </div>
+        <div className="space-y-6 text-lg leading-relaxed text-ink lg:col-span-6 lg:col-start-7">
+          <p>
+            Many people postpone experiences because they are waiting for a partner, for friends, for
+            schedules to align, for permission.
+          </p>
+          <p>Go Solo is the permission.</p>
+          <p className="text-ink-soft">
+            It is not a feed and it is not a stage. It is a home you can leave, to take the trip or
+            learn the skill or eat the weird food, and return to without performing any of it.
+          </p>
+          <p className="font-serif text-3xl leading-snug tracking-tight text-ink">
+            You can live alone without being alone.
+          </p>
+        </div>
+      </section>
+
+      <section id="how-it-works" className="scroll-mt-24 bg-white/50">
+        <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 lg:py-28">
+          <h2 className="max-w-2xl font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">
+            How a life gets bigger
+          </h2>
+          <ol className="mt-12 grid gap-4">
+            {loop.map((step, index) => (
+              <li key={step.name} className="grid gap-3 rounded-[28px] bg-background px-6 py-7 sm:grid-cols-12 sm:items-baseline sm:px-8">
+                <span className="text-sm text-ink-soft sm:col-span-2">0{index + 1}</span>
+                <h3 className="font-serif text-3xl tracking-tight text-ink sm:col-span-3">{step.name}</h3>
+                <p className="text-lg leading-relaxed text-ink-soft sm:col-span-7">{step.body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section id="seeds" className="scroll-mt-24 mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 lg:py-28">
+        <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+          <div className="max-w-2xl">
+            <h2 className="font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">Seeds</h2>
+            <p className="mt-4 text-lg leading-relaxed text-ink-soft">
+              Small actions that make life bigger. Adventure, connection, creativity, home, growth,
+              and wellbeing. Possibility, not a self-improvement program.
+            </p>
+          </div>
+          <Button asChild variant="outline" className={`${pill} bg-transparent`}>
+            <Link href="/seeds">Browse the seeds</Link>
+          </Button>
+        </div>
+        <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {SEED_CATEGORIES.map((category) => (
+            <li key={category.id} className="rounded-[28px] bg-sage/70 p-6">
+              <h3 className="font-serif text-2xl text-ink">{category.label}</h3>
+              <p className="mt-3 text-base leading-relaxed text-ink-soft">{category.line}</p>
+            </li>
+          ))}
+        </ul>
+        <ul className="mt-4 grid gap-4 lg:grid-cols-3">
+          {featured.map((seed) =>
+            seed ? (
+              <li key={seed.id}>
+                <Link href={`/seeds/${seed.id}`} className="block h-full rounded-[28px] bg-white/80 p-6 shadow-soft">
+                  <p className="text-sm text-ink-soft">{seed.timeframe}</p>
+                  <h3 className="mt-3 font-serif text-3xl leading-tight tracking-tight text-ink">{seed.title}</h3>
+                  <p className="mt-4 leading-relaxed text-ink-soft">{seed.description}</p>
+                </Link>
+              </li>
+            ) : null,
+          )}
+        </ul>
+      </section>
+
+      <section id="out-there" className="scroll-mt-24 bg-clay/60">
+        <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-12 lg:py-28">
+          <div className="lg:col-span-4">
+            <h2 className="font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">Out There</h2>
+            <p className="mt-4 text-lg leading-relaxed text-ink">
+              Real-world experiences. Not achievements. Not success stories. What you did, what you
+              expected, what happened, and whether you would do it again.
+            </p>
+          </div>
+          <article className="rounded-[28px] bg-background p-7 shadow-soft sm:p-10 lg:col-span-8">
+            <p className="text-sm text-ink-soft">An experience, told plainly</p>
+            <h3 className="mt-4 font-serif text-4xl leading-tight tracking-tight text-ink">
+              The museum on a Wednesday
+            </h3>
+            <dl className="mt-8 space-y-6">
+              <div>
+                <dt className="text-sm text-ink-soft">What did you do?</dt>
+                <dd className="mt-1 text-lg leading-relaxed">
+                  Went to the tile museum alone after work and stayed until they started closing the rooms.
+                </dd>
+              </div>
+              <div>
+                <dt className="text-sm text-ink-soft">What were you expecting?</dt>
+                <dd className="mt-1 text-lg leading-relaxed">
+                  To feel conspicuous and leave after twenty minutes.
+                </dd>
+              </div>
+              <div>
+                <dt className="text-sm text-ink-soft">What actually happened?</dt>
+                <dd className="mt-1 text-lg leading-relaxed">
+                  Nobody noticed. One blue wall was enough. A sentence arrived on a receipt.
+                </dd>
+              </div>
+              <div>
+                <dt className="text-sm text-ink-soft">Would you do it again?</dt>
+                <dd className="mt-1 text-lg">Yes.</dd>
+              </div>
+            </dl>
+            <p className="mt-8 text-sm text-ink-soft">
+              People can respond with Inspired me, I relate, or Interesting perspective. There are no
+              like counts and no rankings.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="campfire" className="scroll-mt-24 mx-auto grid w-full max-w-6xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-12 lg:py-28">
+        <div className="lg:col-span-6">
+          <h2 className="font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">
+            Pull up a chair.
+          </h2>
+          <p className="mt-4 font-serif text-3xl leading-snug tracking-tight text-ink">
+            What&apos;s on your mind?
+          </p>
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-soft">
+            Campfire is the conversational layer. Questions, thoughts, reflections, daily life,
+            stories, celebrations, and challenges. The point is companionship, not information
+            exchange. No upvotes. No popularity.
+          </p>
+        </div>
+        <div className="space-y-4 lg:col-span-6">
+          <article className="rounded-[28px] bg-gold p-7">
+            <p className="text-sm text-ink-soft">A question</p>
+            <h3 className="mt-3 font-serif text-3xl leading-tight text-ink">
+              Do you tell people you are going alone?
+            </h3>
+            <p className="mt-4 leading-relaxed text-ink">
+              I do not want a speech. I also do not want to apologize. What do you actually say?
+            </p>
+          </article>
+          <article className="rounded-[28px] bg-white/80 p-7">
+            <p className="text-sm text-ink-soft">A reply</p>
+            <p className="mt-3 text-lg leading-relaxed text-ink">
+              I say just me, and then I ask them something. It ends the speech before it starts.
+            </p>
+          </article>
+          <ul className="grid grid-cols-2 gap-3 text-sm text-ink-soft sm:grid-cols-4">
+            {["General", "Growing", "Solo Living", "Deep Thoughts"].map((section) => (
+              <li key={section} className="rounded-full bg-mist px-4 py-3 text-center text-ink">
+                {section}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section id="waypoints" className="scroll-mt-24 bg-mist/80">
+        <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 lg:py-28">
+          <div className="max-w-2xl">
+            <h2 className="font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">Waypoints</h2>
+            <p className="mt-4 text-lg leading-relaxed text-ink-soft">
+              Places where people exploring similar parts of life gather, share experiences, and
+              continue their journey.
+            </p>
+          </div>
+          <ul className="mt-10 grid gap-4 lg:grid-cols-3">
+            {WAYPOINTS.map((waypoint) => (
+              <li key={waypoint.id}>
+                <Link href={`/waypoints/${waypoint.slug}`} className="block h-full rounded-[28px] bg-background p-7 shadow-soft">
+                  <h3 className="font-serif text-3xl leading-tight tracking-tight text-ink">{waypoint.name}</h3>
+                  <p className="mt-4 leading-relaxed text-ink-soft">{waypoint.description}</p>
+                  <p className="mt-6 text-sm text-ink">{waypoint.focus.join(" · ")}</p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section id="coming-soon" className="scroll-mt-24 mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 lg:py-28">
+        <h2 className="font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">Coming later</h2>
+        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink-soft">
+          These are on the horizon. They are not open, and they will not ask for your attention yet.
+        </p>
+        <ul className="mt-10 grid gap-4 lg:grid-cols-3">
+          {[
+            {
+              title: "Experiences",
+              body: "Museum visits, theatre nights, workshops, walks, and day trips. Real rooms, when the time is right.",
+            },
+            {
+              title: "Partnerships",
+              body: "Solo-friendly restaurants, museums, travel, and learning. Opportunities with no plus-one required.",
+            },
+            {
+              title: "First Night Kits",
+              body: "A moving kit. A starting-over kit. A travel kit. Companions for the first night of a new chapter.",
+            },
+          ].map((item) => (
+            <li key={item.title} className="rounded-[28px] border border-dashed border-ink/15 bg-white/40 p-7">
+              <p className="text-sm text-ink-soft">Coming soon</p>
+              <h3 className="mt-3 font-serif text-3xl text-ink">{item.title}</h3>
+              <p className="mt-4 leading-relaxed text-ink-soft">{item.body}</p>
+              <button
+                type="button"
+                disabled
+                className="mt-6 h-12 cursor-not-allowed rounded-full bg-mist px-5 text-sm text-ink-soft"
+              >
+                Not open yet
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </>
+  );
+}
