@@ -111,6 +111,26 @@ export function ContentAdmin() {
           ))}
         </section>
         <section className="space-y-4">
+          <h2 className="font-serif text-3xl">The founder</h2>
+          <p className="text-ink-soft">These words appear on About. Use your own name and a photograph when you have them.</p>
+          <TextField label="Your name" value={draft.founderName} onChange={(founderName) => patch({ founderName })} />
+          <TextField
+            label="Photograph address"
+            value={draft.founderPhoto}
+            onChange={(founderPhoto) => patch({ founderPhoto })}
+          />
+          <TextField label="Short biography" value={draft.founderBio} onChange={(founderBio) => patch({ founderBio })} area />
+          <TextField
+            label="Introduction, separated by a blank line"
+            value={draft.founderLetter.join("\n\n")}
+            onChange={(value) =>
+              patch({ founderLetter: value.split(/\n\s*\n/).map((line) => line.trim()).filter(Boolean) })
+            }
+            area
+          />
+          <TextField label="Email, if you want it public" value={draft.founderEmail} onChange={(founderEmail) => patch({ founderEmail })} />
+        </section>
+        <section className="space-y-4">
           <h2 className="font-serif text-3xl">Emails</h2>
           <p className="text-ink-soft">These are the letters Go Solo can send. Editing them changes the words.</p>
           {draft.emails.map((email, index) => (
@@ -132,6 +152,30 @@ export function ContentAdmin() {
         <Button type="submit" className={deskButton}>Save words</Button>
         {saved ? <p className="text-sm text-ink-soft">{saved}</p> : null}
       </form>
+      <HouseLetters />
     </>
+  );
+}
+
+function HouseLetters() {
+  const { desk } = useGoSolo();
+  return (
+    <section className="mt-16 max-w-2xl">
+      <h2 className="font-serif text-3xl">Notes to you</h2>
+      {desk.letters.length === 0 ? (
+        <p className="mt-4 text-ink-soft">No one has written yet.</p>
+      ) : (
+        <ul className="mt-6 space-y-4">
+          {desk.letters.map((letter) => (
+            <li key={letter.id} className="rounded-[24px] bg-white/80 p-5">
+              <p className="text-sm text-ink-soft">
+                {letter.name} · {letter.email}
+              </p>
+              <p className="mt-3 whitespace-pre-wrap text-lg leading-relaxed">{letter.body}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }

@@ -22,7 +22,7 @@ import { useGoSolo } from "@/lib/gosolo";
 import { CAMPFIRE_KINDS, CAMPFIRE_SECTIONS, type CampfireKind, type CampfireSection } from "@/lib/types";
 
 export function CampfireIndex() {
-  const { world } = useGoSolo();
+  const { world, user } = useGoSolo();
   const [section, setSection] = useState<CampfireSection | "all">("all");
   const posts = world.campfire.filter((post) => section === "all" || post.section === section);
   const names = new Map(world.profiles.map((profile) => [profile.id, profile]));
@@ -34,7 +34,11 @@ export function CampfireIndex() {
         and challenges. A chair to return to after you have been out there.
       </PageIntro>
       <div className="mt-8">
-        <PrimaryLink href="/campfire/new">Say something</PrimaryLink>
+        {user ? (
+          <PrimaryLink href="/campfire/new">Say something</PrimaryLink>
+        ) : (
+          <PrimaryLink href="/register">Join to pull up a chair</PrimaryLink>
+        )}
       </div>
       <div className="mt-8 flex flex-wrap gap-2" role="group" aria-label="Campfire sections">
         <SectionChip current={section === "all"} onClick={() => setSection("all")}>
@@ -174,7 +178,14 @@ export function CampfireDetail({ id }: { id: string }) {
             Leave a reply
           </Button>
         </form>
-      ) : null}
+      ) : (
+        <p className="mt-8 text-lg text-ink-soft">
+          <Link href="/register" className="underline decoration-ink/20 underline-offset-4">
+            Join
+          </Link>{" "}
+          if you want to sit with this. The conversation stays readable either way.
+        </p>
+      )}
       <NextStep />
     </Frame>
   );

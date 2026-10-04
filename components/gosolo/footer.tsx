@@ -29,18 +29,21 @@ export function SiteFooter() {
         <div className="mt-12 flex flex-col gap-6 text-sm text-ink-soft sm:flex-row sm:items-end sm:justify-between">
           <p>You can live alone without being alone.</p>
           <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2">
-            <Link href="/seeds" className="hover:text-ink">
-              Seeds
-            </Link>
-            <Link href="/waypoints" className="hover:text-ink">
-              Waypoints
-            </Link>
-            <Link href="/login" className="hover:text-ink">
-              Log in
-            </Link>
-            <Link href="/register" className="hover:text-ink">
-              Join
-            </Link>
+            {[
+              ["/about", "About"],
+              ["/seeds", "Seeds"],
+              ["/out-there", "Out There"],
+              ["/campfire", "Campfire"],
+              ["/waypoints", "Waypoints"],
+              ["/reading-room", "Reading Room"],
+              ["/contact", "Contact"],
+              ["/register", "Join"],
+              ["/login", "Log in"],
+            ].map(([href, label]) => (
+              <Link key={href} href={href} className="hover:text-ink">
+                {label}
+              </Link>
+            ))}
           </nav>
         </div>
       </div>

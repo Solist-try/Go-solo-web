@@ -22,7 +22,7 @@ import { useCatalog, useGoSolo } from "@/lib/gosolo";
 import { REACTIONS, WOULD_AGAIN, type WouldAgain } from "@/lib/types";
 
 export function StoryIndex() {
-  const { world } = useGoSolo();
+  const { world, user } = useGoSolo();
   const names = new Map(world.profiles.map((profile) => [profile.id, profile]));
 
   return (
@@ -31,7 +31,11 @@ export function StoryIndex() {
         What did you do? What were you expecting? What actually happened? Would you do it again?
       </PageIntro>
       <div className="mt-8">
-        <PrimaryLink href="/out-there/new">Bring a story back</PrimaryLink>
+        {user ? (
+          <PrimaryLink href="/out-there/new">Bring a story back</PrimaryLink>
+        ) : (
+          <PrimaryLink href="/register">Join to bring a story back</PrimaryLink>
+        )}
       </div>
       {world.stories.length === 0 ? (
         <Panel className="mt-10">
@@ -105,18 +109,22 @@ export function StoryDetail({ id }: { id: string }) {
         <Prompt label="Would you do it again?" body={againLabel(story.wouldDoAgain)} />
       </div>
       <div className="mt-10 flex flex-wrap gap-3" role="group" aria-label="Responses">
-        {REACTIONS.map((reaction) => (
-          <Button
-            key={reaction.id}
-            type="button"
-            variant="outline"
-            aria-pressed={mine?.kind === reaction.id}
-            className={`${pill} bg-transparent ${mine?.kind === reaction.id ? "bg-ink text-background hover:bg-ink" : ""}`}
-            onClick={() => void reactToStory(story.id, reaction.id)}
-          >
-            {reaction.label}
-          </Button>
-        ))}
+        {user
+          ? REACTIONS.map((reaction) => (
+              <Button
+                key={reaction.id}
+                type="button"
+                variant="outline"
+                aria-pressed={mine?.kind === reaction.id}
+                className={`${pill} bg-transparent ${mine?.kind === reaction.id ? "bg-ink text-background hover:bg-ink" : ""}`}
+                onClick={() => void reactToStory(story.id, reaction.id)}
+              >
+                {reaction.label}
+              </Button>
+            ))
+          : (
+              <PrimaryLink href={`/login?next=/out-there/${story.id}`}>Join the response</PrimaryLink>
+            )}
       </div>
       <ul className="mt-4 space-y-1 text-sm text-ink-soft">
         {REACTIONS.map((reaction) => {
@@ -146,12 +154,16 @@ export function StoryDetail({ id }: { id: string }) {
               <Link href={`/campfire/${discussion.id}`} className="underline decoration-ink/20 underline-offset-4">
                 At the campfire
               </Link>
-            ) : (
+            ) : user ? (
               <Link
                 href={`/campfire/new?outThere=${story.id}&seed=${story.seedId ?? ""}&waypoint=${story.waypointId ?? ""}`}
                 className="underline decoration-ink/20 underline-offset-4"
               >
                 Continue this at the campfire
+              </Link>
+            ) : (
+              <Link href="/register" className="underline decoration-ink/20 underline-offset-4">
+                Join to continue this at the campfire
               </Link>
             )}
           </li>
