@@ -171,6 +171,13 @@ export function StoryDetail({ id }: { id: string }) {
     <Frame>
       <AuthorLine profile={profile} meta={formatRelative(story.createdAt)} href={`/profile/${story.authorId}`} />
       <h1 className="mt-6 max-w-3xl font-serif text-5xl leading-tight tracking-tight sm:text-6xl">{story.title}</h1>
+      {storyImage(story.imageUrl) ? (
+        <img
+          src={storyImage(story.imageUrl)}
+          alt={story.title}
+          className="mt-8 max-h-[28rem] w-full max-w-3xl rounded-[28px] object-cover"
+        />
+      ) : null}
       <div className="mt-10 space-y-8">
         <Prompt label="What did you do?" body={story.whatDidYouDo} />
         <Prompt label="What were you expecting?" body={story.expecting} />
@@ -263,6 +270,17 @@ function Prompt({ label, body }: { label: string; body: string }) {
   );
 }
 
+function storyImage(url?: string) {
+  if (!url) return "";
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === "https:" || parsed.protocol === "http:") return parsed.toString();
+  } catch {
+    return "";
+  }
+  return "";
+}
+
 export function StoryForm() {
   const params = useSearchParams();
   const router = useRouter();
@@ -273,6 +291,7 @@ export function StoryForm() {
   const [expecting, setExpecting] = useState("");
   const [happened, setHappened] = useState("");
   const [again, setAgain] = useState<WouldAgain>("yes");
+  const [imageUrl, setImageUrl] = useState("");
   const [seedId, setSeedId] = useState(params.get("seed") ?? "");
   const [waypointId, setWaypointId] = useState(params.get("waypoint") ?? "");
   const [error, setError] = useState("");
@@ -285,6 +304,11 @@ export function StoryForm() {
       setError("All four questions want an answer, even a short one.");
       return;
     }
+    const photograph = storyImage(imageUrl.trim());
+    if (imageUrl.trim() && !photograph) {
+      setError("That photograph link needs to start with http.");
+      return;
+    }
     setPending(true);
     const id = await createStory({
       title,
@@ -292,6 +316,7 @@ export function StoryForm() {
       expecting,
       actuallyHappened: happened,
       wouldDoAgain: again,
+      imageUrl: photograph || undefined,
       seedId: seedId || undefined,
       waypointId: waypointId || undefined,
     });
@@ -328,6 +353,16 @@ export function StoryForm() {
             ))}
           </div>
         </fieldset>
+        <label className="block space-y-2">
+          <span className="text-sm">A photograph, if you have a link</span>
+          <Input
+            className={fieldClass}
+            value={imageUrl}
+            inputMode="url"
+            placeholder="https://"
+            onChange={(event) => setImageUrl(event.target.value)}
+          />
+        </label>
         <label className="block space-y-2">
           <span className="text-sm">Related seed, if there is one</span>
           <select className={`${fieldClass} w-full`} value={seedId} onChange={(event) => setSeedId(event.target.value)}>

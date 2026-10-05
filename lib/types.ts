@@ -273,6 +273,7 @@ export type OutTherePost = {
   seedId?: string;
   waypointId?: string;
   createdAt: string;
+  imageUrl?: string;
   hidden?: boolean;
   pinned?: boolean;
   featured?: boolean;
