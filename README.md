@@ -2,7 +2,7 @@
 
 A calm home for people living independently.
 
-Go Solo. Not Alone.
+Go Solo, Not Alone
 
 Go Solo helps people build bigger lives while living independently. Living alone is not the problem. Living on hold is.
 

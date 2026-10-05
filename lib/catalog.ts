@@ -82,13 +82,13 @@ export const SEEDS: Seed[] = [
   },
   {
     id: "weekly-hello",
-    title: "A weekly hello",
-    description: "One person. One recurring note. No performance.",
-    prompt:
-      "Choose one person and a small recurring check-in. Support, accountability, mutual, empowerment. Nothing more elaborate than showing up.",
+    title: "SAME",
+    description:
+      "A seed grows faster when someone else helps tend it. Choose something you'd like to move towards and find someone to grow alongside.",
+    prompt: "Name what you would like to grow, and find someone to tend it with you.",
     category: "connection",
     kind: "same",
-    timeframe: "Weekly",
+    timeframe: "Over time",
     waypoints: ["solo-among-others", "independence-lab"],
   },
   {
@@ -104,13 +104,13 @@ export const SEEDS: Seed[] = [
   },
   {
     id: "skill-swap",
-    title: "Trade a skill",
-    description: "Offer what you know. Ask for what you have been postponing.",
-    prompt:
-      "Offer something you know well enough to share for an hour. Ask for something you have been waiting to learn. Photography, gardening, DIY, cooking, budgeting, languages. Small is perfect.",
+    title: "Skill Swap",
+    description:
+      "Offer what you know. Ask for what you'd like to learn. Help somebody else's seed grow while growing your own.",
+    prompt: "Learn something. Teach something. Crochet, Spanish, gardening, budgeting, writing, DIY. Small is perfect.",
     category: "connection",
     kind: "skill-swap",
-    timeframe: "One exchange",
+    timeframe: "Over time",
     waypoints: ["solo-among-others", "independence-lab"],
   },
   {

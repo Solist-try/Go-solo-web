@@ -19,122 +19,153 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useCatalog, useGoSolo } from "@/lib/gosolo";
 import { categoryLabel, formatRelative } from "@/lib/format";
-import { SEED_CATEGORIES, type SeedCategory } from "@/lib/types";
 import { visibleSeeking } from "@/lib/view";
 
 const NoteContext = createContext("");
 
-export function SeedIndex() {
-  const { seeds, user } = useGoSolo();
-  const [category, setCategory] = useState<SeedCategory | "all">("all");
-  const visible = seeds.filter((seed) => category === "all" || seed.category === category);
+const SAME_EXAMPLES = [
+  "Build confidence",
+  "Create routines",
+  "Improve wellbeing",
+  "Travel independently",
+  "Make new friends",
+  "Navigate a life transition",
+];
 
+const SWAP_EXAMPLES = [
+  "Teach Crochet",
+  "Learn Spanish",
+  "Teach Gardening",
+  "Learn Budgeting",
+  "Teach Writing",
+  "Learn DIY",
+];
+
+const GROWING_SOON = [
+  "Accountability Circles",
+  "Starting Over Buddy",
+  "Medical Buddy",
+  "Project Partners",
+  "Learning Pods",
+];
+
+const JOURNEY = [
+  { label: "Plant Seed", href: "#plant" },
+  { label: "Find Support", href: "/seeds/weekly-hello" },
+  { label: "Take Action" },
+  { label: "Share Experience In Out There", href: "/out-there" },
+  { label: "Reflect At Campfire", href: "/campfire" },
+  { label: "Plant Another Seed", href: "#plant" },
+];
+
+export function SeedIndex() {
   return (
     <Frame>
-      <PageIntro eyebrow="Confidence and capability" title="Seeds">
-        Seeds are not only adventures. They are small ways to build confidence and capability, whether the next step is a day trip, a meal, or a friend.
-      </PageIntro>
-      <div className="mt-10 grid gap-4 lg:grid-cols-3">
-        <SeedGroup
-          title="Adventure"
-          items={[
-            ["/seeds/ticket-for-one", "Take a day trip"],
-            ["/seeds/museum-sentence", "Visit a museum"],
-            ["/seeds/table-for-one", "Try a new restaurant"],
-            ["/seeds/local-yes", "Attend an event"],
-          ]}
-        />
-        <SeedGroup
-          title="Practical"
-          items={[
-            ["/seeds/sunday-reset", "Create a weekly reset routine"],
-            ["/seeds/meal-for-you", "Cook one new meal"],
-            ["/seeds/household-repair", "Learn a household repair"],
-            ["/seeds/refresh-home", "Organise your home"],
-            ["/seeds/budget-month", "Review your monthly finances"],
-          ]}
-        />
-        <SeedGroup
-          title="Connection"
-          items={[
-            ["/seeds/old-friend", "Reach out to an old friend"],
-            ["/seeds/coffee-invite", "Invite somebody for coffee"],
-            ["/seeds/local-group", "Attend a local meetup"],
-            ["/seeds/reconnect", "Reconnect with your community"],
-          ]}
-        />
-      </div>
-      <div className="mt-8 flex flex-wrap gap-2" role="group" aria-label="Filter seeds">
-        <FilterChip current={category === "all"} onClick={() => setCategory("all")}>
-          All
-        </FilterChip>
-        {SEED_CATEGORIES.map((item) => (
-          <FilterChip key={item.id} current={category === item.id} onClick={() => setCategory(item.id)}>
-            {item.label}
-          </FilterChip>
-        ))}
-      </div>
-      <ul className="mt-8 grid gap-4 md:grid-cols-2">
-        {visible.map((seed) => (
-          <li key={seed.id}>
-            <Link href={`/seeds/${seed.id}`} className="block h-full rounded-[28px] bg-white/80 p-6 shadow-soft sm:p-8">
-              <p className="text-sm text-ink-soft">
-                {categoryLabel(seed.category)} · {seed.timeframe}
-              </p>
-              <h2 className="mt-3 font-serif text-3xl leading-tight tracking-tight text-ink">{seed.title}</h2>
-              <p className="mt-4 leading-relaxed text-ink-soft">{seed.description}</p>
-            </Link>
-          </li>
-        ))}
-      </ul>
-      {user ? <NextStep /> : (
-        <Panel tone="gold" className="mt-12">
-          <h2 className="font-serif text-3xl">Begin when you are ready.</h2>
-          <p className="mt-3 text-lg text-ink-soft">Joining lets you keep a seed, then go out and bring the story back.</p>
-          <div className="mt-6">
-            <PrimaryLink href="/register">Join Go Solo</PrimaryLink>
+      <header className="max-w-3xl">
+        <p className="text-sm text-ink-soft">Growth, connection and possibility</p>
+        <h1 className="mt-4 font-serif text-5xl leading-[1.05] tracking-tight text-ink sm:text-7xl">Seeds</h1>
+        <p className="mt-6 font-serif text-3xl leading-snug tracking-tight text-ink sm:text-4xl">
+          Tiny futures you can plant now.
+        </p>
+        <div className="mt-8 max-w-2xl space-y-4 text-lg leading-relaxed text-ink sm:text-xl">
+          <p>Some seeds grow through accountability.</p>
+          <p>Some through learning.</p>
+          <p>Some through encouragement.</p>
+          <p>Some through practice.</p>
+          <p>All begin with something small.</p>
+        </div>
+        <p className="mt-10 max-w-2xl font-serif text-3xl leading-snug tracking-tight text-ink sm:text-4xl">
+          What would I like to grow?
+        </p>
+        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink">
+          A seed grows through attention, practice, support, accountability, encouragement, and connection.
+        </p>
+      </header>
+
+      <div id="plant" className="mt-16 grid scroll-mt-24 gap-6 lg:grid-cols-2">
+        <article className="flex h-full flex-col rounded-[28px] bg-sage p-7 shadow-soft sm:p-10">
+          <h2 className="font-serif text-5xl tracking-tight text-ink sm:text-6xl">SAME</h2>
+          <p className="mt-4 text-sm leading-relaxed text-ink">
+            Support · Accountability · Mutual · Empowerment
+          </p>
+          <div className="mt-6 space-y-4 text-lg leading-relaxed text-ink">
+            <p>A seed grows faster when someone else helps tend it.</p>
+            <p>Choose something you&apos;d like to move towards and find someone to grow alongside.</p>
           </div>
-        </Panel>
-      )}
+          <p className="mt-8 text-sm text-ink-soft">Examples</p>
+          <ul className="mt-3 space-y-1 text-lg text-ink">
+            {SAME_EXAMPLES.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+          <div className="mt-8">
+            <PrimaryLink href="/seeds/weekly-hello">Find a SAME Partner</PrimaryLink>
+          </div>
+        </article>
+
+        <article className="flex h-full flex-col rounded-[28px] bg-clay p-7 shadow-soft sm:p-10">
+          <h2 className="font-serif text-5xl tracking-tight text-ink sm:text-6xl">Skill Swap</h2>
+          <p className="mt-4 font-serif text-2xl leading-snug tracking-tight text-ink">
+            Learn something. Teach something.
+          </p>
+          <div className="mt-6 space-y-4 text-lg leading-relaxed text-ink">
+            <p>Offer what you know.</p>
+            <p>Ask for what you&apos;d like to learn.</p>
+            <p>Help somebody else&apos;s seed grow while growing your own.</p>
+          </div>
+          <p className="mt-8 text-sm text-ink-soft">Examples</p>
+          <ul className="mt-3 space-y-1 text-lg text-ink">
+            {SWAP_EXAMPLES.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+          <div className="mt-8">
+            <PrimaryLink href="/seeds/skill-swap">Explore Skill Swaps</PrimaryLink>
+          </div>
+        </article>
+      </div>
+
+      <section className="mt-16" aria-labelledby="growing-soon-title">
+        <h2 id="growing-soon-title" className="font-serif text-4xl tracking-tight text-ink sm:text-5xl">
+          Growing Soon
+        </h2>
+        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink">These are not open yet.</p>
+        <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {GROWING_SOON.map((item) => (
+            <li key={item} className="rounded-[28px] bg-mist px-6 py-5 font-serif text-2xl tracking-tight text-ink">
+              {item}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="mt-16 max-w-3xl" aria-labelledby="journey-title">
+        <h2 id="journey-title" className="font-serif text-4xl tracking-tight text-ink sm:text-5xl">
+          How a seed grows
+        </h2>
+        <ol className="mt-8">
+          {JOURNEY.map((step, index) => (
+            <li key={step.label}>
+              {step.href ? (
+                <Link
+                  href={step.href}
+                  className="font-serif text-2xl tracking-tight text-ink underline decoration-ink/20 underline-offset-4 sm:text-3xl"
+                >
+                  {step.label}
+                </Link>
+              ) : (
+                <span className="font-serif text-2xl tracking-tight text-ink sm:text-3xl">{step.label}</span>
+              )}
+              {index < JOURNEY.length - 1 ? (
+                <p className="py-2 text-ink-soft" aria-hidden="true">
+                  ↓
+                </p>
+              ) : null}
+            </li>
+          ))}
+        </ol>
+      </section>
     </Frame>
-  );
-}
-
-function SeedGroup({ title, items }: { title: string; items: [string, string][] }) {
-  return (
-    <section className="rounded-[28px] bg-white/80 p-6 shadow-soft">
-      <h2 className="font-serif text-3xl tracking-tight text-ink">{title}</h2>
-      <ul className="mt-4 space-y-3">
-        {items.map(([href, label]) => (
-          <li key={href}>
-            <Link href={href} className="text-lg underline decoration-ink/20 underline-offset-4">
-              {label}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-function FilterChip({
-  current,
-  onClick,
-  children,
-}: {
-  current: boolean;
-  onClick: () => void;
-  children: string;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={current}
-      onClick={onClick}
-      className={`rounded-full px-4 py-2 text-sm ${current ? "bg-ink text-background" : "bg-white/80 text-ink"}`}
-    >
-      {children}
-    </button>
   );
 }
 
@@ -198,7 +229,9 @@ export function SeedDetail({ id }: { id: string }) {
         {seed.description}
       </PageIntro>
       <Panel tone="sage" className="mt-10">
-        <p className="text-sm text-ink-soft">The action</p>
+        <p className="text-sm text-ink-soft">
+          {seed.kind === "same" ? "What you are growing" : seed.kind === "skill-swap" ? "The exchange" : "The action"}
+        </p>
         <p className="mt-3 font-serif text-3xl leading-snug tracking-tight text-ink">{seed.prompt}</p>
         {seed.kind === "same" ? (
           <p className="mt-6 text-ink-soft">
@@ -252,8 +285,8 @@ export function SeedDetail({ id }: { id: string }) {
 
       {user && seed.kind === "same" ? (
         <Panel className="mt-4">
-          <h2 className="font-serif text-3xl">A partner for this</h2>
-          <p className="mt-3 text-ink-soft">Weekly, briefly, without advice unless you ask.</p>
+          <h2 className="font-serif text-3xl">Find a SAME Partner</h2>
+          <p className="mt-3 text-ink-soft">Name what you would like to grow. A partner tends it with you, briefly, and without advice unless you ask.</p>
           {partnership ? (
             <div className="mt-6 space-y-4">
               <p className="text-lg">
@@ -293,7 +326,7 @@ export function SeedDetail({ id }: { id: string }) {
           ) : (
             <div className="mt-6 space-y-6">
               <label className="block space-y-2">
-                <span className="text-sm">What are you hoping to practice?</span>
+                <span className="text-sm">What would you like to grow?</span>
                 <Textarea className={areaClass} value={goal} onChange={(event) => setGoal(event.target.value)} />
               </label>
               {seeking.length > 0 ? (

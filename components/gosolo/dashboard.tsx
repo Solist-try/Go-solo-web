@@ -16,7 +16,7 @@ export function Dashboard() {
     .sort((a, b) => (a.startedAt < b.startedAt ? 1 : -1));
   const current = active[0];
   const currentSeed = current ? getSeed(current.seedId) : undefined;
-  const stories = world.stories.slice(0, 2);
+  const stories = world.stories.filter((story) => !story.example && !story.hidden).slice(0, 2);
   const fires = world.campfire.slice(0, 2);
   const mine = world.memberships.filter((item) => item.userId === user.id);
 

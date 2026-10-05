@@ -190,6 +190,13 @@ function blankProfile(id: string, email: string): Profile {
     notifyWaypoints: false,
     notifyCheckins: true,
     createdAt: new Date().toISOString(),
+    growing: [],
+    helpGrowing: [],
+    helpPlant: [],
+    helpPlantNote: "",
+    supportWith: [],
+    checkInFrequency: "",
+    checkInStyle: "",
   };
 }
 

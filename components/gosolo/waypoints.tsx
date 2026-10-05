@@ -54,7 +54,7 @@ export function WaypointDetail({ slug }: { slug: string }) {
     .map((item) => world.profiles.find((profile) => profile.id === item.userId))
     .filter((profile) => profile && profile.status !== "deactivated" && (profile.showWaypoints || profile.id === user?.id));
   const conversations = world.campfire.filter((post) => post.waypointId === waypoint.id).slice(0, 3);
-  const stories = world.stories.filter((story) => story.waypointId === waypoint.id).slice(0, 3);
+  const stories = world.stories.filter((story) => story.waypointId === waypoint.id && !story.example).slice(0, 3);
   const related = seeds.filter((seed) => seed.waypoints.includes(waypoint.id)).slice(0, 4);
   const names = new Map(world.profiles.map((profile) => [profile.id, profile]));
 

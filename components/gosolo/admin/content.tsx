@@ -30,7 +30,7 @@ export function ContentAdmin() {
       >
         <section className="space-y-4">
           <h2 className="font-serif text-3xl">Homepage hero</h2>
-          <TextField label="Tagline" value={draft.heroTagline} onChange={(heroTagline) => patch({ heroTagline })} />
+          <TextField label="Brand statement" value={draft.heroTagline} onChange={(heroTagline) => patch({ heroTagline })} />
           <TextField label="Headline" value={draft.heroTitle} onChange={(heroTitle) => patch({ heroTitle })} />
           <TextField label="Subhead" value={draft.heroSubhead} onChange={(heroSubhead) => patch({ heroSubhead })} />
           <TextField label="Supporting copy" value={draft.heroSupport} onChange={(heroSupport) => patch({ heroSupport })} area />

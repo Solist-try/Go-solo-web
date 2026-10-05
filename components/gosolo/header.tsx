@@ -43,10 +43,21 @@ const memberLinks = [
   ["/profile", "Profile"],
 ] as const;
 
-function Wordmark() {
+function Wordmark({ onNavigate, className }: { onNavigate?: () => void; className?: string }) {
+  const pathname = usePathname();
+  const home = pathname === "/";
   return (
-    <Link href="/" className="font-serif text-2xl tracking-tight text-ink">
-      Go Solo
+    <Link
+      href="/"
+      onClick={onNavigate}
+      aria-current={home ? "page" : undefined}
+      className={cn(
+        "inline-flex shrink-0 items-center whitespace-nowrap rounded-full font-serif text-lg tracking-tight text-ink underline-offset-[6px] hover:underline focus-visible:underline sm:text-2xl",
+        className,
+      )}
+    >
+      Go Solo, Not Alone
+      <span className="sr-only">, home</span>
     </Link>
   );
 }
@@ -85,20 +96,19 @@ export function SiteHeader() {
       <div className="mx-auto flex min-h-20 w-full max-w-7xl items-center justify-between gap-3 px-5 py-3 sm:px-8">
         <Wordmark />
         <nav aria-label="Primary" className="hidden flex-wrap items-center justify-end gap-0.5 lg:flex">
-          {ready &&
-            links.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                aria-current={isActive(pathname, href) ? "page" : undefined}
-                className={cn(
-                  "rounded-full px-3 py-2 text-sm text-ink-soft hover:text-ink",
-                  isActive(pathname, href) && "bg-white text-ink shadow-soft",
-                )}
-              >
-                {label}
-              </Link>
-            ))}
+          {links.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              aria-current={isActive(pathname, href) ? "page" : undefined}
+              className={cn(
+                "rounded-full px-3 py-2 text-sm text-ink-soft hover:text-ink focus-visible:text-ink",
+                isActive(pathname, href) && "bg-white text-ink shadow-soft",
+              )}
+            >
+              {label}
+            </Link>
+          ))}
         </nav>
         <div className="flex items-center gap-2">
           {!ready ? <div className="h-12 w-28" /> : null}
@@ -183,7 +193,9 @@ export function SiteHeader() {
             </SheetTrigger>
             <SheetContent side="right" className="w-full bg-background sm:max-w-sm">
               <SheetHeader>
-                <SheetTitle className="font-serif text-3xl">Go Solo</SheetTitle>
+                <SheetTitle className="pr-10 font-serif text-2xl font-normal">
+                  <Wordmark onNavigate={() => setOpen(false)} />
+                </SheetTitle>
               </SheetHeader>
               <nav aria-label="Mobile" className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-4 pb-8">
                 {(user?.onboardingComplete
