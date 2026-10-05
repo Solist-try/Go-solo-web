@@ -49,8 +49,8 @@ export function ContactPage() {
             <p>If you have ideas, questions, concerns, or stories, I&apos;d love to hear from you.</p>
             <p>You can reach me by writing a note.</p>
           </div>
-          <p className="mt-10 font-serif text-4xl tracking-tight text-ink">Marge Aliaga</p>
-          <p className="mt-4">
+          <p className="mt-8 text-base text-ink">Marge Aliaga</p>
+          <p className="mt-2">
             <a
               href="mailto:marge@gosolo.co.network"
               className="text-lg underline decoration-ink/30 underline-offset-4 hover:decoration-ink"
