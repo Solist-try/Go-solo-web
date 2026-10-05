@@ -76,8 +76,8 @@ export function profileFromRow(row: Row, interests: string[] = []): Profile {
     helpPlant: [],
     helpPlantNote: "",
     supportWith: [],
-    checkInFrequency: "",
-    checkInStyle: "",
+    checkInFrequency: asString(row.contact_frequency),
+    checkInStyle: asString(row.contact_style),
   };
 }
 
@@ -360,6 +360,8 @@ export function profilePatch(patch: Partial<Profile>) {
   if (patch.bio !== undefined) row.bio = patch.bio;
   if (patch.location !== undefined) row.location = patch.location;
   if (patch.avatarUrl !== undefined) row.avatar_url = patch.avatarUrl;
+  if (patch.checkInFrequency !== undefined) row.contact_frequency = patch.checkInFrequency;
+  if (patch.checkInStyle !== undefined) row.contact_style = patch.checkInStyle;
   if (patch.intentions !== undefined) row.intentions = patch.intentions;
   if (patch.onboardingComplete !== undefined) row.onboarding_complete = patch.onboardingComplete;
   if (patch.emailVerified !== undefined) row.email_verified = patch.emailVerified;
