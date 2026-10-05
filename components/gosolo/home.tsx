@@ -6,15 +6,10 @@ import { pill } from "@/components/gosolo/pieces";
 import { Button } from "@/components/ui/button";
 import { useGoSolo } from "@/lib/gosolo";
 
-const phraseTones = ["bg-sage", "bg-clay", "bg-gold"];
 const stepTones = ["bg-sage", "bg-clay", "bg-gold", "bg-mist"];
 
 export function HomePage() {
   const { content, waypoints } = useGoSolo();
-  const phrases = content.phrases.map((text, index) => ({
-    text,
-    tone: phraseTones[index % phraseTones.length],
-  }));
   const steps = content.steps.map((step, index) => ({
     ...step,
     tone: stepTones[index % stepTones.length],
@@ -22,23 +17,25 @@ export function HomePage() {
 
   return (
     <>
-      <section className="mx-auto w-full max-w-6xl px-5 pt-10 pb-6 sm:px-8 sm:pt-14">
-        <div className="grid items-stretch gap-8 lg:grid-cols-2 lg:gap-12">
+      <section className="mx-auto w-full max-w-6xl px-5 pt-12 pb-8 sm:px-8 sm:pt-16">
+        <div className="grid items-stretch gap-8 lg:grid-cols-2 lg:gap-14">
           <div className="@container flex flex-col justify-center">
-            <h1 className="font-serif text-[clamp(1.7rem,8.4cqi,3.35rem)] leading-none tracking-tight whitespace-nowrap text-ink">
-              {content.heroTagline}
+            <h1 className="font-serif text-[clamp(2.6rem,11cqi,4.25rem)] leading-[1.05] tracking-tight text-ink">
+              {content.heroTitle}
             </h1>
-            <p className="mt-8 font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">{content.heroTitle}</p>
-            <p className="mt-3 font-serif text-2xl leading-snug tracking-tight text-ink sm:text-3xl">{content.heroSubhead}</p>
-            <p className="mt-5 max-w-md text-lg leading-relaxed text-ink">{content.heroSupport}</p>
+            <p className="mt-5 font-serif text-3xl leading-snug tracking-tight text-ink sm:text-4xl">{content.heroSubhead}</p>
+            <p className="mt-6 max-w-md text-lg leading-relaxed text-ink">{content.heroSupport}</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button asChild className={pill}>
+              <Button asChild variant="outline" className={`${pill} border-transparent bg-sage text-ink hover:bg-sage/80`}>
                 <Link href="/register">{content.heroPrimary}</Link>
               </Button>
               <Button asChild variant="outline" className={`${pill} bg-transparent`}>
                 <a href="#how-it-works">{content.heroSecondary}</a>
               </Button>
             </div>
+            <p className="mt-12 font-serif text-[clamp(2.05rem,9.2cqi,3.35rem)] leading-none tracking-tight whitespace-nowrap text-ink">
+              {content.heroTagline}
+            </p>
           </div>
           <figure className="relative aspect-[4/3] overflow-hidden rounded-[28px] lg:aspect-auto lg:h-full lg:min-h-[26rem]">
             <Image
@@ -51,16 +48,6 @@ export function HomePage() {
             />
           </figure>
         </div>
-        <ul className="mt-8 grid gap-3 sm:grid-cols-3">
-          {phrases.map((phrase) => (
-            <li
-              key={phrase.text}
-              className={`${phrase.tone} rounded-[24px] px-6 py-5 font-serif text-2xl leading-tight tracking-tight text-ink sm:text-3xl`}
-            >
-              {phrase.text}
-            </li>
-          ))}
-        </ul>
       </section>
 
       <section id="freedom" className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 sm:py-16">

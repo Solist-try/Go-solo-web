@@ -242,7 +242,13 @@ export function SeedDetail({ id }: { id: string }) {
 
       {!user ? (
         <div className="mt-8">
-          <PrimaryLink href={loginHref}>Join to begin this seed</PrimaryLink>
+          <p className="max-w-xl text-lg leading-relaxed text-ink">
+            Take a look around.{" "}
+            <Link href={loginHref} className="underline decoration-ink/20 underline-offset-4">
+              Join Go Solo
+            </Link>{" "}
+            if you want to start with this seed.
+          </p>
         </div>
       ) : null}
 
