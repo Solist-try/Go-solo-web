@@ -38,6 +38,7 @@ export function SettingsScreen() {
   const [supportWith, setSupportWith] = useState<string[]>(user?.supportWith ?? []);
   const [checkInFrequency, setCheckInFrequency] = useState(user?.checkInFrequency ?? "");
   const [checkInStyle, setCheckInStyle] = useState(user?.checkInStyle ?? "");
+  const [sameNotes, setSameNotes] = useState(user?.sameNotes ?? "");
   const [photo, setPhoto] = useState<File | null>(null);
   const [password, setPassword] = useState("");
   const [confirmName, setConfirmName] = useState("");
@@ -59,6 +60,7 @@ export function SettingsScreen() {
         supportWith,
         checkInFrequency,
         checkInStyle,
+        sameNotes: sameNotes.trim(),
       },
       photo,
     );
@@ -226,6 +228,15 @@ export function SettingsScreen() {
               value={checkInFrequency}
               onChange={setCheckInFrequency}
             />
+            <label className="block space-y-2">
+              <span className="text-sm">A note for a SAME partner</span>
+              <Textarea
+                className={areaClass}
+                value={sameNotes}
+                maxLength={400}
+                onChange={(event) => setSameNotes(event.target.value)}
+              />
+            </label>
             <SingleChoice
               label="Preferred check-in style"
               options={CHECK_IN_STYLES}

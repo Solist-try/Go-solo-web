@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useCatalog, useGoSolo } from "@/lib/gosolo";
+import { SUPPORT_WITH } from "@/lib/types";
 import { categoryLabel, formatRelative } from "@/lib/format";
 import { visibleSeeking } from "@/lib/view";
 
@@ -96,6 +97,14 @@ export function SeedIndex() {
           <ul className="mt-3 space-y-1 text-lg text-ink">
             {SAME_EXAMPLES.map((item) => (
               <li key={item}>{item}</li>
+            ))}
+          </ul>
+          <p className="mt-8 text-sm text-ink-soft">Support you can ask for</p>
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {SUPPORT_WITH.map((item) => (
+              <li key={item.id} className="rounded-full bg-white/70 px-4 py-2 text-ink">
+                {item.label}
+              </li>
             ))}
           </ul>
           <div className="mt-8">

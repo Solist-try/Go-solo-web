@@ -118,13 +118,11 @@ export type LifeSeed = {
 
 export const SUPPORT_WITH = [
   { id: "accountability", label: "Accountability" },
-  { id: "confidence", label: "Confidence" },
-  { id: "starting-over", label: "Starting over" },
+  { id: "starting-over", label: "Starting Over" },
   { id: "connection", label: "Connection" },
-  { id: "practical-life", label: "Practical life" },
-  { id: "medical", label: "Medical support" },
-  { id: "wellbeing", label: "Wellbeing" },
-  { id: "career", label: "Career change" },
+  { id: "confidence", label: "Confidence" },
+  { id: "medical", label: "Medical Buddy" },
+  { id: "practical-life", label: "Practical Life" },
 ] as const;
 
 export const CHECK_IN_FREQUENCIES = [
@@ -170,6 +168,7 @@ export type Profile = {
   supportWith?: string[];
   checkInFrequency?: string;
   checkInStyle?: string;
+  sameNotes?: string;
 };
 
 export type Account = {

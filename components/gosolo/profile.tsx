@@ -141,6 +141,7 @@ export function ProfileView({ profileId }: { profileId?: string }) {
         empty={isSelf ? "Choose the kinds of support you want." : "Not named yet."}
         tone="bg-white/80"
       />
+      {garden.sameNotes ? <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink">{garden.sameNotes}</p> : null}
 
       <section className="mt-16 max-w-2xl" aria-labelledby="frequency-title">
         <h2 id="frequency-title" className="font-serif text-4xl tracking-tight text-ink">

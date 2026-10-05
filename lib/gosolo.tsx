@@ -24,6 +24,7 @@ import {
   ensureProfile,
   loadWorld,
   profilePatch,
+  replaceSamePreferences,
   requestReset,
   resendVerification,
   signIn,
@@ -197,6 +198,7 @@ function blankProfile(id: string, email: string): Profile {
     supportWith: [],
     checkInFrequency: "",
     checkInStyle: "",
+    sameNotes: "",
   };
 }
 
@@ -562,6 +564,8 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
       if (!supabase) return { error: "Supabase is not configured." };
       const { error } = await supabase.from("profiles").update(profilePatch(nextPatch)).eq("id", id);
       if (error) return { error: "Your profile could not be saved." };
+      const preferenceError = await replaceSamePreferences(supabase, id, nextPatch);
+      if (preferenceError) return { error: preferenceError };
       await refreshRemote();
       return {};
     }

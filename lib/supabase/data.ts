@@ -1,6 +1,7 @@
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { sortByNewest } from "@/lib/format";
 import { siteUrl } from "@/lib/supabase/env";
+import { CHECK_IN_FREQUENCIES, SUPPORT_WITH } from "@/lib/types";
 import type {
   AppNotification,
   CampfirePost,
@@ -27,6 +28,28 @@ type Row = Record<string, unknown>;
 
 function asString(value: unknown, fallback = "") {
   return typeof value === "string" ? value : fallback;
+}
+
+function supportIdFor(value: string) {
+  const found = SUPPORT_WITH.find(
+    (item) => item.id === value || item.label.toLowerCase() === value.toLowerCase(),
+  );
+  return found?.id ?? value;
+}
+
+function supportLabelFor(id: string) {
+  return SUPPORT_WITH.find((item) => item.id === id)?.label ?? id;
+}
+
+function frequencyIdFor(value: string) {
+  const found = CHECK_IN_FREQUENCIES.find(
+    (item) => item.id === value || item.label.toLowerCase() === value.toLowerCase(),
+  );
+  return found?.id ?? "";
+}
+
+function frequencyLabelFor(id: string) {
+  return CHECK_IN_FREQUENCIES.find((item) => item.id === id)?.label ?? id;
 }
 
 function asArray(value: unknown) {
@@ -78,6 +101,7 @@ export function profileFromRow(row: Row, interests: string[] = []): Profile {
     supportWith: [],
     checkInFrequency: "",
     checkInStyle: "",
+    sameNotes: "",
   };
 }
 
@@ -174,9 +198,31 @@ export async function loadWorld(supabase: SupabaseClient, authUser: User | null)
     interestMap.set(userId, [...(interestMap.get(userId) ?? []), slug]);
   }
 
-  const profileRows = ((profiles.data ?? []) as Row[]).map((row) =>
-    profileFromRow(row, interestMap.get(asString(row.id)) ?? []),
-  );
+  const preferences = await supabase
+    .from("same_preferences")
+    .select("user_id, support_type, frequency, notes, created_at");
+  if (preferences.error) throw new Error(preferences.error.message);
+  const preferencesByUser = new Map<string, Row[]>();
+  for (const row of (preferences.data ?? []) as Row[]) {
+    const userId = asString(row.user_id);
+    if (!userId) continue;
+    preferencesByUser.set(userId, [...(preferencesByUser.get(userId) ?? []), row]);
+  }
+
+  const profileRows = ((profiles.data ?? []) as Row[]).map((row) => {
+    const profile = profileFromRow(row, interestMap.get(asString(row.id)) ?? []);
+    const mine = (preferencesByUser.get(profile.id) ?? []).slice().sort((a, b) =>
+      asString(a.created_at) < asString(b.created_at) ? 1 : -1,
+    );
+    const supportWith = mine
+      .map((item) => asString(item.support_type).trim())
+      .filter(Boolean)
+      .map(supportIdFor);
+    profile.supportWith = [...new Set(supportWith)];
+    profile.checkInFrequency = frequencyIdFor(asString(mine.find((item) => asString(item.frequency))?.frequency));
+    profile.sameNotes = asString(mine.find((item) => asString(item.notes).trim())?.notes).trim();
+    return profile;
+  });
 
   if (authUser.email_confirmed_at) {
     const mine = profileRows.find((profile) => profile.id === authUser.id);
@@ -352,6 +398,62 @@ export async function resendVerification(supabase: SupabaseClient, email: string
     options: { emailRedirectTo: redirectTo("/onboarding") },
   });
   return { error: friendlyError(error) };
+}
+
+export async function replaceSamePreferences(
+  supabase: SupabaseClient,
+  userId: string,
+  patch: { supportWith?: string[]; checkInFrequency?: string; sameNotes?: string },
+) {
+  const touches =
+    patch.supportWith !== undefined || patch.checkInFrequency !== undefined || patch.sameNotes !== undefined;
+  if (!touches) return null;
+
+  const { data, error: readError } = await supabase
+    .from("same_preferences")
+    .select("support_type, frequency, notes")
+    .eq("user_id", userId);
+  if (readError) return "Your profile could not be saved.";
+  const existing = (data ?? []) as Row[];
+
+  const supportWith =
+    patch.supportWith !== undefined
+      ? patch.supportWith
+      : existing.map((row) => supportIdFor(asString(row.support_type).trim())).filter(Boolean);
+  const frequency =
+    patch.checkInFrequency !== undefined
+      ? patch.checkInFrequency
+      : frequencyIdFor(asString(existing.find((row) => asString(row.frequency))?.frequency));
+  const notes =
+    patch.sameNotes !== undefined
+      ? patch.sameNotes.trim()
+      : asString(existing.find((row) => asString(row.notes).trim())?.notes).trim();
+
+  const { error: deleteError } = await supabase.from("same_preferences").delete().eq("user_id", userId);
+  if (deleteError) return "Your profile could not be saved.";
+
+  const types = [...new Set(supportWith.map((id) => id.trim()).filter(Boolean))];
+  const frequencyText = frequency ? frequencyLabelFor(frequency) : null;
+  const notesText = notes || null;
+  const inserts: {
+    user_id: string;
+    support_type: string | null;
+    frequency: string | null;
+    notes: string | null;
+  }[] =
+    types.length > 0
+      ? types.map((id) => ({
+          user_id: userId,
+          support_type: supportLabelFor(id),
+          frequency: frequencyText,
+          notes: notesText,
+        }))
+      : frequencyText || notesText
+        ? [{ user_id: userId, support_type: null, frequency: frequencyText, notes: notesText }]
+        : [];
+  if (inserts.length === 0) return null;
+  const { error } = await supabase.from("same_preferences").insert(inserts);
+  return error ? "Your profile could not be saved." : null;
 }
 
 export function profilePatch(patch: Partial<Profile>) {
