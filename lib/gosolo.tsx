@@ -19,6 +19,7 @@ import {
   writeSessionCookie,
   writeStorage,
 } from "@/lib/session";
+import { authNotReady } from "@/lib/supabase";
 import { getSupabase } from "@/lib/supabase/client";
 import {
   ensureProfile,
@@ -311,12 +312,10 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
           }
           modeRef.current = "supabase";
           if (!cancelled) setSchemaError(null);
-        } catch (error) {
+        } catch {
           if (!cancelled) {
             setSchemaError(
-              error instanceof Error
-                ? error.message
-                : "Supabase is connected, but the schema is not ready.",
+              "Something isn't ready yet. You can look around, and try again in a little while.",
             );
           }
         } finally {
@@ -376,7 +375,7 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
 
     if (mode === "supabase") {
       const supabase = getSupabase();
-      if (!supabase) return { error: "Supabase is not configured." };
+      if (!supabase) return { error: authNotReady };
       const result = await signUp(supabase, normalized, password);
       if (result.error) return { error: result.error };
       if (result.data.user) await ensureProfile(supabase, result.data.user);
@@ -407,7 +406,7 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
     const normalized = email.trim().toLowerCase();
     if (mode === "supabase") {
       const supabase = getSupabase();
-      if (!supabase) return { error: "Supabase is not configured." };
+      if (!supabase) return { error: authNotReady };
       const result = await signIn(supabase, normalized, password);
       if (result.error) return { error: result.error };
       const profile = await refreshRemote();
@@ -461,7 +460,7 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
     const normalized = email.trim().toLowerCase();
     if (mode === "supabase") {
       const supabase = getSupabase();
-      if (!supabase) return { error: "Supabase is not configured." };
+      if (!supabase) return { error: authNotReady };
       const result = await requestReset(supabase, normalized);
       return { error: result.error ?? undefined };
     }
@@ -481,7 +480,7 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
     if (password.length < 8) return { error: "Use at least 8 characters." };
     if (mode === "supabase") {
       const supabase = getSupabase();
-      if (!supabase) return { error: "Supabase is not configured." };
+      if (!supabase) return { error: authNotReady };
       const { error } = await supabase.auth.updateUser({ password });
       return { error: error ? "The reset link is no longer active. Request a new one." : undefined };
     }
@@ -538,7 +537,7 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
       if (photo) {
         if (mode === "supabase") {
           const supabase = getSupabase();
-          if (!supabase) return { error: "Supabase is not configured." };
+          if (!supabase) return { error: authNotReady };
           const extension = photo.type.includes("png") ? "png" : "jpg";
           const path = `${id}/avatar.${extension}`;
           const { error } = await supabase.storage.from("avatars").upload(path, photo, {
@@ -559,7 +558,7 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
     const nextPatch = { ...patch, ...(avatarUrl !== undefined ? { avatarUrl } : {}) };
     if (mode === "supabase") {
       const supabase = getSupabase();
-      if (!supabase) return { error: "Supabase is not configured." };
+      if (!supabase) return { error: authNotReady };
       const { error } = await supabase.from("profiles").update(profilePatch(nextPatch)).eq("id", id);
       if (error) return { error: "Your profile could not be saved." };
       await refreshRemote();
@@ -578,7 +577,7 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
     if (!id) return { error: "Sign in first." };
     if (mode === "supabase") {
       const supabase = getSupabase();
-      if (!supabase) return { error: "Supabase is not configured." };
+      if (!supabase) return { error: authNotReady };
       const { error: deleteError } = await supabase.from("user_interests").delete().eq("user_id", id);
       if (deleteError) return { error: "Your interests could not be saved." };
       if (interests.length > 0) {
@@ -842,7 +841,7 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
     if (!skill.trim() || !description.trim()) return { error: "Say what you can share, and a little about how." };
     if (mode === "supabase") {
       const supabase = getSupabase();
-      if (!supabase) return { error: "Supabase is not configured." };
+      if (!supabase) return { error: authNotReady };
       await supabase.from("skill_offers").insert({
         user_id: id,
         skill: skill.trim(),
@@ -873,7 +872,7 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
     if (!skill.trim() || !description.trim()) return { error: "Say what you would like to learn." };
     if (mode === "supabase") {
       const supabase = getSupabase();
-      if (!supabase) return { error: "Supabase is not configured." };
+      if (!supabase) return { error: authNotReady };
       await supabase.from("skill_requests").insert({
         user_id: id,
         skill: skill.trim(),
@@ -1157,7 +1156,7 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
     if (!id) return { error: "Sign in first." };
     if (mode === "supabase") {
       const supabase = getSupabase();
-      if (!supabase) return { error: "Supabase is not configured." };
+      if (!supabase) return { error: authNotReady };
       const { error } = await supabase.rpc("delete_own_account");
       if (error) {
         return { error: "Account deletion needs the database function from the migration." };

@@ -1,5 +1,6 @@
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import { sortByNewest } from "@/lib/format";
+import { friendlyAuthError } from "@/lib/supabase";
 import { siteUrl } from "@/lib/supabase/env";
 import type {
   AppNotification,
@@ -82,21 +83,7 @@ export function profileFromRow(row: Row, interests: string[] = []): Profile {
 }
 
 function friendlyError(error: { message: string } | null) {
-  if (!error) return null;
-  const message = error.message.toLowerCase();
-  if (message.includes("invalid login") || message.includes("invalid credentials")) {
-    return "That email and password do not match.";
-  }
-  if (message.includes("already registered") || message.includes("already been registered")) {
-    return "An account with that email already exists. Try logging in.";
-  }
-  if (message.includes("email not confirmed")) {
-    return "Confirm your email first, then come back.";
-  }
-  if (message.includes("password")) {
-    return "Use at least 8 characters.";
-  }
-  return "Something got in the way. Please try again.";
+  return friendlyAuthError(error);
 }
 
 export async function loadWorld(supabase: SupabaseClient, authUser: User | null): Promise<World> {

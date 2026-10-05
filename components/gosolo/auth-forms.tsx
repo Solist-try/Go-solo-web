@@ -61,6 +61,7 @@ export function LoginForm() {
   return (
     <AuthFrame title="Welcome back." lede="Come in quietly. Nothing here is asking you to catch up.">
       <form onSubmit={onSubmit} className="space-y-5">
+        {!ready ? <p className="text-sm text-ink-soft">One moment…</p> : null}
         <label className="block space-y-2">
           <span className="text-sm">Email</span>
           <Input
@@ -88,8 +89,8 @@ export function LoginForm() {
             {error}
           </p>
         ) : null}
-        <Button type="submit" className={pill} disabled={pending}>
-          {pending ? "Opening the door…" : "Log in"}
+        <Button type="submit" className={pill} disabled={pending || !ready}>
+          {pending || !ready ? "Opening the door…" : "Log in"}
         </Button>
         <p className="text-sm text-ink-soft">
           <Link href="/forgot-password" className="underline decoration-ink/20 underline-offset-4">
@@ -181,7 +182,7 @@ export function RegisterForm() {
           </p>
         ) : null}
         <Button type="submit" className={pill} disabled={pending}>
-          {pending ? "Creating your place…" : "Create account"}
+          {pending ? "Making a place for you…" : "Create account"}
         </Button>
         {mode === "demo" ? (
           <p className="text-sm leading-relaxed text-ink-soft">
@@ -263,7 +264,7 @@ export function ForgotForm() {
             </p>
           ) : null}
           <Button type="submit" className={pill} disabled={pending}>
-            {pending ? "Sending…" : "Send reset link"}
+            {pending ? "Sending a note…" : "Send reset link"}
           </Button>
         </form>
       )}
@@ -313,7 +314,7 @@ export function ResetForm() {
           </p>
         ) : null}
         <Button type="submit" className={pill} disabled={pending}>
-          {pending ? "Saving…" : "Save password"}
+          {pending ? "Saving your password…" : "Save password"}
         </Button>
       </form>
     </AuthFrame>
