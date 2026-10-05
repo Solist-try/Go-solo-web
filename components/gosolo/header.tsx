@@ -96,20 +96,19 @@ export function SiteHeader() {
       <div className="mx-auto flex min-h-20 w-full max-w-7xl items-center justify-between gap-3 px-5 py-3 sm:px-8">
         <Wordmark />
         <nav aria-label="Primary" className="hidden flex-wrap items-center justify-end gap-0.5 lg:flex">
-          {ready &&
-            links.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                aria-current={isActive(pathname, href) ? "page" : undefined}
-                className={cn(
-                  "rounded-full px-3 py-2 text-sm text-ink-soft hover:text-ink",
-                  isActive(pathname, href) && "bg-white text-ink shadow-soft",
-                )}
-              >
-                {label}
-              </Link>
-            ))}
+          {links.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              aria-current={isActive(pathname, href) ? "page" : undefined}
+              className={cn(
+                "rounded-full px-3 py-2 text-sm text-ink-soft hover:text-ink focus-visible:text-ink",
+                isActive(pathname, href) && "bg-white text-ink shadow-soft",
+              )}
+            >
+              {label}
+            </Link>
+          ))}
         </nav>
         <div className="flex items-center gap-2">
           {!ready ? <div className="h-12 w-28" /> : null}
