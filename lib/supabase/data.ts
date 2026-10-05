@@ -29,6 +29,19 @@ function asString(value: unknown, fallback = "") {
   return typeof value === "string" ? value : fallback;
 }
 
+function titlesByUser(rows: Row[]) {
+  const map = new Map<string, string[]>();
+  for (const row of rows) {
+    const userId = asString(row.user_id);
+    const title = asString(row.title).trim();
+    if (!userId || !title) continue;
+    const current = map.get(userId) ?? [];
+    if (current.some((item) => item.toLowerCase() === title.toLowerCase())) continue;
+    map.set(userId, [...current, title]);
+  }
+  return map;
+}
+
 function asArray(value: unknown) {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
@@ -174,9 +187,19 @@ export async function loadWorld(supabase: SupabaseClient, authUser: User | null)
     interestMap.set(userId, [...(interestMap.get(userId) ?? []), slug]);
   }
 
-  const profileRows = ((profiles.data ?? []) as Row[]).map((row) =>
-    profileFromRow(row, interestMap.get(asString(row.id)) ?? []),
-  );
+  const helpRequests = await supabase.from("seed_help_requests").select("user_id, title");
+  const helpOffers = await supabase.from("seed_help_offers").select("user_id, title");
+  if (helpRequests.error) throw new Error(helpRequests.error.message);
+  if (helpOffers.error) throw new Error(helpOffers.error.message);
+  const helpGrowingByUser = titlesByUser((helpRequests.data ?? []) as Row[]);
+  const helpPlantByUser = titlesByUser((helpOffers.data ?? []) as Row[]);
+
+  const profileRows = ((profiles.data ?? []) as Row[]).map((row) => {
+    const profile = profileFromRow(row, interestMap.get(asString(row.id)) ?? []);
+    profile.helpGrowing = helpGrowingByUser.get(profile.id) ?? [];
+    profile.helpPlant = helpPlantByUser.get(profile.id) ?? [];
+    return profile;
+  });
 
   if (authUser.email_confirmed_at) {
     const mine = profileRows.find((profile) => profile.id === authUser.id);
@@ -352,6 +375,25 @@ export async function resendVerification(supabase: SupabaseClient, email: string
     options: { emailRedirectTo: redirectTo("/onboarding") },
   });
   return { error: friendlyError(error) };
+}
+
+export async function replaceHelpTitles(
+  supabase: SupabaseClient,
+  table: "seed_help_requests" | "seed_help_offers",
+  userId: string,
+  titles: string[],
+) {
+  const unique: string[] = [];
+  for (const title of titles) {
+    const trimmed = title.trim();
+    if (!trimmed || unique.some((item) => item.toLowerCase() === trimmed.toLowerCase())) continue;
+    unique.push(trimmed);
+  }
+  const { error: deleteError } = await supabase.from(table).delete().eq("user_id", userId);
+  if (deleteError) return "Your profile could not be saved.";
+  if (unique.length === 0) return null;
+  const { error } = await supabase.from(table).insert(unique.map((title) => ({ user_id: userId, title })));
+  return error ? "Your profile could not be saved." : null;
 }
 
 export function profilePatch(patch: Partial<Profile>) {
