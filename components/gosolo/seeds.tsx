@@ -98,7 +98,7 @@ export function SeedIndex() {
             ))}
           </ul>
           <div className="mt-8">
-            <PrimaryLink href="/seeds/weekly-hello">Find a SAME Partner</PrimaryLink>
+            <PrimaryLink href="/seeds/weekly-hello">Be open to a partner</PrimaryLink>
           </div>
         </article>
 
@@ -286,7 +286,7 @@ export function SeedDetail({ id }: { id: string }) {
 
       {user && seed.kind === "same" ? (
         <Panel className="mt-4">
-          <h2 className="font-serif text-3xl">Find a SAME Partner</h2>
+          <h2 className="font-serif text-3xl">A SAME partner</h2>
           <p className="mt-3 text-ink-soft">Name what you would like to grow. A partner tends it with you, briefly, and without advice unless you ask.</p>
           {partnership ? (
             <div className="mt-6 space-y-4">
