@@ -34,15 +34,15 @@ const IDEAS = [
 
 const IDEA_SEEDS = [
   {
-    title: "Learn Spanish",
+    title: "Learning Spanish",
     body: "A place to begin. Not something that already happened.",
-    href: "/seeds/skill-swap",
+    href: "/seeds/learning-spanish",
     cta: "Explore Skill Swap",
   },
   {
-    title: "Build Confidence",
+    title: "Building confidence",
     body: "Find someone to grow it with. This is a seed, not a story.",
-    href: "/seeds/weekly-hello",
+    href: "/seeds/building-confidence",
     cta: "Explore SAME",
   },
 ];

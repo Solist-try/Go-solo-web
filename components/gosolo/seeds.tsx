@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { SEEDS } from "@/lib/catalog";
 import { useCatalog, useGoSolo } from "@/lib/gosolo";
 import { categoryLabel, formatRelative } from "@/lib/format";
 import { visibleSeeking } from "@/lib/view";
@@ -40,6 +41,8 @@ const SWAP_EXAMPLES = [
   "Teach Writing",
   "Learn DIY",
 ];
+
+const STARTER_IDS = ["learning-spanish", "building-confidence", "making-local-friends"];
 
 const GROWING_SOON = [
   "Accountability Circles",
@@ -80,6 +83,22 @@ export function SeedIndex() {
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink">
           A seed grows through attention, practice, support, accountability, encouragement, and connection.
         </p>
+        <ul className="mt-8 max-w-xl space-y-3">
+          {STARTER_IDS.map((id) => {
+            const seed = SEEDS.find((item) => item.id === id);
+            if (!seed) return null;
+            return (
+              <li key={seed.id}>
+                <Link
+                  href={`/seeds/${seed.id}`}
+                  className="font-serif text-3xl tracking-tight text-ink underline decoration-ink/20 underline-offset-4"
+                >
+                  {seed.title}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </header>
 
       <div id="plant" className="mt-16 grid scroll-mt-24 gap-6 lg:grid-cols-2">

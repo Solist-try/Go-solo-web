@@ -650,7 +650,7 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
       if (!supabase) return;
       const { data, error } = await supabase
         .from("user_seeds")
-        .insert({ user_id: id, seed_id: seedId, goal, status: "active" })
+        .insert({ user_id: id, seed_id: seedId, title: seed.title, goal, status: "active" })
         .select("id")
         .single();
       if (error || !data) return;
@@ -675,6 +675,7 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
           id: userSeedId,
           userId: id,
           seedId,
+          title: seed.title,
           status: "active",
           goal,
           startedAt: new Date().toISOString(),
@@ -745,9 +746,10 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
     if (mode === "supabase") {
       const supabase = getSupabase();
       if (!supabase) return;
+      const matchedSeed = resolveSeeds(mergeAdmin(deskRef.current)).find((item) => item.id === seedId);
       const { data } = await supabase
         .from("user_seeds")
-        .insert({ user_id: id, seed_id: seedId, goal: text, status: "active" })
+        .insert({ user_id: id, seed_id: seedId, title: matchedSeed?.title ?? "", goal: text, status: "active" })
         .select("id")
         .single();
       await supabase.from("same_partnerships").insert({
@@ -786,6 +788,7 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
               id: createId(),
               userId: id,
               seedId,
+              title: resolveSeeds(mergeAdmin(deskRef.current)).find((item) => item.id === seedId)?.title,
               status: "active",
               goal: text,
               startedAt: new Date().toISOString(),
