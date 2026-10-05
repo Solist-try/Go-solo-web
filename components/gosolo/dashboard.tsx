@@ -35,7 +35,7 @@ export function Dashboard() {
         {currentSeed ? (
           <div className="mt-6">
             <Link href={`/seeds/${currentSeed.id}`} className="font-serif text-4xl leading-tight tracking-tight text-ink">
-              {currentSeed.title}
+              {current?.title || currentSeed.title}
             </Link>
             <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink-soft">{currentSeed.prompt}</p>
           </div>

@@ -213,6 +213,7 @@ export type UserSeed = {
   id: string;
   userId: string;
   seedId: string;
+  title?: string;
   status: SeedStatus;
   goal: string;
   startedAt: string;
