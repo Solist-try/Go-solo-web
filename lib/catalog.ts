@@ -368,6 +368,9 @@ export const MEMBER_PREFIXES = [
   "/experiences",
   "/partnerships",
   "/first-night-kits",
+  "/seeds",
+  "/campfire",
+  "/waypoints",
 ];
 
 /** Visitors can read these rooms. Writing in them still asks for an account. */
