@@ -152,27 +152,19 @@ export function HomePage() {
             <h2 className="font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">Out There</h2>
             <p className="mt-3 text-lg leading-relaxed text-ink">What happened, told plainly.</p>
           </div>
-          <article className="rounded-[28px] bg-background p-7 shadow-soft sm:p-8 lg:col-span-8">
-            <h3 className="font-serif text-3xl leading-tight tracking-tight text-ink sm:text-4xl">The museum on a Wednesday</h3>
-            <dl className="mt-6 grid gap-5 sm:grid-cols-2">
-              <div>
-                <dt className="text-sm text-ink-soft">What did you do?</dt>
-                <dd className="mt-1 leading-relaxed">Went to the tile museum alone after work.</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-ink-soft">What were you expecting?</dt>
-                <dd className="mt-1 leading-relaxed">To leave after twenty minutes.</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-ink-soft">What actually happened?</dt>
-                <dd className="mt-1 leading-relaxed">Nobody noticed. One blue wall was enough.</dd>
-              </div>
-              <div>
-                <dt className="text-sm text-ink-soft">Would you do it again?</dt>
-                <dd className="mt-1">Yes.</dd>
-              </div>
-            </dl>
-          </article>
+          <div className="rounded-[28px] bg-background p-7 sm:p-8 lg:col-span-8">
+            <p className="font-serif text-3xl leading-snug tracking-tight text-ink">
+              A story here is something a member actually did.
+            </p>
+            <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink">
+              Ideas for a first step sit on the same page, and they are marked as ideas.
+            </p>
+            <p className="mt-6">
+              <Link href="/out-there" className="text-lg underline decoration-ink/20 underline-offset-4">
+                See Out There
+              </Link>
+            </p>
+          </div>
         </div>
       </section>
 

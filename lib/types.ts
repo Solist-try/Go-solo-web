@@ -276,6 +276,8 @@ export type OutTherePost = {
   hidden?: boolean;
   pinned?: boolean;
   featured?: boolean;
+  /** Illustration copy. Never show this as something a member did. */
+  example?: boolean;
 };
 
 export type CampfirePost = {

@@ -35,7 +35,7 @@ export function ProfileView({ profileId }: { profileId?: string }) {
   const helpGrowing = uniqueNames([...garden.helpGrowing, ...requests.map((item) => item.skill)]);
   const helpPlant = uniqueNames([...garden.helpPlant, ...offers.map((item) => item.skill)]);
   const stories = world.stories
-    .filter((item) => item.authorId === profile.id && !item.hidden)
+    .filter((item) => item.authorId === profile.id && !item.hidden && !item.example)
     .slice(0, 3);
 
   return (
@@ -304,7 +304,7 @@ function latestActivity(
 ) {
   const items = [
     ...stories
-      .filter((item) => item.authorId === profile.id && item.waypointId === waypointId && !item.hidden)
+      .filter((item) => item.authorId === profile.id && item.waypointId === waypointId && !item.hidden && !item.example)
       .map((item) => ({ at: item.createdAt, title: item.title, href: `/out-there/${item.id}` })),
     ...campfire
       .filter((item) => item.authorId === profile.id && item.waypointId === waypointId && !item.hidden)

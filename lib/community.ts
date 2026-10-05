@@ -435,7 +435,7 @@ export const communityConnections: SkillConnection[] = [
   },
 ];
 
-export const communityStories: OutTherePost[] = [
+const sampleStories: OutTherePost[] = [
   {
     id: "story-mira",
     authorId: "mira",
@@ -531,6 +531,11 @@ export const communityStories: OutTherePost[] = [
     createdAt: "2026-09-25T08:00:00.000Z",
   },
 ];
+
+export const communityStories: OutTherePost[] = sampleStories.map((story) => ({
+  ...story,
+  example: true,
+}));
 
 export const communityCampfire: CampfirePost[] = [
   {

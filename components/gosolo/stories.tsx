@@ -21,14 +21,41 @@ import { againLabel, describeReactions, formatRelative } from "@/lib/format";
 import { useCatalog, useGoSolo } from "@/lib/gosolo";
 import { REACTIONS, WOULD_AGAIN, type WouldAgain } from "@/lib/types";
 
+const IDEAS = [
+  "Take a day trip",
+  "Visit a museum",
+  "Buy a ticket for one",
+  "Attend a local event",
+  "Try a restaurant alone",
+  "Walk a street you don't know",
+  "Take yourself for coffee",
+  "Visit a local market",
+];
+
+const IDEA_SEEDS = [
+  {
+    title: "Learn Spanish",
+    body: "A place to begin. Not something that already happened.",
+    href: "/seeds/skill-swap",
+    cta: "Explore Skill Swap",
+  },
+  {
+    title: "Build Confidence",
+    body: "Find someone to grow it with. This is a seed, not a story.",
+    href: "/seeds/weekly-hello",
+    cta: "Explore SAME",
+  },
+];
+
 export function StoryIndex() {
   const { world, user } = useGoSolo();
   const names = new Map(world.profiles.map((profile) => [profile.id, profile]));
+  const stories = world.stories.filter((story) => !story.example && !story.hidden);
 
   return (
     <Frame>
-      <PageIntro eyebrow="Experiences, not achievements" title="Out There">
-        What did you do? What were you expecting? What actually happened? Would you do it again?
+      <PageIntro eyebrow="What happened" title="Out There">
+        Real experiences, brought back by members. A story here is something that happened.
       </PageIntro>
       <div className="mt-8">
         {user ? (
@@ -37,14 +64,14 @@ export function StoryIndex() {
           <PrimaryLink href="/register">Join to bring a story back</PrimaryLink>
         )}
       </div>
-      {world.stories.length === 0 ? (
+      {stories.length === 0 ? (
         <Panel className="mt-10">
-          <p className="font-serif text-3xl leading-snug">No one has brought a story back yet.</p>
-          <p className="mt-4 text-lg text-ink-soft">You could be the first, or you can wait until you have one. Both are welcome.</p>
+          <p className="font-serif text-3xl leading-snug">No member has brought a story back yet.</p>
+          <p className="mt-4 text-lg text-ink-soft">When someone does, it will be what actually happened.</p>
         </Panel>
       ) : (
         <ul className="mt-10 space-y-4">
-          {world.stories.map((story) => {
+          {stories.map((story) => {
             const reactions = world.reactions.filter((reaction) => reaction.targetId === story.id);
             const nameMap = new Map(world.profiles.map((profile) => [profile.id, profile.displayName]));
             return (
@@ -72,6 +99,39 @@ export function StoryIndex() {
           })}
         </ul>
       )}
+
+      <section className="mt-16 rounded-[28px] border border-dashed border-ink/20 bg-sage/30 p-6 sm:p-10" aria-labelledby="ideas-title">
+        <p className="text-sm text-ink-soft">Ideas, not experiences</p>
+        <h2 id="ideas-title" className="mt-3 font-serif text-4xl tracking-tight text-ink sm:text-5xl">
+          Need a starting point?
+        </h2>
+        <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink">
+          These are suggestions for getting out there. Nobody has done them on your behalf.
+        </p>
+        <ul className="mt-8 flex flex-wrap gap-3">
+          {IDEAS.map((idea) => (
+            <li key={idea} className="rounded-full border border-ink/15 bg-background px-4 py-2 text-base text-ink">
+              {idea}
+            </li>
+          ))}
+        </ul>
+        <ul className="mt-8 grid gap-4 md:grid-cols-2">
+          {IDEA_SEEDS.map((idea) => (
+            <li key={idea.href}>
+              <div className="h-full rounded-[24px] border border-dashed border-ink/25 bg-transparent p-6">
+                <p className="text-sm text-ink-soft">A seed</p>
+                <h3 className="mt-2 font-serif text-3xl tracking-tight text-ink">{idea.title}</h3>
+                <p className="mt-3 leading-relaxed text-ink">{idea.body}</p>
+                <p className="mt-5">
+                  <Link href={idea.href} className="text-lg underline decoration-ink/30 underline-offset-4">
+                    {idea.cta}
+                  </Link>
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
       <NextStep />
     </Frame>
   );
@@ -80,13 +140,16 @@ export function StoryIndex() {
 export function StoryDetail({ id }: { id: string }) {
   const { world, user, reactToStory } = useGoSolo();
   const { getSeed, getWaypoint } = useCatalog();
-  const story = world.stories.find((item) => item.id === id);
+  const story = world.stories.find((item) => item.id === id && !item.example);
   if (!story) {
     return (
       <Frame>
         <PageIntro title="This story has moved on.">
-          The rest of Out There is still here.
+          Out There only keeps experiences a member brought back.
         </PageIntro>
+        <div className="mt-8">
+          <PrimaryLink href="/out-there">Back to Out There</PrimaryLink>
+        </div>
       </Frame>
     );
   }
