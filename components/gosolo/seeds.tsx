@@ -19,7 +19,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useCatalog, useGoSolo } from "@/lib/gosolo";
 import { categoryLabel, formatRelative } from "@/lib/format";
-import { visibleSeeking } from "@/lib/view";
 
 const NoteContext = createContext("");
 
@@ -178,7 +177,6 @@ export function SeedDetail({ id }: { id: string }) {
     beginSeed,
     setSeedStatus,
     checkInSeed,
-    matchWith,
     partnershipCheckIn,
     offerSkill,
     requestSkill,
@@ -197,9 +195,6 @@ export function SeedDetail({ id }: { id: string }) {
   const names = useMemo(
     () => new Map(world.profiles.map((profile) => [profile.id, profile])),
     [world.profiles],
-  );
-  const seeking = visibleSeeking(world.partnerships).filter(
-    (item) => item.seedId === id && item.seekerId !== user?.id,
   );
   const partnership = world.partnerships.find(
     (item) =>
@@ -335,33 +330,15 @@ export function SeedDetail({ id }: { id: string }) {
                 <span className="text-sm">What would you like to grow?</span>
                 <Textarea className={areaClass} value={goal} onChange={(event) => setGoal(event.target.value)} />
               </label>
-              {seeking.length > 0 ? (
-                <ul className="space-y-4">
-                  {seeking.map((item) => {
-                    const person = names.get(item.seekerId);
-                    return (
-                      <li key={item.id} className="rounded-[24px] bg-gold/70 p-5">
-                        <AuthorLine profile={person} href={person ? `/profile/${person.id}` : undefined} />
-                        <p className="mt-3">{item.goal}</p>
-                        <Button
-                          className={`${pill} mt-4`}
-                          onClick={() => void matchWith(seed.id, item.seekerId, goal || item.goal)}
-                        >
-                          Walk with {person?.displayName?.split(" ")[0]}
-                        </Button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <p className="text-ink-soft">No one is waiting on this seed yet. You can be the open chair.</p>
-              )}
+              <p className="text-ink-soft">
+                A steward suggests a partner when there is a fit. Being open does not pair you with anyone.
+              </p>
               {!mine ? (
                 <Button className={pill} onClick={() => void beginSeed(seed.id, goal)}>
                   I am open to a partner
                 </Button>
               ) : (
-                <p className="text-sm text-ink-soft">You are open. Someone can find you here.</p>
+                <p className="text-sm text-ink-soft">You are open. A match waits for a steward.</p>
               )}
             </div>
           )}

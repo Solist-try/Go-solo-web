@@ -104,7 +104,7 @@ type GoSoloValue = {
   beginSeed: (seedId: string, goal?: string) => Promise<void>;
   setSeedStatus: (userSeedId: string, status: SeedStatus) => Promise<void>;
   checkInSeed: (userSeedId: string, note: string) => Promise<void>;
-  matchWith: (seedId: string, partnerId: string, goal: string) => Promise<void>;
+  confirmSameMatch: (seedId: string, leftId: string, rightId: string) => Promise<{ error?: string }>;
   partnershipCheckIn: (partnershipId: string, note: string) => Promise<void>;
   offerSkill: (skill: string, description: string) => Promise<{ error?: string }>;
   requestSkill: (skill: string, description: string) => Promise<{ error?: string }>;
@@ -737,76 +737,81 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
     }));
   }
 
-  async function matchWith(seedId: string, partnerId: string, goal: string) {
-    const id = userIdRef.current;
-    if (!id) return;
-    const text = goal.trim();
-    if (!text) return;
-    if (mode === "supabase") {
-      const supabase = getSupabase();
-      if (!supabase) return;
-      const { data } = await supabase
-        .from("user_seeds")
-        .insert({ user_id: id, seed_id: seedId, goal: text, status: "active" })
-        .select("id")
-        .single();
-      await supabase.from("same_partnerships").insert({
-        user_seed_id: data?.id,
-        seeker_id: id,
-        partner_id: partnerId,
-        seed_id: seedId,
-        goal: text,
-        status: "matched",
-      });
-      await supabase.rpc("notify", {
-        target: partnerId,
-        title: "Someone would like to walk this stretch with you",
-        body: "A weekly check-in is waiting. Missing a week is allowed.",
-        href: `/seeds/${seedId}`,
-      });
-      await refreshRemote();
-      return;
-    }
-    const notice: AppNotification = {
+  async function confirmSameMatch(seedId: string, leftId: string, rightId: string) {
+    const actor = world.profiles.find((profile) => profile.id === userIdRef.current);
+    if (actor?.role !== "admin") return { error: "This desk is kept by stewards." };
+    if (!seedId || !leftId || !rightId || leftId === rightId) return { error: "Choose a seed and two people." };
+    const already = world.partnerships.some(
+      (item) =>
+        item.status === "matched" &&
+        item.seedId === seedId &&
+        ((item.seekerId === leftId && item.partnerId === rightId) ||
+          (item.seekerId === rightId && item.partnerId === leftId)),
+    );
+    if (already) return { error: "They are already walking this together." };
+    const seed = resolveSeeds(mergeAdmin(deskRef.current)).find((item) => item.id === seedId);
+    const open = world.partnerships.find(
+      (item) => item.seedId === seedId && (item.seekerId === leftId || item.seekerId === rightId) && item.goal.trim(),
+    );
+    const goal = open?.goal || seed?.prompt || "A stretch to tend together.";
+    const leftName = world.profiles.find((profile) => profile.id === leftId)?.displayName || "someone";
+    const rightName = world.profiles.find((profile) => profile.id === rightId)?.displayName || "someone";
+    const title = "A SAME partner was suggested";
+    const notice = (userId: string, other: string): AppNotification => ({
       id: createId(),
-      userId: id,
-      title: "You have a companion for this stretch",
-      body: "Check in when the week has something to say. Missing a week is allowed.",
+      userId,
+      title,
+      body: `A steward suggested ${other} for this stretch. You can take your time.`,
       href: `/seeds/${seedId}`,
       read: false,
       createdAt: new Date().toISOString(),
-    };
+    });
+
+    if (mode === "supabase") {
+      const supabase = getSupabase();
+      if (!supabase) return { error: "Supabase is not configured." };
+      const { error } = await supabase.from("same_partnerships").insert({
+        seeker_id: leftId,
+        partner_id: rightId,
+        seed_id: seedId,
+        goal,
+        status: "matched",
+      });
+      if (error) return { error: "That match could not be saved." };
+      await supabase.rpc("notify", {
+        target: leftId,
+        title,
+        body: `A steward suggested ${rightName} for this stretch. You can take your time.`,
+        href: `/seeds/${seedId}`,
+      });
+      await supabase.rpc("notify", {
+        target: rightId,
+        title,
+        body: `A steward suggested ${leftName} for this stretch. You can take your time.`,
+        href: `/seeds/${seedId}`,
+      });
+      await refreshRemote();
+      return {};
+    }
+
     commit((state) => ({
       ...state,
-      userSeeds: state.userSeeds.some((item) => item.userId === id && item.seedId === seedId && item.status === "active")
-        ? state.userSeeds
-        : [
-            ...state.userSeeds,
-            {
-              id: createId(),
-              userId: id,
-              seedId,
-              status: "active",
-              goal: text,
-              startedAt: new Date().toISOString(),
-              checkIns: [],
-            },
-          ],
       partnerships: [
-        ...state.partnerships.filter((item) => !(item.seekerId === id && item.seedId === seedId && item.status === "seeking")),
+        ...state.partnerships,
         {
           id: createId(),
           seedId,
-          seekerId: id,
-          partnerId,
-          goal: text,
+          seekerId: leftId,
+          partnerId: rightId,
+          goal,
           status: "matched",
           createdAt: new Date().toISOString(),
           checkIns: [],
         },
       ],
-      notifications: [notice, ...state.notifications],
+      notifications: [notice(leftId, rightName), notice(rightId, leftName), ...state.notifications],
     }));
+    return {};
   }
 
   async function partnershipCheckIn(partnershipId: string, note: string) {
@@ -1237,7 +1242,7 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
     beginSeed,
     setSeedStatus,
     checkInSeed,
-    matchWith,
+    confirmSameMatch,
     partnershipCheckIn,
     offerSkill,
     requestSkill,

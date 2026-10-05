@@ -174,6 +174,7 @@ export type AdminState = {
   journal: JournalEntry[];
   letters: HouseLetter[];
   settings: DeskSettings;
+  dismissedSameMatches: string[];
 };
 
 export function defaultContent(): SiteContent {
@@ -392,6 +393,7 @@ export function defaultAdmin(): AdminState {
       note: "Keep the room habitable. Measure action, not performance.",
       warnTemplate: "A steward read what you shared and is asking for a gentler version. Nothing here needs to expose someone's private life.",
     },
+    dismissedSameMatches: [],
   };
 }
 
@@ -483,6 +485,7 @@ export function mergeAdmin(stored?: Partial<AdminState> | null): AdminState {
       (report) => report.targetId !== "fire-asha-permission" && report.targetId !== "story-mira",
     ),
     journal: stored.journal ?? [],
+    dismissedSameMatches: stored.dismissedSameMatches ?? [],
   };
 }
 
