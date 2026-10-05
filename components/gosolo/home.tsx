@@ -10,14 +10,7 @@ const phraseTones = ["bg-sage", "bg-clay", "bg-gold"];
 const stepTones = ["bg-sage", "bg-clay", "bg-gold", "bg-mist"];
 
 export function HomePage() {
-  const { content, seeds, waypoints, desk } = useGoSolo();
-  const featuredIds = desk.featuredSeedIds.length
-    ? desk.featuredSeedIds
-    : ["ticket-for-one", "sunday-reset", "old-friend"];
-  const featured = featuredIds
-    .map((id) => seeds.find((seed) => seed.id === id))
-    .filter((seed) => seed != null)
-    .slice(0, 3);
+  const { content, waypoints } = useGoSolo();
   const phrases = content.phrases.map((text, index) => ({
     text,
     tone: phraseTones[index % phraseTones.length],
@@ -129,24 +122,27 @@ export function HomePage() {
         <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
           <div className="max-w-xl">
             <h2 className="font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">Seeds</h2>
-            <p className="mt-3 text-lg leading-relaxed text-ink-soft">One small thing to try.</p>
+            <p className="mt-3 text-lg leading-relaxed text-ink-soft">Tiny futures you can plant now.</p>
           </div>
           <Button asChild variant="outline" className={`${pill} bg-transparent`}>
-            <Link href="/seeds">Browse the seeds</Link>
+            <Link href="/seeds">See the seeds</Link>
           </Button>
         </div>
-        <ul className="mt-8 grid gap-4 lg:grid-cols-3">
-          {featured.map((seed) =>
-            seed ? (
-              <li key={seed.id}>
-                <Link href={`/seeds/${seed.id}`} className="block h-full rounded-[28px] bg-white/80 p-6 shadow-soft">
-                  <p className="text-sm text-ink-soft">{seed.timeframe}</p>
-                  <h3 className="mt-3 font-serif text-3xl leading-tight tracking-tight text-ink">{seed.title}</h3>
-                  <p className="mt-4 leading-relaxed text-ink-soft">{seed.description}</p>
-                </Link>
-              </li>
-            ) : null,
-          )}
+        <ul className="mt-8 grid gap-4 lg:grid-cols-2">
+          <li>
+            <Link href="/seeds/weekly-hello" className="block h-full rounded-[28px] bg-sage p-6 shadow-soft sm:p-8">
+              <h3 className="font-serif text-3xl leading-tight tracking-tight text-ink">SAME</h3>
+              <p className="mt-4 leading-relaxed text-ink">
+                A seed grows faster when someone else helps tend it.
+              </p>
+            </Link>
+          </li>
+          <li>
+            <Link href="/seeds/skill-swap" className="block h-full rounded-[28px] bg-clay p-6 shadow-soft sm:p-8">
+              <h3 className="font-serif text-3xl leading-tight tracking-tight text-ink">Skill Swap</h3>
+              <p className="mt-4 leading-relaxed text-ink">Learn something. Teach something.</p>
+            </Link>
+          </li>
         </ul>
       </section>
 

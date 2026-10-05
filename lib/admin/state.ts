@@ -310,7 +310,7 @@ export function defaultContent(): SiteContent {
       },
     ],
     seedsIntro:
-      "Seeds help people build confidence and capability. Some are adventures. Some are practical. Some are a way back to other people.",
+      "Tiny futures you can plant now. A seed grows through attention, practice, support, accountability, encouragement, and connection.",
     manifesto: [
       "Go Solo helps people build lives that work, whether or not somebody else shows up.",
       "Living alone is not the problem. Living on hold is.",

@@ -1,17 +1,5 @@
 import { SEEDS } from "@/lib/catalog";
-import type { CampfirePost, Membership, OutTherePost, Seed, SeedCategory, UserSeed } from "@/lib/types";
-
-const interestCategory: Record<string, SeedCategory> = {
-  travel: "adventure",
-  walking: "adventure",
-  nature: "wellbeing",
-  creativity: "creativity",
-  books: "growth",
-  diy: "home",
-  cooking: "home",
-  "personal-growth": "growth",
-  learning: "growth",
-};
+import type { CampfirePost, Membership, OutTherePost, Seed, UserSeed } from "@/lib/types";
 
 export type NextStep = {
   title: string;
@@ -38,18 +26,11 @@ export function suggestNext(input: {
   const myPoints = input.memberships.filter((membership) => membership.userId === input.userId);
 
   if (active.length === 0) {
-    const category = input.interests
-      .map((interest) => interestCategory[interest])
-      .find(Boolean);
-    const match =
-      seeds.find((seed) => seed.category === category && seed.kind === "practice") ?? seeds[0];
     return {
-      title: "Find a seed",
-      body: match
-        ? `One small opening: ${match.title}. You do not have to do it well.`
-        : "One small action is enough to make the week feel bigger.",
-      href: match ? `/seeds/${match.id}` : "/seeds",
-      cta: "Begin with this",
+      title: "Plant a seed",
+      body: "A seed is a tiny future. Choose something you would like to grow, then find someone to tend it with you.",
+      href: "/seeds",
+      cta: "See the seeds",
     };
   }
 
