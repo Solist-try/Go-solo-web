@@ -60,8 +60,8 @@ export function HomePage() {
         </div>
         <figure className="mt-14">
           <Image
-            src="/hero-coastal-path.jpg"
-            alt="A person walking alone along a coastal path."
+            src="/hero-city-walk.jpg"
+            alt="A person walking home along a rainy street with groceries."
             width={1280}
             height={720}
             priority
