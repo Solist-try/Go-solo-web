@@ -385,24 +385,7 @@ export function defaultAdmin(): AdminState {
     memberStatus: {},
     removedMemberIds: [],
     warnings: [],
-    reports: [
-      {
-        id: "report-address",
-        targetType: "campfire",
-        targetId: "fire-asha-permission",
-        reason: "A reply asks where someone lives. It can stay if the address comes out.",
-        status: "open",
-        createdAt: "2026-10-03T11:00:00.000Z",
-      },
-      {
-        id: "report-museum",
-        targetType: "out-there",
-        targetId: "story-mira",
-        reason: "Someone asked if this story should be pinned for people just beginning.",
-        status: "open",
-        createdAt: "2026-10-02T16:00:00.000Z",
-      },
-    ],
+    reports: [],
     journal: [],
     letters: [],
     settings: {
@@ -496,7 +479,9 @@ export function mergeAdmin(stored?: Partial<AdminState> | null): AdminState {
     memberStatus: asRecord(stored.memberStatus),
     removedMemberIds: stored.removedMemberIds ?? [],
     warnings: stored.warnings ?? [],
-    reports: stored.reports ?? base.reports,
+    reports: (stored.reports ?? base.reports).filter(
+      (report) => report.targetId !== "fire-asha-permission" && report.targetId !== "story-mira",
+    ),
     journal: stored.journal ?? [],
   };
 }

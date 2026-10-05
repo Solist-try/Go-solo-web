@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
@@ -8,7 +9,6 @@ import {
   AuthorLine,
   Frame,
   PageIntro,
-  Panel,
   PrimaryLink,
   areaClass,
   fieldClass,
@@ -21,56 +21,83 @@ import { formatRelative, kindLabel, sectionLabel } from "@/lib/format";
 import { useGoSolo } from "@/lib/gosolo";
 import { CAMPFIRE_KINDS, CAMPFIRE_SECTIONS, type CampfireKind, type CampfireSection } from "@/lib/types";
 
+const AT_THE_FIRE = [
+  "Ask questions",
+  "Share experiences",
+  "Reflect on challenges",
+  "Celebrate progress",
+  "Support others",
+  "Discuss everyday life",
+];
+
 export function CampfireIndex() {
   const { world, user } = useGoSolo();
-  const [section, setSection] = useState<CampfireSection | "all">("all");
-  const posts = world.campfire.filter((post) => section === "all" || post.section === section);
+  const posts = world.campfire.filter((post) => !post.hidden);
   const names = new Map(world.profiles.map((profile) => [profile.id, profile]));
 
   return (
     <Frame>
-      <PageIntro eyebrow="A shared campfire" title="Pull up a chair.">
-        What&apos;s on your mind? Questions, thoughts, reflections, daily life, stories, celebrations,
-        and challenges. A chair to return to after you have been out there.
-      </PageIntro>
-      <div className="mt-8">
-        {user ? (
-          <PrimaryLink href="/campfire/new">Say something</PrimaryLink>
+      <header className="max-w-3xl">
+        <p className="text-sm text-ink-soft">A shared campfire</p>
+        <h1 className="mt-4 font-serif text-5xl leading-[1.05] tracking-tight text-ink sm:text-7xl">Pull up a chair.</h1>
+        <div className="mt-8 max-w-2xl space-y-4 text-xl leading-relaxed text-ink">
+          <p>Campfire is where conversations happen.</p>
+          <p>Questions. Thoughts. Stories. Challenges. Ordinary moments.</p>
+          <p>A place to return after you&apos;ve been Out There.</p>
+        </div>
+        <div className="mt-8">
+          {user ? (
+            <PrimaryLink href="/campfire/new">Start a conversation</PrimaryLink>
+          ) : (
+            <PrimaryLink href="/register">Join Go Solo</PrimaryLink>
+          )}
+        </div>
+      </header>
+
+      <Image
+        src="/campfire-table.jpg"
+        alt="Three people talking over coffee at a small table in the evening."
+        width={1280}
+        height={720}
+        priority
+        className="mt-12 aspect-video w-full rounded-[28px] object-cover"
+      />
+
+      <section className="mt-16 max-w-3xl" aria-labelledby="happens-title">
+        <h2 id="happens-title" className="font-serif text-4xl tracking-tight text-ink sm:text-5xl">
+          What happens at Campfire?
+        </h2>
+        <p className="mt-8 text-lg text-ink">Members can:</p>
+        <ul className="mt-4 space-y-2 text-lg text-ink">
+          {AT_THE_FIRE.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+        <p className="mt-8 text-lg leading-relaxed text-ink">
+          Whether you&apos;re figuring out routines, starting over, building confidence, making friends, or simply
+          navigating a quiet Tuesday evening, Campfire is a place to talk about it.
+        </p>
+      </section>
+
+      <section className="mt-16" aria-labelledby="conversations-title">
+        <h2 id="conversations-title" className="font-serif text-4xl tracking-tight text-ink sm:text-5xl">
+          Conversations
+        </h2>
+        {posts.length === 0 ? (
+          <p className="mt-6 max-w-2xl font-serif text-3xl leading-snug tracking-tight text-ink">
+            The campfire is waiting for its first conversation.
+          </p>
         ) : (
-          <PrimaryLink href="/register">Join to pull up a chair</PrimaryLink>
-        )}
-      </div>
-      <div className="mt-8 flex flex-wrap gap-2" role="group" aria-label="Campfire sections">
-        <SectionChip current={section === "all"} onClick={() => setSection("all")}>
-          All
-        </SectionChip>
-        {CAMPFIRE_SECTIONS.map((item) => (
-          <SectionChip key={item.id} current={section === item.id} onClick={() => setSection(item.id)}>
-            {item.label}
-          </SectionChip>
-        ))}
-      </div>
-      {posts.length === 0 ? (
-        <Panel className="mt-8">
-          <p className="font-serif text-3xl">The chairs are here.</p>
-          <p className="mt-3 text-lg text-ink-soft">The first thing said can be ordinary.</p>
-        </Panel>
-      ) : (
-        <ul className="mt-8 space-y-4">
-          {posts.map((post) => {
-            const reply = [...world.comments]
-              .filter((comment) => comment.targetId === post.id)
-              .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))[0];
-            const replyAuthor = reply ? names.get(reply.authorId) : undefined;
-            return (
+          <ul className="mt-8 space-y-4">
+            {posts.map((post) => (
               <li key={post.id}>
                 <article className="rounded-[28px] bg-white/80 p-6 shadow-soft sm:p-8">
                   <p className="text-sm text-ink-soft">
                     {sectionLabel(post.section)} · {kindLabel(post.kind)}
                   </p>
-                  <h2 className="mt-3 font-serif text-4xl leading-tight tracking-tight">
+                  <h3 className="mt-3 font-serif text-4xl leading-tight tracking-tight">
                     <Link href={`/campfire/${post.id}`}>{post.title}</Link>
-                  </h2>
+                  </h3>
                   <p className="mt-4 text-lg leading-relaxed">{post.body}</p>
                   <div className="mt-5">
                     <AuthorLine
@@ -79,40 +106,13 @@ export function CampfireIndex() {
                       href={`/profile/${post.authorId}`}
                     />
                   </div>
-                  {reply ? (
-                    <p className="mt-5 text-ink-soft">
-                      {replyAuthor?.displayName}: {reply.body}
-                    </p>
-                  ) : null}
                 </article>
               </li>
-            );
-          })}
-        </ul>
-      )}
-      <NextStep />
+            ))}
+          </ul>
+        )}
+      </section>
     </Frame>
-  );
-}
-
-function SectionChip({
-  current,
-  onClick,
-  children,
-}: {
-  current: boolean;
-  onClick: () => void;
-  children: string;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={current}
-      onClick={onClick}
-      className={`rounded-full px-4 py-2 text-sm ${current ? "bg-ink text-background" : "bg-white/80"}`}
-    >
-      {children}
-    </button>
   );
 }
 

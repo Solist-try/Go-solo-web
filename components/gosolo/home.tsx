@@ -168,24 +168,18 @@ export function HomePage() {
         </div>
       </section>
 
-      <section id="campfire" className="scroll-mt-24 mx-auto grid w-full max-w-6xl gap-8 px-5 py-16 sm:px-8 lg:grid-cols-2 lg:py-20">
+      <section id="campfire" className="scroll-mt-24 mx-auto grid w-full max-w-6xl gap-8 px-5 py-16 sm:px-8 lg:grid-cols-2 lg:items-end lg:py-20">
         <div>
           <h2 className="font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">Pull up a chair.</h2>
-          <p className="mt-3 font-serif text-3xl leading-snug tracking-tight text-ink">What&apos;s on your mind?</p>
+          <p className="mt-3 max-w-md text-lg leading-relaxed text-ink">
+            Campfire is where conversations happen, after you&apos;ve been Out There.
+          </p>
         </div>
-        <div className="space-y-4">
-          <article className="rounded-[28px] bg-gold p-7">
-            <h3 className="font-serif text-3xl leading-tight text-ink">Do you tell people you are going alone?</h3>
-            <p className="mt-4 leading-relaxed text-ink">I say just me, and then I ask them something.</p>
-          </article>
-          <ul className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
-            {["General", "Growing", "Solo Living", "Deep Thoughts"].map((section) => (
-              <li key={section} className="rounded-full bg-mist px-4 py-3 text-center text-ink">
-                {section}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <p>
+          <Link href="/campfire" className="text-lg underline decoration-ink/20 underline-offset-4">
+            Come to the campfire
+          </Link>
+        </p>
       </section>
 
       <section id="waypoints" className="scroll-mt-24 bg-mist/80">
