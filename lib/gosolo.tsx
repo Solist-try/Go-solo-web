@@ -24,6 +24,7 @@ import {
   ensureProfile,
   loadWorld,
   profilePatch,
+  replaceHelpTitles,
   requestReset,
   resendVerification,
   signIn,
@@ -562,6 +563,14 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
       if (!supabase) return { error: "Supabase is not configured." };
       const { error } = await supabase.from("profiles").update(profilePatch(nextPatch)).eq("id", id);
       if (error) return { error: "Your profile could not be saved." };
+      if (nextPatch.helpGrowing) {
+        const helpError = await replaceHelpTitles(supabase, "seed_help_requests", id, nextPatch.helpGrowing);
+        if (helpError) return { error: helpError };
+      }
+      if (nextPatch.helpPlant) {
+        const helpError = await replaceHelpTitles(supabase, "seed_help_offers", id, nextPatch.helpPlant);
+        if (helpError) return { error: helpError };
+      }
       await refreshRemote();
       return {};
     }

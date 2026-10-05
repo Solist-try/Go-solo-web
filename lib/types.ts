@@ -116,6 +116,8 @@ export type LifeSeed = {
   lookingForSupport: boolean;
 };
 
+export const HELP_TITLES = ["Crochet", "Writing", "Gardening", "Photography"] as const;
+
 export const SUPPORT_WITH = [
   { id: "accountability", label: "Accountability" },
   { id: "confidence", label: "Confidence" },

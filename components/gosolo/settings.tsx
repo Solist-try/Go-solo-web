@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useGoSolo } from "@/lib/gosolo";
 import { createId } from "@/lib/session";
-import { CHECK_IN_FREQUENCIES, CHECK_IN_STYLES, INTERESTS, SUPPORT_WITH, type LifeSeed } from "@/lib/types";
+import { CHECK_IN_FREQUENCIES, CHECK_IN_STYLES, HELP_TITLES, INTERESTS, SUPPORT_WITH, type LifeSeed } from "@/lib/types";
 
 export function SettingsScreen() {
   const { user, mode, updateProfile, setInterests, resetPassword, deleteAccount, logout } = useGoSolo();
@@ -198,6 +198,7 @@ export function SettingsScreen() {
               draft={helpName}
               onDraft={setHelpName}
               onChange={setHelpGrowing}
+              suggestions={HELP_TITLES}
             />
             <NameEditor
               label="Seeds I'm happy to help plant"
@@ -206,6 +207,7 @@ export function SettingsScreen() {
               draft={plantName}
               onDraft={setPlantName}
               onChange={setHelpPlant}
+              suggestions={HELP_TITLES}
             />
             <label className="block space-y-2">
               <span className="text-sm">What knowledge, experience or encouragement are you happy to share?</span>
@@ -365,6 +367,7 @@ function NameEditor({
   draft,
   onDraft,
   onChange,
+  suggestions = [],
 }: {
   label: string;
   placeholder: string;
@@ -372,7 +375,11 @@ function NameEditor({
   draft: string;
   onDraft: (value: string) => void;
   onChange: (items: string[]) => void;
+  suggestions?: readonly string[];
 }) {
+  const offered = suggestions.filter(
+    (title) => !items.some((item) => item.toLowerCase() === title.toLowerCase()),
+  );
   return (
     <div className="space-y-3">
       <p className="text-sm">{label}</p>
@@ -405,6 +412,20 @@ function NameEditor({
           Add
         </Button>
       </div>
+      {offered.length > 0 ? (
+        <div className="flex flex-wrap gap-2">
+          {offered.map((title) => (
+            <button
+              key={title}
+              type="button"
+              className="rounded-full border border-ink/15 px-4 py-2 text-sm"
+              onClick={() => onChange([...items, title])}
+            >
+              {title}
+            </button>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
