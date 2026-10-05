@@ -108,6 +108,42 @@ export type MemberStatus = "active" | "suspended" | "deactivated";
 export type SeedDifficulty = "gentle" | "steady" | "brave";
 export type WaypointColour = "sage" | "clay" | "gold" | "mist";
 
+export type LifeSeed = {
+  id: string;
+  name: string;
+  status: "active" | "resting";
+  since: string;
+  lookingForSupport: boolean;
+};
+
+export const SUPPORT_WITH = [
+  { id: "accountability", label: "Accountability" },
+  { id: "confidence", label: "Confidence" },
+  { id: "starting-over", label: "Starting over" },
+  { id: "connection", label: "Connection" },
+  { id: "practical-life", label: "Practical life" },
+  { id: "medical", label: "Medical support" },
+  { id: "wellbeing", label: "Wellbeing" },
+  { id: "career", label: "Career change" },
+] as const;
+
+export const CHECK_IN_FREQUENCIES = [
+  { id: "daily", label: "Daily" },
+  { id: "several-weekly", label: "Several times per week" },
+  { id: "weekly", label: "Weekly" },
+  { id: "fortnightly", label: "Every two weeks" },
+  { id: "monthly", label: "Monthly" },
+  { id: "as-needed", label: "As needed" },
+] as const;
+
+export const CHECK_IN_STYLES = [
+  { id: "messages", label: "Messages" },
+  { id: "voice", label: "Voice Notes" },
+  { id: "video", label: "Video Calls" },
+  { id: "email", label: "Email" },
+  { id: "any", label: "Any Format" },
+] as const;
+
 export type Profile = {
   id: string;
   email: string;
@@ -127,6 +163,13 @@ export type Profile = {
   createdAt: string;
   role?: MemberRole;
   status?: MemberStatus;
+  growing?: LifeSeed[];
+  helpGrowing?: string[];
+  helpPlant?: string[];
+  helpPlantNote?: string;
+  supportWith?: string[];
+  checkInFrequency?: string;
+  checkInStyle?: string;
 };
 
 export type Account = {
