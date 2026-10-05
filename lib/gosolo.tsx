@@ -58,6 +58,7 @@ type StoryInput = {
   wouldDoAgain: WouldAgain;
   seedId?: string;
   waypointId?: string;
+  imageUrl?: string;
 };
 
 type CampfireInput = {
@@ -947,11 +948,16 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
         .from("out_there_posts")
         .insert({
           author_id: id,
+          user_id: id,
           title: input.title.trim(),
           what_did_you_do: input.whatDidYouDo.trim(),
+          what_i_did: input.whatDidYouDo.trim(),
           expecting: input.expecting.trim(),
+          expectations: input.expecting.trim(),
           actually_happened: input.actuallyHappened.trim(),
+          what_happened: input.actuallyHappened.trim(),
           would_do_again: input.wouldDoAgain,
+          image_url: input.imageUrl || null,
           seed_id: input.seedId || null,
           waypoint_id: input.waypointId || null,
         })
@@ -972,6 +978,7 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
           expecting: input.expecting.trim(),
           actuallyHappened: input.actuallyHappened.trim(),
           wouldDoAgain: input.wouldDoAgain,
+          imageUrl: input.imageUrl,
           seedId: input.seedId,
           waypointId: input.waypointId,
           createdAt: new Date().toISOString(),
