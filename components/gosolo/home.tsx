@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { pill } from "@/components/gosolo/pieces";
 import { Button } from "@/components/ui/button";
@@ -57,6 +58,17 @@ export function HomePage() {
             <a href="#how-it-works">{content.heroSecondary}</a>
           </Button>
         </div>
+        <figure className="mt-14">
+          <Image
+            src="/hero-coastal-path.jpg"
+            alt="A person walking alone along a coastal path."
+            width={1280}
+            height={720}
+            priority
+            sizes="(min-width: 72rem) 72rem, 100vw"
+            className="aspect-video w-full rounded-[28px] object-cover"
+          />
+        </figure>
       </section>
 
       <section className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8">
