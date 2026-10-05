@@ -61,7 +61,13 @@ export function StoryIndex() {
         {user ? (
           <PrimaryLink href="/out-there/new">Bring a story back</PrimaryLink>
         ) : (
-          <PrimaryLink href="/register">Join to bring a story back</PrimaryLink>
+          <p className="max-w-xl text-lg leading-relaxed text-ink">
+            You can read what people bring back.{" "}
+            <Link href="/register" className="underline decoration-ink/20 underline-offset-4">
+              Join Go Solo
+            </Link>{" "}
+            if you&apos;d like a chair of your own.
+          </p>
         )}
       </div>
       {stories.length === 0 ? (
@@ -186,7 +192,13 @@ export function StoryDetail({ id }: { id: string }) {
               </Button>
             ))
           : (
-              <PrimaryLink href={`/login?next=/out-there/${story.id}`}>Join the response</PrimaryLink>
+              <p className="text-lg text-ink-soft">
+                You can read this as you are.{" "}
+                <Link href="/register" className="underline decoration-ink/20 underline-offset-4">
+                  Join Go Solo
+                </Link>{" "}
+                whenever you feel like sitting with it.
+              </p>
             )}
       </div>
       <ul className="mt-4 space-y-1 text-sm text-ink-soft">
@@ -226,7 +238,7 @@ export function StoryDetail({ id }: { id: string }) {
               </Link>
             ) : (
               <Link href="/register" className="underline decoration-ink/20 underline-offset-4">
-                Join to continue this at the campfire
+                Join Go Solo
               </Link>
             )}
           </li>

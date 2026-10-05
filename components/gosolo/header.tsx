@@ -136,7 +136,7 @@ export function SiteHeader() {
                 <DropdownMenuContent align="end" className="w-80 rounded-[24px] p-2">
                   {notes.length === 0 ? (
                     <p className="px-3 py-4 text-sm leading-relaxed text-ink-soft">
-                      Nothing needs you right now. Go live a little, then come back.
+                      Nothing is waiting. The chair is here when you come back.
                     </p>
                   ) : (
                     notes.slice(0, 6).map((note) => (

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { AuthorLine, Frame, PageIntro, Panel, PrimaryLink, pill } from "@/components/gosolo/pieces";
+import { AuthorLine, Frame, PageIntro, Panel, pill } from "@/components/gosolo/pieces";
 import { NextStep } from "@/components/gosolo/next-step";
 import { Button } from "@/components/ui/button";
 import { useCatalog } from "@/lib/gosolo";
@@ -28,7 +28,13 @@ export function WaypointIndex() {
       </ul>
       {user ? <NextStep /> : (
         <div className="mt-10">
-          <PrimaryLink href="/register">Join to choose a waypoint</PrimaryLink>
+          <p className="max-w-xl text-lg leading-relaxed text-ink">
+            Look around as long as you like.{" "}
+            <Link href="/register" className="underline decoration-ink/20 underline-offset-4">
+              Join Go Solo
+            </Link>{" "}
+            if you want a seat in one of these rooms.
+          </p>
         </div>
       )}
     </Frame>
@@ -72,9 +78,16 @@ export function WaypointDetail({ slug }: { slug: string }) {
       </ul>
       <div className="mt-8">
         {!user ? (
-          <PrimaryLink href={`/register?next=${encodeURIComponent(`/waypoints/${waypoint.slug}`)}`}>
-            Join Go Solo to walk here
-          </PrimaryLink>
+          <p className="max-w-xl text-lg leading-relaxed text-ink">
+            You can read this room first.{" "}
+            <Link
+              href={`/register?next=${encodeURIComponent(`/waypoints/${waypoint.slug}`)}`}
+              className="underline decoration-ink/20 underline-offset-4"
+            >
+              Join Go Solo
+            </Link>{" "}
+            when you want a seat here.
+          </p>
         ) : joined ? (
           <Button variant="outline" className={`${pill} bg-transparent`} onClick={() => void leaveWaypoint(waypoint.id)}>
             Leave quietly

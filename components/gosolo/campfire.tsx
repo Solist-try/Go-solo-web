@@ -10,6 +10,7 @@ import {
   Frame,
   PageIntro,
   PrimaryLink,
+  SecondaryLink,
   areaClass,
   fieldClass,
   pill,
@@ -49,7 +50,7 @@ export function CampfireIndex() {
           {user ? (
             <PrimaryLink href="/campfire/new">Start a conversation</PrimaryLink>
           ) : (
-            <PrimaryLink href="/register">Join Go Solo</PrimaryLink>
+            <SecondaryLink href="/register">Join Go Solo</SecondaryLink>
           )}
         </div>
       </header>
