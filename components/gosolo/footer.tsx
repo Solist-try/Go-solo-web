@@ -12,22 +12,9 @@ export function SiteFooter() {
   return (
     <footer className="mt-auto border-t border-ink/5">
       <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
-        {home ? (
-          <div id="manifesto" className="max-w-3xl">
-            <p className="text-sm text-ink-soft">{content.heroTagline}</p>
-            <div className="mt-6 space-y-6 font-serif text-3xl leading-snug tracking-tight text-ink sm:text-4xl">
-              {content.manifesto.map((line) => (
-                <p key={line}>{line}</p>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <p className="max-w-xl font-serif text-3xl leading-snug tracking-tight text-ink">
-            Go Solo. Not Alone.
-          </p>
-        )}
+        <p className="font-serif text-3xl leading-tight tracking-tight whitespace-nowrap text-ink sm:text-5xl">{content.heroTagline}</p>
         <div className="mt-12 flex flex-col gap-6 text-sm text-ink-soft sm:flex-row sm:items-end sm:justify-between">
-          <p>You can live alone without being alone.</p>
+          {home ? null : <p>A home base you can leave, and return to.</p>}
           <nav aria-label="Footer" className="flex flex-wrap gap-x-5 gap-y-2">
             {[
               ["/about", "About"],

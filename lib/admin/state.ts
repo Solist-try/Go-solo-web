@@ -178,15 +178,15 @@ export type AdminState = {
 
 export function defaultContent(): SiteContent {
   return {
-    contentRevision: 3,
-    heroTagline: "Go Solo. Not Alone.",
+    contentRevision: 4,
+    heroTagline: "Go Solo, Not Alone",
     heroEyebrow: "",
     heroTitle: "Hello, Vagabond.",
     heroSubhead: "Your life doesn't have to wait.",
-    heroSupport: "Go Solo helps people build lives that work, whether or not somebody else shows up.",
+    heroSupport: "Go Solo helps people build meaningful lives on their own terms.",
     heroLede: "",
     heroPrimary: "Join Go Solo",
-    heroSecondary: "Explore Seeds",
+    heroSecondary: "Learn More",
     phrases: ["Try the thing.", "Take the trip.", "Paint the room orange."],
     balanceIntro: "Sometimes the thing is",
     balanceItems: [
@@ -346,7 +346,7 @@ export function defaultContent(): SiteContent {
         id: "welcome",
         name: "Welcome",
         subject: "Your life doesn't have to wait",
-        body: "Hello, Vagabond.\n\nGo Solo is a home base you can leave, and return to. Start with one small seed.\n\nGo Solo. Not Alone.",
+        body: "Hello, Vagabond.\n\nGo Solo is a home base you can leave, and return to. Start with one small seed.\n\nGo Solo, Not Alone",
       },
       {
         id: "verify",
@@ -427,7 +427,9 @@ export function mergeAdmin(stored?: Partial<AdminState> | null): AdminState {
   content.phrases = !refreshCopy && stored.content?.phrases?.length ? stored.content.phrases : base.content.phrases;
   if (refreshCopy) {
     content.contentRevision = base.content.contentRevision;
+    content.heroTagline = base.content.heroTagline;
     content.heroSupport = base.content.heroSupport;
+    content.heroSecondary = base.content.heroSecondary;
     content.heroLede = base.content.heroLede;
     content.balanceIntro = base.content.balanceIntro;
     content.balanceClose = base.content.balanceClose;
