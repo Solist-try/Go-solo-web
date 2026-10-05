@@ -18,12 +18,14 @@ export function HomePage() {
   return (
     <>
       <section className="mx-auto w-full max-w-6xl px-5 pt-12 pb-8 sm:px-8 sm:pt-16">
-        <div className="grid items-stretch gap-8 lg:grid-cols-2 lg:gap-14">
+        <div className="grid items-stretch gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-12">
           <div className="@container flex flex-col justify-center">
             <h1 className="font-serif text-[clamp(2.6rem,11cqi,4.25rem)] leading-[1.05] tracking-tight text-ink">
-              {content.heroTitle}
+              Hello, vagabond
             </h1>
-            <p className="mt-5 font-serif text-3xl leading-snug tracking-tight text-ink sm:text-4xl">{content.heroSubhead}</p>
+            <p className="mt-5 font-serif text-3xl leading-snug tracking-tight text-ink sm:text-4xl">
+              Your life doesn&apos;t have to wait
+            </p>
             <p className="mt-6 max-w-md text-lg leading-relaxed text-ink">{content.heroSupport}</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild variant="outline" className={`${pill} border-transparent bg-sage text-ink hover:bg-sage/80`}>
@@ -33,11 +35,11 @@ export function HomePage() {
                 <a href="#how-it-works">{content.heroSecondary}</a>
               </Button>
             </div>
-            <p className="mt-12 font-serif text-[clamp(2.05rem,9.2cqi,3.35rem)] leading-none tracking-tight whitespace-nowrap text-ink">
-              {content.heroTagline}
+            <p className="mt-16 font-serif text-2xl leading-snug tracking-tight whitespace-nowrap text-ink-soft sm:mt-20 sm:text-3xl">
+              Go solo, not alone
             </p>
           </div>
-          <figure className="relative aspect-[4/3] overflow-hidden rounded-[28px] lg:aspect-auto lg:h-full lg:min-h-[26rem]">
+          <figure className="relative aspect-[4/3] overflow-hidden rounded-[28px] sm:aspect-[5/4] lg:aspect-auto lg:h-full lg:min-h-[32rem]">
             <Image
               src="/hero-city-walk.jpg"
               alt="A person walking home along a rainy street with groceries."

@@ -56,7 +56,7 @@ function Wordmark({ onNavigate, className }: { onNavigate?: () => void; classNam
         className,
       )}
     >
-      Go Solo, Not Alone
+      Go Solo
       <span className="sr-only">, home</span>
     </Link>
   );
