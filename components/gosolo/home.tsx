@@ -29,13 +29,13 @@ export function HomePage() {
   return (
     <>
       <section className="mx-auto w-full max-w-6xl px-5 pt-16 pb-8 sm:px-8 sm:pt-24">
-        <div className="grid items-end gap-10 lg:grid-cols-12">
+        <h1 className="font-serif text-[clamp(1.75rem,8.2vw,5.25rem)] leading-none tracking-tight whitespace-nowrap text-ink">
+          {content.heroTagline}
+        </h1>
+        <div className="mt-10 grid items-end gap-8 lg:grid-cols-12">
           <div className="lg:col-span-7">
-            <h1 className="font-serif text-[1.85rem] leading-none tracking-tight whitespace-nowrap text-ink min-[420px]:text-4xl sm:text-6xl md:text-7xl lg:text-8xl">
-              {content.heroTagline}
-            </h1>
-            <p className="mt-8 font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">{content.heroTitle}</p>
-            <p className="mt-4 font-serif text-3xl leading-snug tracking-tight text-ink sm:text-4xl">{content.heroSubhead}</p>
+            <p className="font-serif text-[1.65rem] leading-tight tracking-tight text-ink sm:text-5xl">{content.heroTitle}</p>
+            <p className="mt-3 font-serif text-2xl leading-snug tracking-tight text-ink sm:text-4xl">{content.heroSubhead}</p>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink">{content.heroSupport}</p>
           </div>
           <div className="flex flex-col gap-4 lg:col-span-5">
