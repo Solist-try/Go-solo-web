@@ -72,7 +72,7 @@ export function HomePage() {
       </section>
 
       <section id="freedom" className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 sm:py-16">
-        <div className="grid items-end gap-8 lg:grid-cols-12">
+        <div className="grid items-center gap-8 lg:grid-cols-12">
           <div className="lg:col-span-4">
             <h2 className="font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">Freedom is a choice.</h2>
             <p className="mt-4 max-w-sm text-lg leading-relaxed text-ink">A quiet morning at home is part of an independent life.</p>
