@@ -22,46 +22,45 @@ export function HomePage() {
 
   return (
     <>
-      <section className="mx-auto w-full max-w-6xl px-5 pt-16 pb-8 sm:px-8 sm:pt-24">
-        <h1 className="font-serif text-[clamp(1.75rem,8.2vw,5.25rem)] leading-none tracking-tight whitespace-nowrap text-ink">
-          {content.heroTagline}
-        </h1>
-        <div className="mt-10 grid items-end gap-8 lg:grid-cols-12">
-          <div className="lg:col-span-7">
-            <p className="font-serif text-[1.65rem] leading-tight tracking-tight text-ink sm:text-5xl">{content.heroTitle}</p>
-            <p className="mt-3 font-serif text-2xl leading-snug tracking-tight text-ink sm:text-4xl">{content.heroSubhead}</p>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink">{content.heroSupport}</p>
+      <section className="mx-auto w-full max-w-6xl px-5 pt-10 pb-6 sm:px-8 sm:pt-14">
+        <div className="grid items-stretch gap-8 lg:grid-cols-2 lg:gap-12">
+          <div className="@container flex flex-col justify-center">
+            <h1 className="font-serif text-[clamp(1.7rem,8.4cqi,3.35rem)] leading-none tracking-tight whitespace-nowrap text-ink">
+              {content.heroTagline}
+            </h1>
+            <p className="mt-8 font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">{content.heroTitle}</p>
+            <p className="mt-3 font-serif text-2xl leading-snug tracking-tight text-ink sm:text-3xl">{content.heroSubhead}</p>
+            <p className="mt-5 max-w-md text-lg leading-relaxed text-ink">{content.heroSupport}</p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Button asChild className={pill}>
+                <Link href="/register">{content.heroPrimary}</Link>
+              </Button>
+              <Button asChild variant="outline" className={`${pill} bg-transparent`}>
+                <a href="#how-it-works">{content.heroSecondary}</a>
+              </Button>
+            </div>
           </div>
-          <div className="flex flex-col gap-4 lg:col-span-5">
-            {phrases.map((phrase) => (
-              <p
-                key={phrase.text}
-                className={`${phrase.tone} rounded-[28px] px-7 py-7 font-serif text-3xl leading-tight tracking-tight text-ink sm:text-4xl`}
-              >
-                {phrase.text}
-              </p>
-            ))}
-          </div>
+          <figure className="relative aspect-[4/3] overflow-hidden rounded-[28px] lg:aspect-auto lg:h-full lg:min-h-[26rem]">
+            <Image
+              src="/hero-city-walk.jpg"
+              alt="A person walking home along a rainy street with groceries."
+              fill
+              priority
+              sizes="(min-width: 1024px) 36rem, 100vw"
+              className="object-cover object-center"
+            />
+          </figure>
         </div>
-        <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-          <Button asChild className={pill}>
-            <Link href="/register">{content.heroPrimary}</Link>
-          </Button>
-          <Button asChild variant="outline" className={`${pill} bg-transparent`}>
-            <a href="#how-it-works">{content.heroSecondary}</a>
-          </Button>
-        </div>
-        <figure className="mt-14">
-          <Image
-            src="/hero-city-walk.jpg"
-            alt="A person walking home along a rainy street with groceries."
-            width={1280}
-            height={720}
-            priority
-            sizes="(min-width: 72rem) 72rem, 100vw"
-            className="aspect-video w-full rounded-[28px] object-cover"
-          />
-        </figure>
+        <ul className="mt-8 grid gap-3 sm:grid-cols-3">
+          {phrases.map((phrase) => (
+            <li
+              key={phrase.text}
+              className={`${phrase.tone} rounded-[24px] px-6 py-5 font-serif text-2xl leading-tight tracking-tight text-ink sm:text-3xl`}
+            >
+              {phrase.text}
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section id="freedom" className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 sm:py-16">
