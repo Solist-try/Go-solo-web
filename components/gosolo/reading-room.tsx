@@ -1,10 +1,26 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Frame } from "@/components/gosolo/pieces";
-import { READING_CATEGORIES, readingsIn, type Reading } from "@/lib/readings";
+import { READING_CATEGORIES, readingsIn, type Reading, type ReadingCategory } from "@/lib/readings";
 
 const tones = ["bg-sage", "bg-clay", "bg-gold", "bg-mist"] as const;
+
+function CategoryPhoto({ category, priority = false }: { category: ReadingCategory; priority?: boolean }) {
+  if (!category.image || !category.imageAlt) return null;
+  return (
+    <Image
+      src={category.image}
+      alt={category.imageAlt}
+      width={1152}
+      height={864}
+      priority={priority}
+      sizes="(min-width: 1024px) 40rem, 100vw"
+      className="aspect-[4/3] w-full rounded-[28px] object-cover"
+    />
+  );
+}
 
 export function ReadingRoom() {
   return (
@@ -36,8 +52,17 @@ export function ReadingRoom() {
       <div className="mt-14 space-y-16">
         {READING_CATEGORIES.map((category, index) => (
           <section key={category.id} id={category.id} className="scroll-mt-28">
-            <h2 className="font-serif text-4xl tracking-tight text-ink">{category.title}</h2>
-            <p className="mt-3 max-w-2xl text-lg leading-relaxed text-ink-soft">{category.line}</p>
+            <div className={`grid gap-6 lg:gap-10 ${category.image ? "lg:grid-cols-12 lg:items-center" : ""}`}>
+              {category.image ? (
+                <figure className="lg:col-span-7">
+                  <CategoryPhoto category={category} priority={index === 0} />
+                </figure>
+              ) : null}
+              <div className={category.image ? "lg:col-span-5" : "max-w-3xl"}>
+                <h2 className="font-serif text-4xl tracking-tight text-ink sm:text-5xl">{category.title}</h2>
+                <p className="mt-3 text-lg leading-relaxed text-ink-soft">{category.line}</p>
+              </div>
+            </div>
             <ul className="mt-6 grid gap-3">
               {readingsIn(category.id).map((reading) => (
                 <li key={reading.slug}>
@@ -75,7 +100,12 @@ export function ReadingPiece({ reading }: { reading: Reading }) {
           </>
         ) : null}
       </p>
-      <h1 className="mt-4 font-serif text-5xl leading-tight tracking-tight text-ink sm:text-6xl">{reading.title}</h1>
+      {category?.image ? (
+        <figure className="mt-8">
+          <CategoryPhoto category={category} priority />
+        </figure>
+      ) : null}
+      <h1 className="mt-8 font-serif text-5xl leading-tight tracking-tight text-ink sm:text-6xl">{reading.title}</h1>
       <p className="mt-6 text-xl leading-relaxed text-ink-soft">{reading.standfirst}</p>
       <div className="mt-10 space-y-6 text-lg leading-relaxed text-ink">
         {reading.paragraphs.map((paragraph) => (

@@ -2,6 +2,8 @@ export type ReadingCategory = {
   id: string;
   title: string;
   line: string;
+  image?: string;
+  imageAlt?: string;
 };
 
 export type Reading = {
@@ -16,22 +18,37 @@ export const READING_CATEGORIES: ReadingCategory[] = [
   {
     id: "living-well",
     title: "Living Well",
-    line: "Practical independent living. The home, the week, the money, and the energy to keep them.",
+    line: "A sustainable everyday life. The kitchen, the week, and a home that is actually used.",
+    image: "/reading/reading-living-well.jpg",
+    imageAlt: "A person cooking a simple meal beside unpacked groceries and a cup of tea.",
   },
   {
     id: "connection",
     title: "Connection",
-    line: "How adults find people, and how to stay in touch while living alone.",
+    line: "Everyday human contact. A conversation, a meal, someone you see again.",
+    image: "/reading/reading-connection.jpg",
+    imageAlt: "Two people talking over coffee in a café.",
   },
   {
     id: "starting-over",
     title: "Starting Over",
-    line: "For the seasons after a marriage, a move, or a life that no longer fits.",
+    line: "Transitions and new beginnings. An unfinished room after a move, a marriage, or a life that no longer fits.",
+    image: "/reading/reading-starting-over.jpg",
+    imageAlt: "Half-unpacked boxes, keys on a windowsill, and a suitcase beside a bed.",
+  },
+  {
+    id: "independent-living",
+    title: "Independent Living",
+    line: "Learning how to navigate a life on your own. Repairs, money, meals, and the next practical step.",
+    image: "/reading/reading-independent-living.jpg",
+    imageAlt: "A person fixing a wooden shelf in an apartment.",
   },
   {
     id: "out-there",
     title: "Out There",
     line: "Trips, tables, and the city you already live in.",
+    image: "/reading/reading-out-there.jpg",
+    imageAlt: "A person looking out a train window, with a bag on the seat.",
   },
   {
     id: "reflections",
@@ -65,7 +82,7 @@ export const READINGS: Reading[] = [
   },
   {
     slug: "managing-a-household-alone",
-    category: "living-well",
+    category: "independent-living",
     title: "Managing A Household Alone",
     standfirst: "Every task in the home has one name on it. Yours.",
     paragraphs: [
@@ -76,7 +93,7 @@ export const READINGS: Reading[] = [
   },
   {
     slug: "building-routines-that-stick",
-    category: "living-well",
+    category: "independent-living",
     title: "Building Routines That Stick",
     standfirst: "A routine survives when it is attached to something you already do.",
     paragraphs: [
@@ -98,7 +115,7 @@ export const READINGS: Reading[] = [
   },
   {
     slug: "organising-your-finances",
-    category: "living-well",
+    category: "independent-living",
     title: "Organising Your Finances",
     standfirst: "A plain picture of money is a form of self-reliance.",
     paragraphs: [
