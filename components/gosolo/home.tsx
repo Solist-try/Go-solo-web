@@ -71,6 +71,25 @@ export function HomePage() {
         </figure>
       </section>
 
+      <section id="freedom" className="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8 sm:py-16">
+        <div className="grid items-end gap-8 lg:grid-cols-12">
+          <div className="lg:col-span-4">
+            <h2 className="font-serif text-4xl leading-tight tracking-tight text-ink sm:text-5xl">Freedom is a choice.</h2>
+            <p className="mt-4 max-w-sm text-lg leading-relaxed text-ink">A quiet morning at home is part of an independent life.</p>
+          </div>
+          <figure className="lg:col-span-8">
+            <Image
+              src="/freedom-at-home.jpg"
+              alt="A person pouring tea at a wooden table in a small apartment."
+              width={1152}
+              height={864}
+              sizes="(min-width: 72rem) 48rem, 100vw"
+              className="aspect-[4/3] w-full rounded-[28px] object-cover"
+            />
+          </figure>
+        </div>
+      </section>
+
       <section className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8">
         <p className="text-lg text-ink">{content.balanceIntro}</p>
         <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
