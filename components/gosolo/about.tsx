@@ -3,14 +3,6 @@
 import { Frame, Panel } from "@/components/gosolo/pieces";
 import { useGoSolo } from "@/lib/gosolo";
 
-const WAITING = [
-  "The right person",
-  "The right timing",
-  "The right schedule",
-  "More confidence",
-  "Better circumstances",
-];
-
 export function AboutPage() {
   const { content } = useGoSolo();
   const photo = content.founderPhoto.trim();
@@ -23,15 +15,15 @@ export function AboutPage() {
           Why Go Solo Exists
         </h1>
         <div className="mt-8 max-w-2xl space-y-4 text-xl leading-relaxed text-ink sm:text-2xl">
-          <p>Go Solo began with a simple observation.</p>
-          <p>Many parts of life are built around couples, families and established social circles.</p>
-          <p>But more and more people are navigating the world independently.</p>
-          <p>Sometimes by choice. Sometimes by circumstance.</p>
-          <p>Yet the world has not always caught up.</p>
+          <p>I kept noticing the same thing.</p>
+          <p>
+            A lot of life is still set up for couples, families, and people who already have a circle. I was moving
+            through it on my own. Sometimes by choice. Sometimes by circumstance.
+          </p>
         </div>
       </header>
 
-      <section className="mt-20" aria-labelledby="founder-title">
+      <section className="mt-16" aria-labelledby="founder-title">
         <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,280px)_1fr]">
           <figure>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -46,74 +38,44 @@ export function AboutPage() {
               Hi, I&apos;m Marge.
             </h2>
             <div className="mt-8 space-y-4 text-lg leading-relaxed text-ink">
-              <p>I&apos;ve always been a friendly person, but I haven&apos;t always been well connected.</p>
+              <p>I&apos;ve always been a friendly person. I haven&apos;t always been well connected.</p>
               <p>
-                Over the years I&apos;ve often found myself navigating a world that assumes everyone has a built-in
-                support system.
+                People assumed I had someone built in. Someone to bring along, someone to call, someone to help me
+                decide, or someone to nudge me when life got stuck. Sometimes I did. Often I didn&apos;t.
               </p>
-              <ul className="space-y-1">
-                <li>Someone to bring along.</li>
-                <li>Someone to call.</li>
-                <li>Someone to help make decisions.</li>
-                <li>Someone to nudge you when life gets stuck.</li>
-              </ul>
-              <p>Sometimes that&apos;s not the reality.</p>
-              <p>One experience that stayed with me was being turned away from a bar because I arrived alone.</p>
-              <p>It was a small moment, but it highlighted something much larger:</p>
-              <p>Many experiences are still designed around people arriving as part of a pair or group.</p>
-              <p>And yet more and more people are building independent lives.</p>
-              <p>Not because they&apos;ve given up on connection.</p>
               <p>
-                But because they want the freedom to keep living, exploring, learning and growing regardless of who
-                happens to be available.
+                One experience stayed with me. I was turned away from a bar because I arrived alone. It was a small
+                moment, and it made something obvious: a lot of rooms are still built for people who show up as a pair.
               </p>
-              <p>That idea eventually became Go Solo.</p>
+              <p>
+                I hadn&apos;t given up on company. I wanted to keep going when nobody was free to come with me. That is
+                how Go Solo started.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="mt-20 max-w-3xl" aria-labelledby="belief-title">
-        <h2 id="belief-title" className="font-serif text-4xl tracking-tight text-ink sm:text-5xl">
+      <section className="mt-16 max-w-2xl" aria-labelledby="belief-title">
+        <h2 id="belief-title" className="font-serif text-3xl tracking-tight text-ink sm:text-4xl">
           Freedom Is A Choice, Not A Circumstance
         </h2>
-        <p className="mt-8 text-lg leading-relaxed text-ink sm:text-xl">Many of us postpone parts of our lives while waiting for:</p>
-        <ul className="mt-4 space-y-2 text-lg text-ink">
-          {WAITING.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-        <div className="mt-8 space-y-4 text-lg leading-relaxed text-ink sm:text-xl">
-          <p>Go Solo is built on a different belief:</p>
-          <p>Freedom begins when our lives are no longer dependent on all of those things aligning.</p>
-          <p>That doesn&apos;t mean doing everything alone.</p>
-          <p>It means knowing your life can keep moving.</p>
+        <div className="mt-6 space-y-4 text-lg leading-relaxed text-ink">
+          <p>I postponed a lot while I waited for the right person, the right timing, or a bit more confidence.</p>
+          <p>My life can keep moving before all of that lines up. That doesn&apos;t mean doing everything alone.</p>
         </div>
       </section>
 
-      <section className="mt-20" aria-labelledby="tuesday-title">
-        <div className="grid gap-8 lg:grid-cols-2 lg:items-end">
-          <div>
-            <h2 id="tuesday-title" className="font-serif text-4xl tracking-tight text-ink sm:text-5xl">
-              Not Every Story Is An Adventure
-            </h2>
-            <div className="mt-6 space-y-4 text-lg leading-relaxed text-ink sm:text-xl">
-              <p>Sometimes growth looks like taking a trip you&apos;ve postponed for years.</p>
-              <p>Sometimes growth looks like learning how to enjoy a quiet Tuesday evening.</p>
-              <p>Both matter.</p>
-              <p>Go Solo is interested in both.</p>
-            </div>
-          </div>
-          <Panel tone="gold">
-            <p className="font-serif text-3xl leading-snug tracking-tight text-ink">The exciting moments.</p>
-            <p className="mt-4 font-serif text-3xl leading-snug tracking-tight text-ink">
-              And the ordinary moments where life is actually lived.
-            </p>
-          </Panel>
-        </div>
+      <section className="mt-16 max-w-2xl" aria-labelledby="tuesday-title">
+        <h2 id="tuesday-title" className="font-serif text-3xl tracking-tight text-ink sm:text-4xl">
+          Not Every Story Is An Adventure
+        </h2>
+        <p className="mt-6 text-lg leading-relaxed text-ink">
+          Sometimes the thing I&apos;d put off was a trip. Sometimes it was a quiet Tuesday evening. I care about both.
+        </p>
       </section>
 
-      <section className="mt-20" aria-labelledby="hello-title">
+      <section className="mt-16" aria-labelledby="hello-title">
         <Panel tone="sage">
           <h2 id="hello-title" className="font-serif text-4xl tracking-tight text-ink sm:text-5xl">
             Say Hello
@@ -145,18 +107,12 @@ export function AboutPage() {
         </Panel>
       </section>
 
-      <section className="mt-20 max-w-3xl" aria-labelledby="chair-title">
+      <section className="mt-16 max-w-3xl" aria-labelledby="chair-title">
         <h2 id="chair-title" className="font-serif text-4xl tracking-tight text-ink sm:text-5xl">
           Pull Up A Chair
         </h2>
-        <div className="mt-8 space-y-4 text-lg leading-relaxed text-ink sm:text-xl">
-          <p>
-            Whether you&apos;re travelling solo, starting over, learning something new, creating routines, building
-            friendships, or simply figuring things out one step at a time, you&apos;re welcome here.
-          </p>
-          <p>Go Solo exists for people building meaningful lives on their own terms.</p>
-        </div>
-        <p className="mt-10 font-serif text-4xl tracking-tight text-ink sm:text-5xl">Go Solo, Not Alone</p>
+        <p className="mt-6 text-lg leading-relaxed text-ink sm:text-xl">You&apos;re welcome here.</p>
+        <p className="mt-8 font-serif text-4xl tracking-tight text-ink sm:text-5xl">Go Solo, Not Alone</p>
       </section>
     </Frame>
   );
