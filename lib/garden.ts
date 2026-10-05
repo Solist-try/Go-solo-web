@@ -9,6 +9,7 @@ export function gardenOf(profile: Profile) {
     supportWith: profile.supportWith ?? [],
     checkInFrequency: profile.checkInFrequency ?? "",
     checkInStyle: profile.checkInStyle ?? "",
+    sameNotes: profile.sameNotes ?? "",
   };
 }
 
