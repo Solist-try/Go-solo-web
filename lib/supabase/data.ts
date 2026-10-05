@@ -267,11 +267,11 @@ export async function loadWorld(supabase: SupabaseClient, authUser: User | null)
       ((campfire.data ?? []) as Row[]).map(
         (row): CampfirePost => ({
           id: asString(row.id),
-          authorId: asString(row.author_id),
+          authorId: asString(row.author_id) || asString(row.user_id),
           section: asString(row.section, "general") as CampfireSection,
           kind: asString(row.kind, "thought") as CampfireKind,
           title: asString(row.title),
-          body: asString(row.body),
+          body: asString(row.body) || asString(row.content),
           waypointId: asString(row.waypoint_id) || undefined,
           seedId: asString(row.seed_id) || undefined,
           outThereId: asString(row.out_there_id) || undefined,

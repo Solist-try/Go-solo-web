@@ -1039,10 +1039,12 @@ export function GoSoloProvider({ children }: { children: ReactNode }) {
         .from("campfire_posts")
         .insert({
           author_id: id,
+          user_id: id,
           section: input.section,
           kind: input.kind,
           title: input.title.trim(),
           body: input.body.trim(),
+          content: input.body.trim(),
           waypoint_id: input.waypointId || null,
           seed_id: input.seedId || null,
           out_there_id: input.outThereId || null,
