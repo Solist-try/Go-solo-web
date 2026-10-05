@@ -43,10 +43,21 @@ const memberLinks = [
   ["/profile", "Profile"],
 ] as const;
 
-function Wordmark() {
+function Wordmark({ onNavigate, className }: { onNavigate?: () => void; className?: string }) {
+  const pathname = usePathname();
+  const home = pathname === "/";
   return (
-    <Link href="/" className="font-serif text-2xl tracking-tight text-ink">
-      Go Solo
+    <Link
+      href="/"
+      onClick={onNavigate}
+      aria-current={home ? "page" : undefined}
+      className={cn(
+        "inline-flex shrink-0 items-center whitespace-nowrap rounded-full font-serif text-lg tracking-tight text-ink underline-offset-[6px] hover:underline focus-visible:underline sm:text-2xl",
+        className,
+      )}
+    >
+      Go Solo, Not Alone
+      <span className="sr-only">, home</span>
     </Link>
   );
 }
@@ -183,7 +194,9 @@ export function SiteHeader() {
             </SheetTrigger>
             <SheetContent side="right" className="w-full bg-background sm:max-w-sm">
               <SheetHeader>
-                <SheetTitle className="font-serif text-3xl">Go Solo</SheetTitle>
+                <SheetTitle className="pr-10 font-serif text-2xl font-normal">
+                  <Wordmark onNavigate={() => setOpen(false)} />
+                </SheetTitle>
               </SheetHeader>
               <nav aria-label="Mobile" className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-4 pb-8">
                 {(user?.onboardingComplete
