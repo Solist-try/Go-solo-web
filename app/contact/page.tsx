@@ -3,7 +3,7 @@ import { ContactPage } from "@/components/gosolo/contact";
 
 export const metadata: Metadata = {
   title: "Contact",
-  description: "Write to the person who tends Go Solo.",
+  description: "Write to Marge Aliaga.",
 };
 
 export default function Page() {

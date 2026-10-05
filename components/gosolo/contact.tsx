@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useGoSolo } from "@/lib/gosolo";
 
 export function ContactPage() {
-  const { content, user, leaveNote } = useGoSolo();
+  const { user, leaveNote } = useGoSolo();
   const [name, setName] = useState(user?.displayName ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [body, setBody] = useState("");
@@ -37,20 +37,33 @@ export function ContactPage() {
 
   return (
     <Frame>
-      <header className="max-w-3xl">
+      <header>
         <h1 className="font-serif text-5xl leading-tight tracking-tight text-ink sm:text-7xl">Contact</h1>
-        <p className="mt-6 text-xl leading-relaxed text-ink-soft sm:text-2xl">
-          I read this. Write as you would to someone keeping a chair for you.
-        </p>
       </header>
 
-      <div className="mt-12 grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+      <div className="mt-16 grid gap-12 lg:mt-24 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:gap-16">
+        <Panel className="lg:order-2">
+          <h2 className="font-serif text-3xl tracking-tight text-ink">How to reach me</h2>
+          <div className="mt-8 space-y-4 text-lg leading-relaxed text-ink">
+            <p>Hi there, nice to hear from you.</p>
+            <p>If you have ideas, questions, concerns, or stories, I&apos;d love to hear from you.</p>
+            <p>You can reach me by writing a note.</p>
+          </div>
+          <p className="mt-10 font-serif text-4xl tracking-tight text-ink">Marge Aliaga</p>
+          <p className="mt-4">
+            <a
+              href="mailto:marge@gosolo.co.network"
+              className="text-lg underline decoration-ink/30 underline-offset-4 hover:decoration-ink"
+            >
+              marge@gosolo.co.network
+            </a>
+          </p>
+        </Panel>
+
         {sent ? (
-          <Panel tone="sage">
+          <Panel tone="sage" className="lg:order-1">
             <h2 className="font-serif text-4xl tracking-tight">I have it.</h2>
-            <p className="mt-4 text-lg leading-relaxed">
-              Thank you for writing. I will read it as a person, not as a queue.
-            </p>
+            <p className="mt-4 text-lg leading-relaxed">Thank you for writing. I&apos;ll read it.</p>
             <p className="mt-6">
               <Link href="/about" className="underline decoration-ink/20 underline-offset-4">
                 Back to why this place exists
@@ -58,7 +71,7 @@ export function ContactPage() {
             </p>
           </Panel>
         ) : (
-          <form onSubmit={onSubmit} className="space-y-5">
+          <form onSubmit={onSubmit} className="space-y-5 lg:order-1">
             <label className="block space-y-2">
               <span className="text-sm">Your name</span>
               <Input className={fieldClass} value={name} maxLength={80} onChange={(event) => setName(event.target.value)} />
@@ -93,29 +106,6 @@ export function ContactPage() {
           </form>
         )}
 
-        <Panel>
-          <h2 className="font-serif text-3xl tracking-tight">How to reach me</h2>
-          <ul className="mt-4 space-y-3 text-lg leading-relaxed">
-            <li>This note comes to me. I read it myself.</li>
-            {content.founderEmail.trim() ? (
-              <li>
-                Or write directly:{" "}
-                <a className="underline decoration-ink/20 underline-offset-4" href={`mailto:${content.founderEmail.trim()}`}>
-                  {content.founderEmail.trim()}
-                </a>
-              </li>
-            ) : (
-              <li>Leave your email in the note if you want a reply in your own inbox.</li>
-            )}
-            <li>
-              If you are already here, the{" "}
-              <Link href="/campfire" className="underline decoration-ink/20 underline-offset-4">
-                campfire
-              </Link>{" "}
-              is for conversation with other people. A private note belongs on this page.
-            </li>
-          </ul>
-        </Panel>
       </div>
     </Frame>
   );
