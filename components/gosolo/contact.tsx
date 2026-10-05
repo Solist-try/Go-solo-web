@@ -15,7 +15,6 @@ export function ContactPage() {
   const [body, setBody] = useState("");
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
-  const founder = content.founderName.trim();
 
   function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -41,8 +40,7 @@ export function ContactPage() {
       <header className="max-w-3xl">
         <h1 className="font-serif text-5xl leading-tight tracking-tight text-ink sm:text-7xl">Contact</h1>
         <p className="mt-6 text-xl leading-relaxed text-ink-soft sm:text-2xl">
-          {founder ? `${founder} reads this.` : "A real person reads this."} Write as you would to someone keeping a
-          chair for you.
+          I read this. Write as you would to someone keeping a chair for you.
         </p>
       </header>
 
@@ -98,7 +96,7 @@ export function ContactPage() {
         <Panel>
           <h2 className="font-serif text-3xl tracking-tight">How to reach me</h2>
           <ul className="mt-4 space-y-3 text-lg leading-relaxed">
-            <li>This note is the surest way. It stays with the person who tends Go Solo.</li>
+            <li>This note comes to me. I read it myself.</li>
             {content.founderEmail.trim() ? (
               <li>
                 Or write directly:{" "}

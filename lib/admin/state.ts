@@ -178,7 +178,7 @@ export type AdminState = {
 
 export function defaultContent(): SiteContent {
   return {
-    contentRevision: 4,
+    contentRevision: 5,
     heroTagline: "Go Solo, Not Alone",
     heroEyebrow: "",
     heroTitle: "Hello, Vagabond.",
@@ -331,16 +331,14 @@ export function defaultContent(): SiteContent {
         body: "A moving kit. A starting-over kit. A travel kit. Companions for the first night of a new chapter.",
       },
     ],
-    founderName: "",
+    founderName: "Marge Aliaga",
     founderPhoto: "",
     founderBio:
-      "I live on my own. I started Go Solo because I was tired of treating that as a reason to postpone the rest of life.",
+      "I've always been a friendly person, but I haven't always been well connected. Go Solo began after I was turned away from a bar for arriving alone.",
     founderLetter: [
-      "Hello. If you are reading this, you have found the person behind the place.",
-      "I still answer what comes in. There is no team standing between a note and a reply, and there is no one else tending the campfire when the day is quiet.",
-      "Some parts of a life are better with company. Many parts are perfectly good to begin alone. I built this so those two things could sit in the same room.",
+      "Go Solo is intentionally founder-led. If you have a question, an idea, feedback, or simply want to say hello, I'd genuinely love to hear from you.",
     ],
-    founderEmail: "",
+    founderEmail: "marge@gosolo.co.network",
     emails: [
       {
         id: "welcome",
@@ -444,6 +442,10 @@ export function mergeAdmin(stored?: Partial<AdminState> | null): AdminState {
     content.togetherIntro = base.content.togetherIntro;
     content.comeHereTitle = base.content.comeHereTitle;
     content.seedsIntro = base.content.seedsIntro;
+    content.founderName = base.content.founderName;
+    content.founderEmail = base.content.founderEmail;
+    content.founderBio = base.content.founderBio;
+    content.founderLetter = base.content.founderLetter;
   }
   content.philosophyParagraphs =
     !refreshCopy && stored.content?.philosophyParagraphs?.length
@@ -470,9 +472,10 @@ export function mergeAdmin(stored?: Partial<AdminState> | null): AdminState {
   content.manifesto = !refreshCopy && stored.content?.manifesto?.length ? stored.content.manifesto : base.content.manifesto;
   content.comingSoon = stored.content?.comingSoon?.length ? stored.content.comingSoon : base.content.comingSoon;
   content.emails = stored.content?.emails?.length ? stored.content.emails : base.content.emails;
-  content.founderLetter = stored.content?.founderLetter?.length
-    ? stored.content.founderLetter
-    : base.content.founderLetter;
+  content.founderLetter =
+    !refreshCopy && stored.content?.founderLetter?.length
+      ? stored.content.founderLetter
+      : base.content.founderLetter;
   return {
     ...base,
     ...stored,
