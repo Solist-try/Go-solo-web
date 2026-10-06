@@ -2,7 +2,7 @@
 <section class="band mist">
   <div class="frame section">
   <h1>Waypoints</h1>
-  <p>Places to sit with people navigating a similar part of life. These are not interest groups.</p>
+  <p>A chair with people in a similar part of life. You can sit down when you want.</p>
   <?php if (!$waypoints): ?>
     <p>Waypoints will sit here when they are ready.</p>
   <?php else: ?>

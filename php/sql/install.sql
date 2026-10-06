@@ -450,7 +450,7 @@ INSERT INTO seeds (slug, title, description, prompt, kind, category, archived, c
 (
   'same',
   'SAME',
-  'Support. Accountability. Mutual empowerment. Find somebody growing a similar future. Being open does not pair you with anyone. A steward suggests a partner when there is a fit.',
+  'Support. Accountability. Mutual empowerment. You can be open to a partner. Being open does not pair you with anyone. A steward suggests a match when there is a fit. You can take your time.',
   'What would you like to grow with a partner?',
   'same',
   'SAME',
@@ -480,7 +480,7 @@ INSERT INTO seeds (slug, title, description, prompt, kind, category, archived, c
 (
   'building-confidence',
   'Building confidence',
-  'A quieter kind of courage. Showing up, speaking, and trying the thing you have been postponing.',
+  'One thing you have been postponing. A class, a conversation, a first try. A steward can suggest someone in a similar stretch.',
   'Building confidence',
   'same',
   'SAME',
@@ -500,25 +500,25 @@ INSERT INTO seeds (slug, title, description, prompt, kind, category, archived, c
 
 INSERT INTO settings (setting_key, setting_value) VALUES
   ('site_title', 'Go Solo'),
-  ('tagline', 'A calm home for people building meaningful lives on their own terms.'),
+  ('tagline', 'A calm place to try something small, with other people nearby.'),
   ('logo_text', 'Go Solo'),
-  ('footer_line', 'A calm home for people building meaningful lives on their own terms.'),
+  ('footer_line', 'A chair is here if you want it. Take your time.'),
   ('founder_name', 'Marge Aliaga'),
   ('founder_email', 'marge@gosolo.co.network'),
   ('hero_title', 'Hello, vagabond'),
   ('hero_subhead', 'Your life doesn''t have to wait'),
-  ('hero_support', 'Go Solo helps people build meaningful lives on their own terms'),
+  ('hero_support', 'A calm place to plant a seed, learn something, or ask for help.'),
   ('hero_primary', 'Join Go Solo'),
   ('hero_secondary', 'Learn More'),
   ('hero_philosophy', 'Go solo, not alone'),
   ('hero_image', '/assets/images/hero-city-walk.jpg'),
   ('hero_image_alt', 'A person walking home along a rainy street with groceries.'),
-  ('freedom_heading', 'Freedom is a choice.'),
-  ('freedom_body', 'A quiet morning at home is part of an independent life.'),
+  ('freedom_heading', 'Freedom is a choice, not a circumstance.'),
+  ('freedom_body', 'A quiet morning at home can be part of it. So can having someone to ask.'),
   ('freedom_image', '/assets/images/freedom-at-home.jpg'),
   ('freedom_image_alt', 'A person pouring tea at a wooden table in a small apartment.'),
   ('how_title', 'How Go Solo works'),
-  ('how_steps', '[{"name":"Find a Seed","body":"A seed is a tiny future, not a task. Plant something small.","href":"/seeds"},{"name":"Go Out There","body":"Try it in ordinary life. A trip counts. A Tuesday counts.","href":"/out-there"},{"name":"Return to Campfire","body":"Talk about what happened, and what you are still figuring out.","href":"/campfire"},{"name":"Visit a Waypoint","body":"Sit with people navigating a similar part of life.","href":"/waypoints"}]'),
+  ('how_steps', '[{"name":"Find a Seed","body":"A seed is a tiny future, not a task. Plant something small.","href":"/seeds"},{"name":"Go Out There","body":"Try it in ordinary life. Take the trip. A Tuesday counts.","href":"/out-there"},{"name":"Return to Campfire","body":"Talk about a question, an ordinary day, or something you are figuring out.","href":"/campfire"},{"name":"Visit a Waypoint","body":"Sit with people in a similar part of life. Take your time.","href":"/waypoints"}]'),
   ('home_seeds_title', 'Seeds'),
   ('home_seeds_line', 'Tiny futures you can plant now.'),
   ('about_heading', 'Why Go Solo exists'),
@@ -536,11 +536,13 @@ I hadn''t given up on company. I wanted to keep going when nobody was free to co
   ('about_belief_heading', 'Freedom is a choice, not a circumstance'),
   ('about_belief_body', 'I postponed a lot while I waited for the right person, the right timing, or a bit more confidence.
 
-My life can keep moving before all of that lines up. That doesn''t mean doing everything alone.'),
+Life is not equally easy for everyone. People arrive starting over, living alone, managing an illness, grieving, or new in a city.
+
+A life can keep moving before all of that lines up. That doesn''t mean doing everything alone. Support is welcome, and the choice stays yours.'),
   ('about_hello_heading', 'Say hello'),
   ('about_hello_body', 'Go Solo is intentionally founder-led. If you have a question, an idea, or simply want to say hello, I would love to hear from you.'),
   ('about_close_heading', 'Pull up a chair'),
-  ('about_close_body', 'You''re welcome here.'),
+  ('about_close_body', 'You''re welcome here. Take your time.'),
   ('contact_headline', 'Contact'),
   ('contact_card_title', 'How to reach me'),
   ('contact_body', 'Hi there, nice to hear from you.

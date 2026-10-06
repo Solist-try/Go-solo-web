@@ -34,18 +34,26 @@
     if (!is_array($steps) || $steps === []) {
         $steps = [
             ['name' => 'Find a Seed', 'body' => 'A seed is a tiny future, not a task. Plant something small.', 'href' => '/seeds'],
-            ['name' => 'Go Out There', 'body' => 'Try it in ordinary life. A trip counts. A Tuesday counts.', 'href' => '/out-there'],
-            ['name' => 'Return to Campfire', 'body' => 'Talk about what happened, and what you are still figuring out.', 'href' => '/campfire'],
-            ['name' => 'Visit a Waypoint', 'body' => 'Sit with people navigating a similar part of life.', 'href' => '/waypoints'],
+            ['name' => 'Go Out There', 'body' => 'Try it in ordinary life. Take the trip. A Tuesday counts.', 'href' => '/out-there'],
+            ['name' => 'Return to Campfire', 'body' => 'Talk about a question, an ordinary day, or something you are figuring out.', 'href' => '/campfire'],
+            ['name' => 'Visit a Waypoint', 'body' => 'Sit with people in a similar part of life. Take your time.', 'href' => '/waypoints'],
         ];
     }
+    $stepLinks = [
+        '/seeds' => 'Explore Seeds',
+        '/out-there' => 'Take The Trip',
+        '/campfire' => 'Pull Up A Chair',
+        '/waypoints' => 'Pull Up A Chair',
+        '/reading' => 'Read The Story',
+    ];
     foreach ($steps as $step):
+        $href = (string) ($step['href'] ?? '');
     ?>
       <article class="card">
         <h3><?= e((string) ($step['name'] ?? '')) ?></h3>
         <p><?= e((string) ($step['body'] ?? '')) ?></p>
-        <?php if (!empty($step['href'])): ?>
-          <p><a href="<?= e(url((string) $step['href'])) ?>">Come this way</a></p>
+        <?php if ($href !== ''): ?>
+          <p><a href="<?= e(url($href)) ?>"><?= e($stepLinks[$href] ?? 'Learn More') ?></a></p>
         <?php endif; ?>
       </article>
     <?php endforeach; ?>
@@ -56,16 +64,17 @@
   <h2><?= e(copy('home_seeds_title')) ?></h2>
   <p class="soft"><?= e(copy('home_seeds_line')) ?></p>
   <div class="cards two">
-    <a class="card sage stretch" href="<?= e(url('/seeds/same')) ?>"><h3>SAME</h3><p>Find somebody growing a similar future.</p></a>
+    <a class="card sage stretch" href="<?= e(url('/seeds/same')) ?>"><h3>SAME</h3><p>Be open to someone on a similar stretch. You can take your time.</p></a>
     <a class="card sage stretch" href="<?= e(url('/seeds/skill-swap')) ?>"><h3>Skill Swap</h3><p>Learn something. Teach something.</p></a>
   </div>
+  <p><a href="<?= e(url('/seeds')) ?>">Explore Seeds</a></p>
 </section>
 
 <section class="band mist">
   <div class="frame section">
     <h2><?= e(copy('nav_reading')) ?></h2>
-    <p>Practical notes for ordinary life.</p>
-    <p><a class="button" href="<?= e(url('/reading')) ?>">Come this way</a></p>
+    <p>Practical notes for ordinary days. A trip, a meal, a question, a first try.</p>
+    <p><a class="button" href="<?= e(url('/reading')) ?>">Read The Story</a></p>
   </div>
 </section>
 

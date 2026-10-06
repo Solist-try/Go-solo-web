@@ -9,7 +9,7 @@
     <article class="card sage">
       <h2>SAME</h2>
       <p>Support<br>Accountability<br>Mutual<br>Empowerment</p>
-      <p>Find somebody growing a similar future.</p>
+      <p>You can be open to someone on a similar stretch. A steward suggests a match. You can take your time.</p>
       <p class="kicker">Support you can ask for</p>
       <ul class="chips">
         <?php foreach (support_choices() as $choice): ?><li><?= e($choice) ?></li><?php endforeach; ?>
@@ -29,7 +29,7 @@
     </article>
   </div>
   <?php if ($seeds): ?>
-    <h2>A few futures</h2>
+    <h2>See What's Growing</h2>
     <ul class="list">
       <?php foreach ($seeds as $seed): ?>
         <li><a href="<?= e(url('/seeds/' . $seed['slug'])) ?>"><?= e($seed['title']) ?></a></li>

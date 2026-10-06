@@ -2,7 +2,7 @@
 <section class="band mist">
   <div class="frame section">
   <h1>Reading Room</h1>
-  <p>Practical notes for ordinary life. Not a blog, and not a funnel.</p>
+  <p>Practical notes for ordinary days. A trip, a meal, a question, a first try.</p>
   <?php if (!$categories): ?>
     <p>The shelf is empty for now.</p>
   <?php endif; ?>

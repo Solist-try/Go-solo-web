@@ -10,7 +10,7 @@
     <p class="lede" style="font-size:1.8rem"><?= e($seed['prompt']) ?></p>
   </div>
   <?php if (!$currentUser): ?>
-    <p>Take a look around. <a href="<?= e(url('/join')) ?>">Join Go Solo</a> if you want to start with this seed.</p>
+    <p>Take a look around. <a href="<?= e(url('/join')) ?>">Join Go Solo</a> if you want to plant this seed.</p>
   <?php elseif ($seed['kind'] === 'same'): ?>
     <div class="card">
       <h2>A SAME partner</h2>
@@ -38,7 +38,7 @@
       <?php else: ?>
         <form method="post" action="<?= e(url('/seeds/' . $seed['slug'] . '/begin')) ?>">
           <?= csrf_field() ?>
-          <button type="submit">Begin this seed</button>
+          <button type="submit">Plant this seed</button>
         </form>
       <?php endif; ?>
       <?php if ($seed['kind'] === 'skill-swap'): ?>
