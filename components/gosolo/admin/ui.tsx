@@ -12,6 +12,7 @@ const links = [
   ["/admin", "Dashboard"],
   ["/admin/members", "Members"],
   ["/admin/seeds", "Seeds"],
+  ["/admin/same", "SAME"],
   ["/admin/out-there", "Out There"],
   ["/admin/campfire", "Campfire"],
   ["/admin/waypoints", "Waypoints"],

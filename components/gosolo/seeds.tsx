@@ -17,9 +17,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { SEEDS } from "@/lib/catalog";
 import { useCatalog, useGoSolo } from "@/lib/gosolo";
 import { categoryLabel, formatRelative } from "@/lib/format";
-import { visibleSeeking } from "@/lib/view";
+import { HELP_TITLES, SUPPORT_WITH } from "@/lib/types";
 
 const NoteContext = createContext("");
 
@@ -40,6 +41,8 @@ const SWAP_EXAMPLES = [
   "Teach Writing",
   "Learn DIY",
 ];
+
+const STARTER_IDS = ["learning-spanish", "building-confidence", "making-local-friends"];
 
 const GROWING_SOON = [
   "Accountability Circles",
@@ -80,6 +83,22 @@ export function SeedIndex() {
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink">
           A seed grows through attention, practice, support, accountability, encouragement, and connection.
         </p>
+        <ul className="mt-8 max-w-xl space-y-3">
+          {STARTER_IDS.map((id) => {
+            const seed = SEEDS.find((item) => item.id === id);
+            if (!seed) return null;
+            return (
+              <li key={seed.id}>
+                <Link
+                  href={`/seeds/${seed.id}`}
+                  className="font-serif text-3xl tracking-tight text-ink underline decoration-ink/20 underline-offset-4"
+                >
+                  {seed.title}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </header>
 
       <div id="plant" className="mt-16 grid scroll-mt-24 gap-6 lg:grid-cols-2">
@@ -98,8 +117,16 @@ export function SeedIndex() {
               <li key={item}>{item}</li>
             ))}
           </ul>
+          <p className="mt-8 text-sm text-ink-soft">Support you can ask for</p>
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {SUPPORT_WITH.map((item) => (
+              <li key={item.id} className="rounded-full bg-white/70 px-4 py-2 text-ink">
+                {item.label}
+              </li>
+            ))}
+          </ul>
           <div className="mt-8">
-            <PrimaryLink href="/seeds/weekly-hello">Find a SAME Partner</PrimaryLink>
+            <PrimaryLink href="/seeds/weekly-hello">Be open to a partner</PrimaryLink>
           </div>
         </article>
 
@@ -117,6 +144,14 @@ export function SeedIndex() {
           <ul className="mt-3 space-y-1 text-lg text-ink">
             {SWAP_EXAMPLES.map((item) => (
               <li key={item}>{item}</li>
+            ))}
+          </ul>
+          <p className="mt-8 text-sm text-ink-soft">Offer help, or ask for it</p>
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {HELP_TITLES.map((item) => (
+              <li key={item} className="rounded-full bg-white/70 px-4 py-2 text-ink">
+                {item}
+              </li>
             ))}
           </ul>
           <div className="mt-8">
@@ -178,7 +213,6 @@ export function SeedDetail({ id }: { id: string }) {
     beginSeed,
     setSeedStatus,
     checkInSeed,
-    matchWith,
     partnershipCheckIn,
     offerSkill,
     requestSkill,
@@ -197,9 +231,6 @@ export function SeedDetail({ id }: { id: string }) {
   const names = useMemo(
     () => new Map(world.profiles.map((profile) => [profile.id, profile])),
     [world.profiles],
-  );
-  const seeking = visibleSeeking(world.partnerships).filter(
-    (item) => item.seedId === id && item.seekerId !== user?.id,
   );
   const partnership = world.partnerships.find(
     (item) =>
@@ -291,7 +322,7 @@ export function SeedDetail({ id }: { id: string }) {
 
       {user && seed.kind === "same" ? (
         <Panel className="mt-4">
-          <h2 className="font-serif text-3xl">Find a SAME Partner</h2>
+          <h2 className="font-serif text-3xl">A SAME partner</h2>
           <p className="mt-3 text-ink-soft">Name what you would like to grow. A partner tends it with you, briefly, and without advice unless you ask.</p>
           {partnership ? (
             <div className="mt-6 space-y-4">
@@ -335,33 +366,15 @@ export function SeedDetail({ id }: { id: string }) {
                 <span className="text-sm">What would you like to grow?</span>
                 <Textarea className={areaClass} value={goal} onChange={(event) => setGoal(event.target.value)} />
               </label>
-              {seeking.length > 0 ? (
-                <ul className="space-y-4">
-                  {seeking.map((item) => {
-                    const person = names.get(item.seekerId);
-                    return (
-                      <li key={item.id} className="rounded-[24px] bg-gold/70 p-5">
-                        <AuthorLine profile={person} href={person ? `/profile/${person.id}` : undefined} />
-                        <p className="mt-3">{item.goal}</p>
-                        <Button
-                          className={`${pill} mt-4`}
-                          onClick={() => void matchWith(seed.id, item.seekerId, goal || item.goal)}
-                        >
-                          Walk with {person?.displayName?.split(" ")[0]}
-                        </Button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : (
-                <p className="text-ink-soft">No one is waiting on this seed yet. You can be the open chair.</p>
-              )}
+              <p className="text-ink-soft">
+                A steward suggests a partner when there is a fit. Being open does not pair you with anyone.
+              </p>
               {!mine ? (
                 <Button className={pill} onClick={() => void beginSeed(seed.id, goal)}>
                   I am open to a partner
                 </Button>
               ) : (
-                <p className="text-sm text-ink-soft">You are open. Someone can find you here.</p>
+                <p className="text-sm text-ink-soft">You are open. A match waits for a steward.</p>
               )}
             </div>
           )}

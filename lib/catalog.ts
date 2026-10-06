@@ -48,6 +48,37 @@ export const WAYPOINTS: Waypoint[] = [
 
 export const SEEDS: Seed[] = [
   {
+    id: "learning-spanish",
+    title: "Learning Spanish",
+    description: "A language, begun at the size of one conversation.",
+    prompt:
+      "Spend the first hour on Spanish. Ask for one small thing you actually need, or trade an hour with someone who already speaks it.",
+    category: "growth",
+    kind: "skill-swap",
+    timeframe: "Over time",
+    waypoints: ["solo-among-others"],
+  },
+  {
+    id: "building-confidence",
+    title: "Building confidence",
+    description: "A stretch you do not have to take alone.",
+    prompt: "Name one thing you would like to feel more able to do. Find someone to grow it with you.",
+    category: "growth",
+    kind: "same",
+    timeframe: "Over time",
+    waypoints: ["emotional-clarity", "independence-lab"],
+  },
+  {
+    id: "making-local-friends",
+    title: "Making local friends",
+    description: "A few people nearby, met more than once.",
+    prompt: "Choose one local place you can return to. Say hello. Go again.",
+    category: "relationships",
+    kind: "practice",
+    timeframe: "Over time",
+    waypoints: ["solo-among-others"],
+  },
+  {
     id: "walk-unknown",
     title: "Walk a street you don't know",
     description: "A small adventure that asks nothing of anyone else.",

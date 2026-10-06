@@ -16,7 +16,7 @@ export function AdminHome() {
     ["New Campfire posts", insight.newCampfire, "What was said by the fire this week."],
     ["Seeds started", insight.seedsStarted, `${insight.seedsStartedThisWeek} began this week.`],
     ["Seeds completed", insight.seedsCompleted, "Finished, not merely opened."],
-    ["SAME matches", insight.sameMatches, "Pairs who found each other."],
+    ["SAME matches", insight.sameMatches, "Pairs a steward has joined."],
     ["Skill swaps completed", insight.skillSwaps, "An offer and a person who reached across."],
   ] as const;
 

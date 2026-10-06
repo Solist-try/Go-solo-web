@@ -34,18 +34,29 @@ const IDEAS = [
 
 const IDEA_SEEDS = [
   {
-    title: "Learn Spanish",
+    title: "Learning Spanish",
     body: "A place to begin. Not something that already happened.",
-    href: "/seeds/skill-swap",
+    href: "/seeds/learning-spanish",
     cta: "Explore Skill Swap",
   },
   {
-    title: "Build Confidence",
+    title: "Building confidence",
     body: "Find someone to grow it with. This is a seed, not a story.",
-    href: "/seeds/weekly-hello",
+    href: "/seeds/building-confidence",
     cta: "Explore SAME",
   },
 ];
+
+function storyImage(value?: string) {
+  if (!value) return "";
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return "";
+    return url.toString();
+  } catch {
+    return "";
+  }
+}
 
 export function StoryIndex() {
   const { world, user } = useGoSolo();
@@ -171,6 +182,13 @@ export function StoryDetail({ id }: { id: string }) {
     <Frame>
       <AuthorLine profile={profile} meta={formatRelative(story.createdAt)} href={`/profile/${story.authorId}`} />
       <h1 className="mt-6 max-w-3xl font-serif text-5xl leading-tight tracking-tight sm:text-6xl">{story.title}</h1>
+      {storyImage(story.imageUrl) ? (
+        <img
+          src={storyImage(story.imageUrl)}
+          alt={story.title}
+          className="mt-8 max-h-[28rem] w-full max-w-3xl rounded-[28px] object-cover"
+        />
+      ) : null}
       <div className="mt-10 space-y-8">
         <Prompt label="What did you do?" body={story.whatDidYouDo} />
         <Prompt label="What were you expecting?" body={story.expecting} />
@@ -275,6 +293,7 @@ export function StoryForm() {
   const [again, setAgain] = useState<WouldAgain>("yes");
   const [seedId, setSeedId] = useState(params.get("seed") ?? "");
   const [waypointId, setWaypointId] = useState(params.get("waypoint") ?? "");
+  const [imageUrl, setImageUrl] = useState("");
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
   const mySeeds = world.userSeeds.filter((item) => item.userId === user?.id);
@@ -283,6 +302,11 @@ export function StoryForm() {
     event.preventDefault();
     if (!title.trim() || !what.trim() || !expecting.trim() || !happened.trim()) {
       setError("All four questions want an answer, even a short one.");
+      return;
+    }
+    const photograph = imageUrl.trim();
+    if (photograph && !storyImage(photograph)) {
+      setError("A photograph needs a full http or https link.");
       return;
     }
     setPending(true);
@@ -294,6 +318,7 @@ export function StoryForm() {
       wouldDoAgain: again,
       seedId: seedId || undefined,
       waypointId: waypointId || undefined,
+      imageUrl: photograph || undefined,
     });
     setPending(false);
     router.push(id ? `/out-there/${id}` : "/out-there");
@@ -312,6 +337,15 @@ export function StoryForm() {
         <Field label="What did you do?" value={what} onChange={setWhat} />
         <Field label="What were you expecting?" value={expecting} onChange={setExpecting} />
         <Field label="What actually happened?" value={happened} onChange={setHappened} />
+        <label className="block space-y-2">
+          <span className="text-sm">A photograph, if you have a link</span>
+          <Input
+            className={fieldClass}
+            value={imageUrl}
+            placeholder="https://"
+            onChange={(event) => setImageUrl(event.target.value)}
+          />
+        </label>
         <fieldset>
           <legend className="text-sm">Would you do it again?</legend>
           <div className="mt-3 flex flex-wrap gap-2">

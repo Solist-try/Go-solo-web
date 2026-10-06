@@ -29,14 +29,14 @@ Without Supabase environment variables, Go Solo keeps accounts in this browser a
 
 1. Create a Supabase project.
 2. Copy `.env.example` to `.env.local` and add the project URL and anon key.
-3. In the SQL editor, run `supabase/migrations/0001_init.sql`, then `supabase/seed.sql`.
+3. In the SQL editor, run `supabase/migrations/0001_init.sql`, then `0002_admin.sql`, then `0003_member_support.sql`, then `supabase/seed.sql`.
 4. In Authentication, enable email sign-in.
 5. Add these redirect URLs:
    - `http://localhost:3000/auth/callback`
    - your production `/auth/callback`
 6. Restart the dev server.
 
-The app then uses Supabase Auth for registration, login, logout, email verification, and password reset. Profiles, interests, waypoints, seeds, SAME partnerships, skill swaps, Out There posts, campfire posts, comments, reactions, and notifications are stored in Postgres with row-level security. Profile photos go to the `avatars` bucket created by the migration.
+The app then uses Supabase Auth for registration, login, logout, email verification, and password reset. Profiles, the seeds a member is growing, the help they want and can offer, support preferences, contact frequency and style, SAME partnerships, Campfire posts, and Out There stories are stored in Postgres with row-level security. A steward makes SAME matches. Profile photos go to the `avatars` bucket created by the migration.
 
 Protected routes are enforced in `proxy.ts`. Member pages also wait until email verification and onboarding are complete.
 

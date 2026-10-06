@@ -114,7 +114,7 @@ export function ProfileView({ profileId }: { profileId?: string }) {
 
       <section className="mt-16" aria-labelledby="help-plant-title">
         <h2 id="help-plant-title" className="font-serif text-4xl tracking-tight text-ink">
-          Seeds I&apos;m Happy to Help Plant
+          Seeds I&apos;m Happy To Help Plant
         </h2>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink">
           What knowledge, experience or encouragement are you happy to share?
@@ -135,16 +135,17 @@ export function ProfileView({ profileId }: { profileId?: string }) {
 
       <NameList
         id="support-title"
-        title="I'd Appreciate Support With"
-        intro="This is what helps SAME find a fitting partner."
+        title="Support Preferences"
+        intro="This is what helps a steward suggest a SAME partner."
         items={garden.supportWith.map(supportLabel)}
         empty={isSelf ? "Choose the kinds of support you want." : "Not named yet."}
         tone="bg-white/80"
       />
+      {garden.sameNotes ? <p className="mt-4 max-w-2xl text-lg leading-relaxed text-ink">{garden.sameNotes}</p> : null}
 
       <section className="mt-16 max-w-2xl" aria-labelledby="frequency-title">
         <h2 id="frequency-title" className="font-serif text-4xl tracking-tight text-ink">
-          Preferred Check-in Frequency
+          Preferred Contact Frequency
         </h2>
         <p className="mt-4 text-lg text-ink">
           {frequencyLabel(garden.checkInFrequency) || (isSelf ? "Choose a rhythm in settings." : "Not chosen yet.")}
@@ -153,7 +154,7 @@ export function ProfileView({ profileId }: { profileId?: string }) {
 
       <section className="mt-16 max-w-2xl" aria-labelledby="style-title">
         <h2 id="style-title" className="font-serif text-4xl tracking-tight text-ink">
-          Preferred Check-in Style
+          Preferred Contact Style
         </h2>
         <p className="mt-4 text-lg text-ink">
           {styleLabel(garden.checkInStyle) || (isSelf ? "Choose a way to check in." : "Not chosen yet.")}

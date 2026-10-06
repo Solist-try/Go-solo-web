@@ -116,15 +116,15 @@ export type LifeSeed = {
   lookingForSupport: boolean;
 };
 
+export const HELP_TITLES = ["Crochet", "Writing", "Gardening", "Photography"] as const;
+
 export const SUPPORT_WITH = [
   { id: "accountability", label: "Accountability" },
-  { id: "confidence", label: "Confidence" },
-  { id: "starting-over", label: "Starting over" },
+  { id: "starting-over", label: "Starting Over" },
   { id: "connection", label: "Connection" },
-  { id: "practical-life", label: "Practical life" },
-  { id: "medical", label: "Medical support" },
-  { id: "wellbeing", label: "Wellbeing" },
-  { id: "career", label: "Career change" },
+  { id: "confidence", label: "Confidence" },
+  { id: "medical", label: "Medical Buddy" },
+  { id: "practical-life", label: "Practical Life" },
 ] as const;
 
 export const CHECK_IN_FREQUENCIES = [
@@ -170,6 +170,7 @@ export type Profile = {
   supportWith?: string[];
   checkInFrequency?: string;
   checkInStyle?: string;
+  sameNotes?: string;
 };
 
 export type Account = {
@@ -213,6 +214,7 @@ export type UserSeed = {
   id: string;
   userId: string;
   seedId: string;
+  title?: string;
   status: SeedStatus;
   goal: string;
   startedAt: string;
@@ -272,6 +274,7 @@ export type OutTherePost = {
   wouldDoAgain: WouldAgain;
   seedId?: string;
   waypointId?: string;
+  imageUrl?: string;
   createdAt: string;
   hidden?: boolean;
   pinned?: boolean;

@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useGoSolo } from "@/lib/gosolo";
 import { createId } from "@/lib/session";
-import { CHECK_IN_FREQUENCIES, CHECK_IN_STYLES, INTERESTS, SUPPORT_WITH, type LifeSeed } from "@/lib/types";
+import { CHECK_IN_FREQUENCIES, CHECK_IN_STYLES, HELP_TITLES, INTERESTS, SUPPORT_WITH, type LifeSeed } from "@/lib/types";
 
 export function SettingsScreen() {
   const { user, mode, updateProfile, setInterests, resetPassword, deleteAccount, logout } = useGoSolo();
@@ -38,6 +38,7 @@ export function SettingsScreen() {
   const [supportWith, setSupportWith] = useState<string[]>(user?.supportWith ?? []);
   const [checkInFrequency, setCheckInFrequency] = useState(user?.checkInFrequency ?? "");
   const [checkInStyle, setCheckInStyle] = useState(user?.checkInStyle ?? "");
+  const [sameNotes, setSameNotes] = useState(user?.sameNotes ?? "");
   const [photo, setPhoto] = useState<File | null>(null);
   const [password, setPassword] = useState("");
   const [confirmName, setConfirmName] = useState("");
@@ -59,6 +60,7 @@ export function SettingsScreen() {
         supportWith,
         checkInFrequency,
         checkInStyle,
+        sameNotes: sameNotes.trim(),
       },
       photo,
     );
@@ -121,7 +123,7 @@ export function SettingsScreen() {
               Name what you are growing, what help you need, and what you are happy to share.
             </p>
             <div className="space-y-3">
-              <p className="text-sm">Seeds I&apos;m growing</p>
+              <p className="text-sm">Seeds I&apos;m Growing</p>
               <ul className="space-y-2">
                 {growing.map((seed) => (
                   <li key={seed.id} className="flex flex-wrap items-center justify-between gap-3 rounded-[24px] bg-white/75 px-4 py-3">
@@ -192,18 +194,20 @@ export function SettingsScreen() {
               </div>
             </div>
             <NameEditor
-              label="Seeds I'd like help growing"
+              label="Seeds I'd Like Help Growing"
               placeholder="Gardening"
               items={helpGrowing}
               draft={helpName}
+              suggestions={HELP_TITLES}
               onDraft={setHelpName}
               onChange={setHelpGrowing}
             />
             <NameEditor
-              label="Seeds I'm happy to help plant"
+              label="Seeds I'm Happy To Help Plant"
               placeholder="Crochet"
               items={helpPlant}
               draft={plantName}
+              suggestions={HELP_TITLES}
               onDraft={setPlantName}
               onChange={setHelpPlant}
             />
@@ -217,17 +221,26 @@ export function SettingsScreen() {
               />
             </label>
             <div className="space-y-3">
-              <p className="text-sm">I&apos;d appreciate support with</p>
-              <ChoiceGrid label="I'd appreciate support with" options={SUPPORT_WITH} value={supportWith} onChange={setSupportWith} />
+              <p className="text-sm">Support Preferences</p>
+              <ChoiceGrid label="Support Preferences" options={SUPPORT_WITH} value={supportWith} onChange={setSupportWith} />
             </div>
             <SingleChoice
-              label="Preferred check-in frequency"
+              label="Preferred Contact Frequency"
               options={CHECK_IN_FREQUENCIES}
               value={checkInFrequency}
               onChange={setCheckInFrequency}
             />
+            <label className="block space-y-2">
+              <span className="text-sm">A note for a SAME partner</span>
+              <Textarea
+                className={areaClass}
+                value={sameNotes}
+                maxLength={400}
+                onChange={(event) => setSameNotes(event.target.value)}
+              />
+            </label>
             <SingleChoice
-              label="Preferred check-in style"
+              label="Preferred Contact Style"
               options={CHECK_IN_STYLES}
               value={checkInStyle}
               onChange={setCheckInStyle}
@@ -363,6 +376,7 @@ function NameEditor({
   placeholder,
   items,
   draft,
+  suggestions = [],
   onDraft,
   onChange,
 }: {
@@ -370,9 +384,11 @@ function NameEditor({
   placeholder: string;
   items: string[];
   draft: string;
+  suggestions?: readonly string[];
   onDraft: (value: string) => void;
   onChange: (items: string[]) => void;
 }) {
+  const offered = suggestions.filter((item) => !items.some((name) => name.toLowerCase() === item.toLowerCase()));
   return (
     <div className="space-y-3">
       <p className="text-sm">{label}</p>
@@ -389,6 +405,21 @@ function NameEditor({
           </li>
         ))}
       </ul>
+      {offered.length > 0 ? (
+        <ul className="flex flex-wrap gap-2">
+          {offered.map((item) => (
+            <li key={item}>
+              <button
+                type="button"
+                className="rounded-full bg-white/50 px-3 py-1 text-sm text-ink"
+                onClick={() => onChange([...items, item])}
+              >
+                {item}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
       <div className="flex flex-col gap-3 sm:flex-row">
         <Input className={fieldClass} value={draft} maxLength={80} placeholder={placeholder} onChange={(event) => onDraft(event.target.value)} />
         <Button
