@@ -1,0 +1,25 @@
+<?php $pageTitle = 'Campfire · ' . copy('site_title'); ?>
+<section class="frame section">
+  <h1>Campfire</h1>
+  <?php if (!$posts): ?>
+    <figure>
+      <img class="photo story-photo" src="<?= e(media(copy('campfire_image'))) ?>" alt="<?= e(copy('campfire_image_alt')) ?>">
+    </figure>
+    <p class="lede" style="font-size:1.8rem"><?= e(copy('campfire_waiting')) ?></p>
+    <p><?= e(copy('campfire_empty')) ?></p>
+  <?php else: ?>
+    <p><?= e(copy('campfire_empty')) ?></p>
+    <div class="stack">
+      <?php foreach ($posts as $post): ?>
+        <article class="card">
+          <h2><a href="<?= e(url('/campfire/' . $post['id'])) ?>"><?= e($post['title']) ?></a></h2>
+          <p class="soft"><?= e($post['display_name'] ?: 'A member') ?> · <?= e(nice_date($post['created_at'])) ?></p>
+          <p><?= e(clip((string) $post['body'], 240)) ?></p>
+        </article>
+      <?php endforeach; ?>
+    </div>
+  <?php endif; ?>
+  <?php if ($currentUser): ?>
+    <p style="margin-top:1.4rem"><a class="button sage" href="<?= e(url('/campfire/new')) ?>">Start a conversation</a></p>
+  <?php endif; ?>
+</section>

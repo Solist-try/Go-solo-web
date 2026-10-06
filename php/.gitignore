@@ -1,0 +1,7 @@
+config.php
+uploads/avatars/*
+uploads/covers/*
+uploads/reading/*
+!uploads/avatars/.gitkeep
+!uploads/covers/.gitkeep
+!uploads/reading/.gitkeep
