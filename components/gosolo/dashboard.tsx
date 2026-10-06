@@ -24,7 +24,7 @@ export function Dashboard() {
     <Frame>
       <p className="text-sm text-ink-soft">Your home</p>
       <h1 className="mt-3 max-w-4xl font-serif text-6xl leading-[0.98] tracking-tight text-balance text-ink sm:text-7xl">
-        Hello, Vagabond.
+        Hello, vagabond
       </h1>
       <p className="mt-6 max-w-2xl font-serif text-3xl leading-snug tracking-tight text-ink sm:text-4xl">
         What&apos;s calling to you today?

@@ -112,7 +112,7 @@ export function AboutPage() {
           Pull Up A Chair
         </h2>
         <p className="mt-6 text-lg leading-relaxed text-ink sm:text-xl">You&apos;re welcome here.</p>
-        <p className="mt-8 font-serif text-4xl tracking-tight text-ink sm:text-5xl">Go Solo, Not Alone</p>
+        <p className="mt-8 font-serif text-4xl tracking-tight text-ink sm:text-5xl">Go solo, not alone</p>
       </section>
     </Frame>
   );

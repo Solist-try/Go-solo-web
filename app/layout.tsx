@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     template: "%s · Go Solo",
   },
   description:
-    "Go Solo, Not Alone — a home for people building meaningful lives on their own terms.",
+    "Go solo, not alone — a home for people building meaningful lives on their own terms.",
   applicationName: "Go Solo",
 };
 
