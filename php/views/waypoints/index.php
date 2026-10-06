@@ -1,5 +1,6 @@
 <?php $pageTitle = 'Waypoints · ' . copy('site_title'); ?>
-<section class="frame section">
+<section class="band mist">
+  <div class="frame section">
   <h1>Waypoints</h1>
   <p>Places to sit with people navigating a similar part of life. These are not interest groups.</p>
   <?php if (!$waypoints): ?>
@@ -7,7 +8,7 @@
   <?php else: ?>
     <div class="cards">
       <?php foreach ($waypoints as $waypoint): ?>
-        <a class="card stretch" href="<?= e(url('/waypoints/' . $waypoint['slug'])) ?>">
+        <a class="card waypoint stretch" href="<?= e(url('/waypoints/' . $waypoint['slug'])) ?>">
           <?php if ($waypoint['cover_path']): ?>
             <img class="photo" src="<?= e(media($waypoint['cover_path'])) ?>" alt="">
           <?php endif; ?>
@@ -17,4 +18,5 @@
       <?php endforeach; ?>
     </div>
   <?php endif; ?>
+  </div>
 </section>

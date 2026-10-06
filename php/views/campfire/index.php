@@ -1,5 +1,6 @@
 <?php $pageTitle = 'Campfire · ' . copy('site_title'); ?>
-<section class="frame section">
+<section class="band clay">
+  <div class="frame section">
   <h1>Campfire</h1>
   <?php if (!$posts): ?>
     <figure>
@@ -9,6 +10,14 @@
     <p><?= e(copy('campfire_empty')) ?></p>
   <?php else: ?>
     <p><?= e(copy('campfire_empty')) ?></p>
+  <?php endif; ?>
+  <?php if ($currentUser): ?>
+    <p style="margin-top:1.4rem"><a class="button sage" href="<?= e(url('/campfire/new')) ?>">Start a conversation</a></p>
+  <?php endif; ?>
+  </div>
+</section>
+<?php if ($posts): ?>
+<section class="frame section">
     <div class="stack">
       <?php foreach ($posts as $post): ?>
         <article class="card">
@@ -18,8 +27,5 @@
         </article>
       <?php endforeach; ?>
     </div>
-  <?php endif; ?>
-  <?php if ($currentUser): ?>
-    <p style="margin-top:1.4rem"><a class="button sage" href="<?= e(url('/campfire/new')) ?>">Start a conversation</a></p>
-  <?php endif; ?>
 </section>
+<?php endif; ?>

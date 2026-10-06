@@ -125,7 +125,7 @@ $name = $person['display_name'] ?: 'A member';
   <?php if ($isSelf && $warnings): ?>
     <h2>A note from the steward</h2>
     <?php foreach ($warnings as $warning): ?>
-      <article class="card gold">
+      <article class="card clay">
         <p><?= e($warning['note']) ?></p>
         <p class="soft"><?= e(nice_date($warning['created_at'])) ?></p>
       </article>

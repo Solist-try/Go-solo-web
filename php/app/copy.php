@@ -104,7 +104,6 @@ function color_keys(): array
         'color_soft' => 'Soft text',
         'color_sage' => 'Sage',
         'color_clay' => 'Clay',
-        'color_gold' => 'Gold',
         'color_mist' => 'Mist',
         'color_card' => 'Cards',
     ];

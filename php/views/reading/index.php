@@ -1,12 +1,13 @@
 <?php $pageTitle = 'Reading Room · ' . copy('site_title'); ?>
-<section class="frame section">
+<section class="band mist">
+  <div class="frame section">
   <h1>Reading Room</h1>
   <p>Practical notes for ordinary life. Not a blog, and not a funnel.</p>
   <?php if (!$categories): ?>
     <p>The shelf is empty for now.</p>
   <?php endif; ?>
   <?php foreach ($categories as $category): ?>
-    <article class="section" style="padding-top:1.4rem">
+    <article style="margin-top:2.4rem">
       <div class="split two">
         <div>
           <h2><?= e($category['title']) ?></h2>
@@ -27,4 +28,5 @@
       <?php endif; ?>
     </article>
   <?php endforeach; ?>
+  </div>
 </section>

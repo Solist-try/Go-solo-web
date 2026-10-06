@@ -16,7 +16,7 @@
       </ul>
       <p><a class="button sage" href="<?= e(url('/seeds/same')) ?>">Be open to a partner</a></p>
     </article>
-    <article class="card clay">
+    <article class="card sage">
       <h2>Skill Swap</h2>
       <p>Learn something.</p>
       <p>Teach something.</p>
@@ -25,7 +25,7 @@
           <li><?= e($example) ?></li>
         <?php endforeach; ?>
       </ul>
-      <p><a class="button" href="<?= e(url('/seeds/skill-swap')) ?>">Offer help, or ask for it</a></p>
+      <p><a class="button sage" href="<?= e(url('/seeds/skill-swap')) ?>">Offer help, or ask for it</a></p>
     </article>
   </div>
   <?php if ($seeds): ?>

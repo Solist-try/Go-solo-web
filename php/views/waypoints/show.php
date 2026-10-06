@@ -1,5 +1,6 @@
 <?php $pageTitle = ($waypoint['title'] ?? 'Waypoint') . ' · ' . copy('site_title'); ?>
-<section class="frame section">
+<section class="band mist">
+  <div class="frame section">
   <p class="kicker"><a href="<?= e(url('/waypoints')) ?>">Waypoints</a></p>
   <h1><?= e($waypoint['title']) ?></h1>
   <?php if ($waypoint['cover_path']): ?>
@@ -31,4 +32,5 @@
       <?php endforeach; ?>
     </ul>
   <?php endif; ?>
+  </div>
 </section>

@@ -577,7 +577,7 @@ You can reach me by writing a note.'),
   ('color_clay', '#eed9d2'),
   ('color_gold', '#f3ead7'),
   ('color_mist', '#eceeef'),
-  ('color_card', '#fffcf8'),
+  ('color_card', '#eceeef'),
   ('email_reset_subject', 'A way back into Go Solo'),
   ('email_reset_body', 'Hello {name},
 

@@ -17,9 +17,8 @@ $ink = hex_color(copy('color_ink'), '#1a1a1a');
 $soft = hex_color(copy('color_soft'), '#6b6b6b');
 $sage = hex_color(copy('color_sage'), '#dce5de');
 $clay = hex_color(copy('color_clay'), '#eed9d2');
-$gold = hex_color(copy('color_gold'), '#f3ead7');
 $mist = hex_color(copy('color_mist'), '#eceeef');
-$card = hex_color(copy('color_card'), '#fffcf8');
+$card = hex_color(copy('color_card'), '#eceeef');
 $logoImage = copy('logo_image');
 ?>
 <!DOCTYPE html>
@@ -37,7 +36,6 @@ $logoImage = copy('logo_image');
       --soft: <?= e($soft) ?>;
       --sage: <?= e($sage) ?>;
       --clay: <?= e($clay) ?>;
-      --gold: <?= e($gold) ?>;
       --mist: <?= e($mist) ?>;
       --card: <?= e($card) ?>;
     }
