@@ -1,5 +1,9 @@
 # Install Go Solo on shared hosting
 
+The steward trial lives at **https://steward.gosolo.co.network**.
+
+On that hosting account the database is `gosolo-313930486f`. The database user is the same name. In `config.php` on the server, set the host to `localhost`. The hostname in the MySQL panel does not resolve on the public internet, and MySQL is not open from outside the account, so the import is done in phpMyAdmin while you are logged into the panel.
+
 Go Solo runs on ordinary PHP hosting. The copy you upload is the `php` folder in this repository. It does not need Node.js, Composer, Redis, Docker, or a separate database host.
 
 You need:
@@ -37,16 +41,21 @@ Upload the **contents** of the `php` folder into `public_html`, so `index.php` s
 
 The upload includes `app`, `assets`, `sql`, `uploads`, `views`, `.htaccess`, `index.php`, and `config.example.php`.
 
-On the server, copy `config.example.php` to `config.php` and fill in the four database values:
+On the server, copy `config.example.php` to `config.php`. For this account it should read:
 
 ```php
 return [
     'db_host' => 'localhost',
-    'db_name' => 'the-name-from-the-panel',
-    'db_user' => 'the-user-from-the-panel',
-    'db_pass' => 'the-password-from-the-panel',
+    'db_name' => 'gosolo-313930486f',
+    'db_user' => 'gosolo-313930486f',
+    'db_pass' => 'the-password-from-the-mysql-panel',
+    'site_url' => 'https://steward.gosolo.co.network',
 ];
 ```
+
+Put the password from the MySQL panel in `db_pass`. Leave it only in this file on the server.
+
+In the hosting panel, set **steward.gosolo.co.network** to PHP 8.2. Upload into the folder that subdomain uses. If the domain is still on an older PHP, the site will say so instead of showing a blank server error.
 
 `app`, `sql`, and `config.php` are blocked from being opened in a browser. PHP can still read them.
 

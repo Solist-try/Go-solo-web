@@ -139,6 +139,10 @@ function send_reset(string $email): void
 
 function absolute_url(string $path): string
 {
+    $configured = str_replace(["\r", "\n"], '', trim((string) ($GLOBALS['config']['site_url'] ?? '')));
+    if (preg_match('#^https://#', $configured)) {
+        return rtrim($configured, '/') . url($path);
+    }
     $https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
     $scheme = $https ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
