@@ -70,7 +70,7 @@
 </section>
 
 <section class="band clay">
-  <div class="frame section narrow">
+  <div class="frame section">
     <h2><?= e(copy('contact_headline')) ?></h2>
     <p class="philosophy" style="font-size:2rem"><?= e(copy('founder_name')) ?></p>
     <p><a class="button" href="<?= e(url('/contact')) ?>"><?= e(copy('contact_card_title')) ?></a></p>
