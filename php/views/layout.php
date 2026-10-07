@@ -1,7 +1,6 @@
 <?php
 $title = $title ?? site_text('site_title');
 $pageTitle = $pageTitle ?? $title;
-$philosophy = site_text('hero_philosophy');
 $nav = [
     ['/about', site_text('nav_about')],
     ['/seeds', site_text('nav_seeds')],
@@ -69,9 +68,7 @@ $logoImage = site_text('logo_image');
     <?= $content ?>
   </main>
   <footer class="site-footer">
-    <p class="philosophy" style="font-size:1.8rem"><?= e($philosophy) ?></p>
     <p><?= e(site_text('footer_line')) ?></p>
-    <p><a href="<?= e(url('/contact')) ?>"><?= e(site_text('nav_contact')) ?></a> · <a href="mailto:<?= e(site_text('founder_email')) ?>"><?= e(site_text('founder_email')) ?></a></p>
   </footer>
 </body>
 </html>

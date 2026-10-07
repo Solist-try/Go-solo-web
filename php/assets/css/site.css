@@ -163,7 +163,8 @@ textarea { min-height: 8rem; }
 }
 .error { background: var(--clay); }
 
-.site-footer { padding: 3rem 0 3.5rem; color: var(--soft); }
+.founder { color: var(--soft); font-size: 0.95rem; margin: 1.4rem 0 0; }
+.site-footer { padding: 2.4rem 0 2.8rem; color: var(--soft); font-size: 0.95rem; }
 .site-footer a { color: var(--ink); }
 
 .table-wrap { overflow-x: auto; }

@@ -9,6 +9,7 @@
     <div>
       <h2><?= e(site_text('about_founder_heading')) ?></h2>
       <?= paragraphs(site_text('about_founder_body')) ?>
+      <p class="founder">Founder<br><?= e(site_text('founder_name')) ?></p>
     </div>
   </div>
   <h2><?= e(site_text('about_belief_heading')) ?></h2>
@@ -16,7 +17,6 @@
   <div class="card clay">
     <h2><?= e(site_text('about_hello_heading')) ?></h2>
     <?= paragraphs(site_text('about_hello_body')) ?>
-    <p class="philosophy" style="font-size:2rem;margin-bottom:0.2rem"><?= e(site_text('founder_name')) ?></p>
     <p><a href="mailto:<?= e(site_text('founder_email')) ?>"><?= e(site_text('founder_email')) ?></a></p>
   </div>
   <h2><?= e(site_text('about_close_heading')) ?></h2>

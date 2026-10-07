@@ -81,7 +81,7 @@
 <section class="band clay">
   <div class="frame section">
     <h2><?= e(site_text('contact_headline')) ?></h2>
-    <p class="philosophy" style="font-size:2rem"><?= e(site_text('founder_name')) ?></p>
+    <p>A question, an idea, or a story is welcome.</p>
     <p><a class="button" href="<?= e(url('/contact')) ?>"><?= e(site_text('contact_card_title')) ?></a></p>
   </div>
 </section>

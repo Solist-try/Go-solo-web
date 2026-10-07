@@ -97,7 +97,7 @@ function attempt_login(string $email, string $password): ?string
         return 'That email and password do not match.';
     }
     if ($row['status'] === 'suspended') {
-        return 'This account is resting. Write to Marge if that is a surprise.';
+        return 'This account is resting. Write through Contact if that is a surprise.';
     }
     if ($row['status'] === 'banned') {
         return 'This account is closed.';

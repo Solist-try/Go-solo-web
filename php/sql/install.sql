@@ -502,7 +502,7 @@ INSERT INTO settings (setting_key, setting_value) VALUES
   ('site_title', 'Go Solo'),
   ('tagline', 'A calm place to try something small, with other people nearby.'),
   ('logo_text', 'Go Solo'),
-  ('footer_line', 'A chair is here if you want it. Take your time.'),
+  ('footer_line', 'Go Solo © 2026'),
   ('founder_name', 'Marge Aliaga'),
   ('founder_email', 'marge@gosolo.co.network'),
   ('hero_title', 'Hello, vagabond'),
@@ -525,7 +525,7 @@ INSERT INTO settings (setting_key, setting_value) VALUES
   ('about_intro', 'I kept noticing the same thing.
 
 A lot of life is still set up for couples, families, and people who already have a circle. I was moving through it on my own. Sometimes by choice. Sometimes by circumstance.'),
-  ('about_founder_heading', 'Hi, I''m Marge.'),
+  ('about_founder_heading', 'How this started'),
   ('about_founder_body', 'I''ve always been a friendly person. I haven''t always been well connected.
 
 People assumed I had someone built in. Someone to bring along, someone to call, someone to help me decide, or someone to nudge me when life got stuck. Sometimes I did. Often I didn''t.
@@ -540,16 +540,12 @@ Life is not equally easy for everyone. People arrive starting over, living alone
 
 A life can keep moving before all of that lines up. That doesn''t mean doing everything alone. Support is welcome, and the choice stays yours.'),
   ('about_hello_heading', 'Say hello'),
-  ('about_hello_body', 'Go Solo is intentionally founder-led. If you have a question, an idea, or simply want to say hello, I would love to hear from you.'),
+  ('about_hello_body', 'If you have a question, an idea, or simply want to say hello, I would love to hear from you.'),
   ('about_close_heading', 'Pull up a chair'),
   ('about_close_body', 'You''re welcome here. Take your time.'),
   ('contact_headline', 'Contact'),
   ('contact_card_title', 'How to reach me'),
-  ('contact_body', 'Hi there, nice to hear from you.
-
-If you have ideas, questions, concerns, or stories, I''d love to hear from you.
-
-You can reach me by writing a note.'),
+  ('contact_body', 'Hi there. If you have a question, idea, concern, or story, I''d love to hear from you.'),
   ('seeds_title', 'Seeds'),
   ('seeds_line', 'Tiny futures you can plant now'),
   ('seeds_support', 'Some seeds grow through support.'),

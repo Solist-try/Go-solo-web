@@ -20,8 +20,8 @@
     <aside class="card">
       <h2><?= e(site_text('contact_card_title')) ?></h2>
       <?= paragraphs(site_text('contact_body')) ?>
-      <p class="philosophy" style="font-size:2.2rem"><?= e(site_text('founder_name')) ?></p>
-      <p><a href="mailto:<?= e(site_text('founder_email')) ?>"><?= e(site_text('founder_email')) ?></a></p>
+      <p>You can reach me at:<br><a href="mailto:<?= e(site_text('founder_email')) ?>"><?= e(site_text('founder_email')) ?></a></p>
+      <p class="founder">Founder<br><?= e(site_text('founder_name')) ?></p>
     </aside>
   </div>
   </div>

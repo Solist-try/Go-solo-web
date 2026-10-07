@@ -17,7 +17,26 @@ function site_text(string $key): string
 {
     $defaults = copy_defaults();
     $default = isset($defaults[$key]) ? (string) $defaults[$key] : '';
-    return setting($key, $default);
+    $value = setting($key, $default);
+    $earlier = [
+        'footer_line' => [
+            'A chair is here if you want it. Take your time.',
+            'A calm home for people building meaningful lives on their own terms.',
+        ],
+        'about_founder_heading' => [
+            "Hi, I'm Marge.",
+        ],
+        'about_hello_body' => [
+            'Go Solo is intentionally founder-led. If you have a question, an idea, or simply want to say hello, I would love to hear from you.',
+        ],
+        'contact_body' => [
+            "Hi there, nice to hear from you.\n\nIf you have ideas, questions, concerns, or stories, I'd love to hear from you.\n\nYou can reach me by writing a note.",
+        ],
+    ];
+    if (isset($earlier[$key]) && in_array($value, $earlier[$key], true)) {
+        return $default;
+    }
+    return $value;
 }
 
 function content_groups(): array
