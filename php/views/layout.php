@@ -27,6 +27,9 @@ $logoImage = site_text('logo_image');
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= e($pageTitle) ?></title>
   <meta name="description" content="<?= e(site_text('tagline')) ?>">
+  <link rel="icon" href="<?= e(url('/favicon.ico')) ?>" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="<?= e(url('/assets/images/favicon.svg')) ?>">
+  <link rel="apple-touch-icon" href="<?= e(url('/assets/images/apple-touch-icon.png')) ?>">
   <link rel="stylesheet" href="<?= e(url('/assets/css/site.css')) ?>">
   <style>
     :root {
