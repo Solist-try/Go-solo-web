@@ -450,8 +450,8 @@ INSERT INTO seeds (slug, title, description, prompt, kind, category, archived, c
 (
   'same',
   'SAME',
-  'Support. Accountability. Mutual empowerment. You can be open to a partner. Being open does not pair you with anyone. A steward suggests a match when there is a fit. You can take your time.',
-  'What would you like to grow with a partner?',
+  'Looking for someone on a similar path? A steward can introduce you. There is no rush.',
+  'What would you like company for on this stretch?',
   'same',
   'SAME',
   0,

@@ -151,7 +151,7 @@ function absolute_url(string $path): string
 
 function support_choices(): array
 {
-    return ['Accountability', 'Medical Buddy', 'Practical Life', 'Connection', 'Starting Over', 'Confidence'];
+    return ['Accountability', 'Medical Buddy', 'Practical Life', 'Connection', 'Starting Over', 'Confidence', 'Similar Path'];
 }
 
 function frequency_choices(): array

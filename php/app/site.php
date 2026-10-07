@@ -90,6 +90,16 @@ function page_seed(array $params): void
     }
     $offers = [];
     $requests = [];
+    if ($seed['slug'] === 'same') {
+        $earlierDescription = 'Support. Accountability. Mutual empowerment. You can be open to a partner. Being open does not pair you with anyone. A steward suggests a match when there is a fit. You can take your time.';
+        $earlierPrompt = 'What would you like to grow with a partner?';
+        if ($seed['description'] === $earlierDescription) {
+            $seed['description'] = 'Looking for someone on a similar path? A steward can introduce you. There is no rush.';
+        }
+        if ($seed['prompt'] === $earlierPrompt) {
+            $seed['prompt'] = 'What would you like company for on this stretch?';
+        }
+    }
     if ($seed['slug'] === 'skill-swap') {
         $offers = skill_rows('skill_offers');
         $requests = skill_rows('skill_requests');
@@ -154,9 +164,9 @@ function page_seed_open(array $params): void
             'INSERT INTO same_requests (user_id, seed_id, note, status, created_at) VALUES (?, ?, ?, ?, NOW())',
             [(int) $user['id'], (int) $seed['id'], clip(post_text('note', 1000), 1000), 'open']
         );
-        log_activity((int) $user['id'], 'Is open to a SAME partner for ' . $seed['title']);
+        log_activity((int) $user['id'], 'Asked for an introduction for ' . $seed['title']);
     }
-    flash('You are open. A steward will suggest someone if there is a fit. There is no rush.');
+    flash('You have asked for an introduction. A steward will be in touch when someone is on a similar path. There is no rush.');
     redirect('/seeds/' . $seed['slug']);
 }
 

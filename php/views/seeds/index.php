@@ -6,26 +6,31 @@
   <p><?= e(site_text('seeds_learning')) ?></p>
   <p><?= e(site_text('seeds_small')) ?></p>
   <div class="cards two">
-    <article class="card sage">
+    <article class="card sage seed-card">
       <h2>SAME</h2>
-      <p>Support<br>Accountability<br>Mutual<br>Empowerment</p>
-      <p>You can be open to someone on a similar stretch. A steward suggests a match. You can take your time.</p>
-      <p class="kicker">Support you can ask for</p>
-      <ul class="chips">
-        <?php foreach (support_choices() as $choice): ?><li><?= e($choice) ?></li><?php endforeach; ?>
-      </ul>
-      <p><a class="button sage" href="<?= e(url('/seeds/same')) ?>">Be open to a partner</a></p>
+      <p class="soft meaning">Support, accountability, mutual empowerment.</p>
+      <p>Looking for someone on a similar path? A steward can introduce you. There is no rush.</p>
+      <div class="examples">
+        <p class="kicker">Support you can ask for</p>
+        <p class="examples-label">Examples</p>
+        <ul class="chips">
+          <?php foreach (support_choices() as $choice): ?><li><?= e($choice) ?></li><?php endforeach; ?>
+        </ul>
+      </div>
+      <p class="card-action"><a class="button" href="<?= e(url('/seeds/same')) ?>">Ask for an introduction</a></p>
     </article>
-    <article class="card sage">
+    <article class="card sage seed-card">
       <h2>Skill Swap</h2>
-      <p>Learn something.</p>
-      <p>Teach something.</p>
-      <ul class="chips">
-        <?php foreach (['Teach crochet', 'Learn Spanish', 'Teach gardening', 'Learn budgeting', 'Teach writing', 'Learn DIY'] as $example): ?>
-          <li><?= e($example) ?></li>
-        <?php endforeach; ?>
-      </ul>
-      <p><a class="button sage" href="<?= e(url('/seeds/skill-swap')) ?>">Offer help, or ask for it</a></p>
+      <p>Learn something. Teach something.</p>
+      <div class="examples">
+        <p class="kicker">Examples</p>
+        <ul class="chips">
+          <?php foreach (['Teach crochet', 'Learn Spanish', 'Teach gardening', 'Learn budgeting', 'Teach writing', 'Learn DIY'] as $example): ?>
+            <li><?= e($example) ?></li>
+          <?php endforeach; ?>
+        </ul>
+      </div>
+      <p class="card-action"><a class="button" href="<?= e(url('/seeds/skill-swap')) ?>">Offer or request a skill</a></p>
     </article>
   </div>
   <?php if ($seeds): ?>

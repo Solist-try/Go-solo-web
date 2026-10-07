@@ -64,7 +64,7 @@
   <h2><?= e(site_text('home_seeds_title')) ?></h2>
   <p class="soft"><?= e(site_text('home_seeds_line')) ?></p>
   <div class="cards two">
-    <a class="card sage stretch" href="<?= e(url('/seeds/same')) ?>"><h3>SAME</h3><p>Be open to someone on a similar stretch. You can take your time.</p></a>
+    <a class="card sage stretch" href="<?= e(url('/seeds/same')) ?>"><h3>SAME</h3><p>Someone on a similar path. A steward can introduce you. There is no rush.</p></a>
     <a class="card sage stretch" href="<?= e(url('/seeds/skill-swap')) ?>"><h3>Skill Swap</h3><p>Learn something. Teach something.</p></a>
   </div>
   <p><a href="<?= e(url('/seeds')) ?>">Explore Seeds</a></p>

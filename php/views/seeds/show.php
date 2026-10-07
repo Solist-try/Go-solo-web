@@ -13,19 +13,19 @@
     <p>Take a look around. <a href="<?= e(url('/join')) ?>">Join Go Solo</a> if you want to plant this seed.</p>
   <?php elseif ($seed['kind'] === 'same'): ?>
     <div class="card">
-      <h2>A SAME partner</h2>
-      <p>Name what you would like to grow. Being open does not pair you with anyone. A steward suggests a partner when there is a fit.</p>
+      <h2>A similar path</h2>
+      <p>Say what you are moving through. A steward can introduce you to someone on a similar stretch. Nothing happens until you ask, and there is no rush.</p>
       <?php if (!empty($partnered)): ?>
-        <p>A steward suggested a partner. It is on your profile, whenever you want to look.</p>
+        <p>A steward has an introduction for you. It is on your profile, whenever you want to look.</p>
         <p><a href="<?= e(url('/profile')) ?>">Go to your profile</a></p>
       <?php elseif ($open): ?>
-        <p>You are open. A match waits for a steward.</p>
+        <p>You have asked. A steward will introduce you when someone is on a similar path.</p>
         <p><?= e($open['note']) ?></p>
       <?php else: ?>
         <form method="post" action="<?= e(url('/seeds/' . $seed['slug'] . '/open')) ?>">
           <?= csrf_field() ?>
-          <label><span>What would you like to grow?</span><textarea name="note" maxlength="1000"></textarea></label>
-          <button type="submit">I am open to a partner</button>
+          <label><span>What would you like company for?</span><textarea name="note" maxlength="1000"></textarea></label>
+          <button type="submit">Ask for an introduction</button>
         </form>
       <?php endif; ?>
     </div>
@@ -42,7 +42,7 @@
         </form>
       <?php endif; ?>
       <?php if ($seed['kind'] === 'skill-swap'): ?>
-        <p><a href="<?= e(url('/seeds/skill-swap')) ?>">Offer help, or ask for it</a></p>
+        <p><a href="<?= e(url('/seeds/skill-swap')) ?>">Offer or request a skill</a></p>
       <?php endif; ?>
     </div>
   <?php endif; ?>

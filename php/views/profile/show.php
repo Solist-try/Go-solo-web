@@ -27,10 +27,10 @@ $name = $person['display_name'] ?: 'A member';
   <?php endif; ?>
 
   <?php if ($isSelf && $matches): ?>
-    <h2>A SAME partner</h2>
+    <h2>Someone on a similar path</h2>
     <?php foreach ($matches as $match): ?>
       <article class="card sage">
-        <p>A SAME partner was suggested. A steward suggested <?= e($match['other_name']) ?> for this stretch. You can take your time.</p>
+        <p>A steward suggested <?= e($match['other_name']) ?> for this stretch. You can take your time.</p>
         <p><a href="<?= e(url('/members/' . $match['other_id'])) ?>"><?= e($match['other_name']) ?></a></p>
         <?php if ($match['note']): ?><p><?= e($match['note']) ?></p><?php endif; ?>
         <?php foreach ($sameNotes[$match['id']] ?? [] as $note): ?>

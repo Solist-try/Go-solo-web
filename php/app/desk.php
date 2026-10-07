@@ -295,7 +295,7 @@ function desk_same_suggest(array $params): void
         [$a, $b, $b, $a]
     );
     if ($existing) {
-        flash('Those two already have a match waiting.');
+        flash('Those two already have an introduction waiting.');
         redirect('/steward/same');
     }
     $note = clip(post_text('note', 1000), 1000);
@@ -310,10 +310,10 @@ function desk_same_suggest(array $params): void
     );
     $nameA = display_name_of($a);
     $nameB = display_name_of($b);
-    notify($a, 'A SAME partner was suggested. A steward suggested ' . $nameB . ' for this stretch. You can take your time.', '/profile');
-    notify($b, 'A SAME partner was suggested. A steward suggested ' . $nameA . ' for this stretch. You can take your time.', '/profile');
-    log_activity($a, 'A SAME partner was suggested');
-    log_activity($b, 'A SAME partner was suggested');
+    notify($a, 'A steward suggested ' . $nameB . ' for this stretch. You can take your time.', '/profile');
+    notify($b, 'A steward suggested ' . $nameA . ' for this stretch. You can take your time.', '/profile');
+    log_activity($a, 'An introduction was suggested');
+    log_activity($b, 'An introduction was suggested');
     flash('The suggestion is with both of them.');
     redirect('/steward/same');
 }
@@ -329,12 +329,12 @@ function desk_same_status(array $params): void
     $action = (string) ($_POST['action'] ?? '');
     if ($action === 'approve' && $match['status'] === 'suggested') {
         exec_sql('UPDATE same_matches SET status = ? WHERE id = ?', ['approved', (int) $match['id']]);
-        flash('The match is approved.');
+        flash('The introduction is approved.');
     } elseif ($action === 'archive' && $match['status'] !== 'archived') {
         exec_sql('UPDATE same_matches SET status = ? WHERE id = ?', ['archived', (int) $match['id']]);
-        notify((int) $match['user_a_id'], 'The SAME suggestion was set aside. You can be open again whenever you want.', '/seeds/same');
-        notify((int) $match['user_b_id'], 'The SAME suggestion was set aside. You can be open again whenever you want.', '/seeds/same');
-        flash('The match is archived.');
+        notify((int) $match['user_a_id'], 'The introduction was set aside. You can ask again whenever you want.', '/seeds/same');
+        notify((int) $match['user_b_id'], 'The introduction was set aside. You can ask again whenever you want.', '/seeds/same');
+        flash('The introduction is set aside.');
     }
     redirect('/steward/same');
 }

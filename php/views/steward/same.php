@@ -1,8 +1,8 @@
 <?php $pageTitle = 'SAME · Steward Desk'; $desk = 'same'; include __DIR__ . '/open.php'; ?>
-<h1>Suggested SAME Matches</h1>
-<p>People are open. A steward makes the match. Nothing here pairs them on its own.</p>
+<h1>Introductions</h1>
+<p>Someone has asked for company on a similar path. You make the introduction. Nothing here pairs people on its own.</p>
 <h2>Open requests</h2>
-<?php if (!$requests): ?><p class="soft">No one has asked for a partner yet.</p><?php endif; ?>
+<?php if (!$requests): ?><p class="soft">No one has asked for an introduction yet.</p><?php endif; ?>
 <?php foreach ($requests as $request): ?>
   <article class="card">
     <h3><?= e($request['display_name'] ?: 'A member') ?></h3>
@@ -14,7 +14,7 @@
     <form method="post" action="<?= e(url('/steward/same/suggest')) ?>">
       <?= csrf_field() ?>
       <input type="hidden" name="request_id" value="<?= e((string) $request['id']) ?>">
-      <label><span>Suggest a partner</span>
+      <label><span>Introduce someone</span>
         <select name="partner_id" required>
           <option value="">Choose a member</option>
           <?php foreach ($members as $member): ?>
@@ -24,12 +24,12 @@
         </select>
       </label>
       <label><span>A private note for them</span><textarea name="note" maxlength="1000"></textarea></label>
-      <button type="submit">Suggest this match</button>
+      <button type="submit">Make this introduction</button>
     </form>
   </article>
 <?php endforeach; ?>
 
-<h2>Matches</h2>
+<h2>Introductions</h2>
 <?php if (!$matches): ?><p class="soft">None yet.</p><?php endif; ?>
 <div class="table-wrap">
   <table>

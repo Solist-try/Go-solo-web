@@ -21,5 +21,5 @@
     </tbody>
   </table>
 </div>
-<?php if (!$members): ?><p>No one matches.</p><?php endif; ?>
+<?php if (!$members): ?><p>No one fits that search.</p><?php endif; ?>
 <?php include __DIR__ . '/close.php'; ?>
