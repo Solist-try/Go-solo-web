@@ -1,4 +1,4 @@
-<?php $pageTitle = ($waypoint['title'] ?? 'Waypoint') . ' · ' . copy('site_title'); ?>
+<?php $pageTitle = ($waypoint['title'] ?? 'Waypoint') . ' · ' . site_text('site_title'); ?>
 <section class="band mist">
   <div class="frame section">
   <p class="kicker"><a href="<?= e(url('/waypoints')) ?>">Waypoints</a></p>

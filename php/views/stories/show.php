@@ -1,4 +1,4 @@
-<?php $pageTitle = ($story['title'] ?? 'Out There') . ' · ' . copy('site_title'); ?>
+<?php $pageTitle = ($story['title'] ?? 'Out There') . ' · ' . site_text('site_title'); ?>
 <section class="frame section">
   <p class="kicker"><a href="<?= e(url('/out-there')) ?>">Out There</a></p>
   <h1><?= e($story['title']) ?></h1>

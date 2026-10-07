@@ -1,4 +1,4 @@
-<?php $pageTitle = ($post['title'] ?? 'Campfire') . ' · ' . copy('site_title'); ?>
+<?php $pageTitle = ($post['title'] ?? 'Campfire') . ' · ' . site_text('site_title'); ?>
 <section class="frame section">
   <p class="kicker"><a href="<?= e(url('/campfire')) ?>">Campfire</a></p>
   <h1><?= e($post['title']) ?></h1>

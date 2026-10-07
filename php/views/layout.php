@@ -1,25 +1,25 @@
 <?php
-$title = $title ?? copy('site_title');
+$title = $title ?? site_text('site_title');
 $pageTitle = $pageTitle ?? $title;
-$philosophy = copy('hero_philosophy');
+$philosophy = site_text('hero_philosophy');
 $nav = [
-    ['/about', copy('nav_about')],
-    ['/seeds', copy('nav_seeds')],
-    ['/out-there', copy('nav_out_there')],
-    ['/campfire', copy('nav_campfire')],
-    ['/waypoints', copy('nav_waypoints')],
-    ['/reading', copy('nav_reading')],
-    ['/contact', copy('nav_contact')],
+    ['/about', site_text('nav_about')],
+    ['/seeds', site_text('nav_seeds')],
+    ['/out-there', site_text('nav_out_there')],
+    ['/campfire', site_text('nav_campfire')],
+    ['/waypoints', site_text('nav_waypoints')],
+    ['/reading', site_text('nav_reading')],
+    ['/contact', site_text('nav_contact')],
 ];
 $path = request_path();
-$bg = hex_color(copy('color_background'), '#f7f5f2');
-$ink = hex_color(copy('color_ink'), '#1a1a1a');
-$soft = hex_color(copy('color_soft'), '#6b6b6b');
-$sage = hex_color(copy('color_sage'), '#dce5de');
-$clay = hex_color(copy('color_clay'), '#eed9d2');
-$mist = hex_color(copy('color_mist'), '#eceeef');
-$card = hex_color(copy('color_card'), '#eceeef');
-$logoImage = copy('logo_image');
+$bg = hex_color(site_text('color_background'), '#f7f5f2');
+$ink = hex_color(site_text('color_ink'), '#1a1a1a');
+$soft = hex_color(site_text('color_soft'), '#6b6b6b');
+$sage = hex_color(site_text('color_sage'), '#dce5de');
+$clay = hex_color(site_text('color_clay'), '#eed9d2');
+$mist = hex_color(site_text('color_mist'), '#eceeef');
+$card = hex_color(site_text('color_card'), '#eceeef');
+$logoImage = site_text('logo_image');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -27,7 +27,7 @@ $logoImage = copy('logo_image');
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= e($pageTitle) ?></title>
-  <meta name="description" content="<?= e(copy('tagline')) ?>">
+  <meta name="description" content="<?= e(site_text('tagline')) ?>">
   <link rel="stylesheet" href="<?= e(url('/assets/css/site.css')) ?>">
   <style>
     :root {
@@ -44,7 +44,7 @@ $logoImage = copy('logo_image');
 <body>
   <a class="skip" href="#content">Skip to content</a>
   <header class="site-header">
-    <a class="logo" href="<?= e(url('/')) ?>"><?php if ($logoImage !== ''): ?><img src="<?= e(media($logoImage)) ?>" alt=""><?php endif; ?><?= e(copy('logo_text')) ?></a>
+    <a class="logo" href="<?= e(url('/')) ?>"><?php if ($logoImage !== ''): ?><img src="<?= e(media($logoImage)) ?>" alt=""><?php endif; ?><?= e(site_text('logo_text')) ?></a>
     <nav class="nav" aria-label="Primary">
       <?php foreach ($nav as [$href, $label]): ?>
         <a href="<?= e(url($href)) ?>"<?= $path === $href ? ' aria-current="page"' : '' ?>><?= e($label) ?></a>
@@ -59,8 +59,8 @@ $logoImage = copy('logo_image');
           <button class="quiet small" type="submit">Log out</button>
         </form>
       <?php else: ?>
-        <a href="<?= e(url('/join')) ?>"><?= e(copy('nav_join')) ?></a>
-        <a href="<?= e(url('/login')) ?>"><?= e(copy('nav_login')) ?></a>
+        <a href="<?= e(url('/join')) ?>"><?= e(site_text('nav_join')) ?></a>
+        <a href="<?= e(url('/login')) ?>"><?= e(site_text('nav_login')) ?></a>
       <?php endif; ?>
     </nav>
   </header>
@@ -70,8 +70,8 @@ $logoImage = copy('logo_image');
   </main>
   <footer class="site-footer">
     <p class="philosophy" style="font-size:1.8rem"><?= e($philosophy) ?></p>
-    <p><?= e(copy('footer_line')) ?></p>
-    <p><a href="<?= e(url('/contact')) ?>"><?= e(copy('nav_contact')) ?></a> · <a href="mailto:<?= e(copy('founder_email')) ?>"><?= e(copy('founder_email')) ?></a></p>
+    <p><?= e(site_text('footer_line')) ?></p>
+    <p><a href="<?= e(url('/contact')) ?>"><?= e(site_text('nav_contact')) ?></a> · <a href="mailto:<?= e(site_text('founder_email')) ?>"><?= e(site_text('founder_email')) ?></a></p>
   </footer>
 </body>
 </html>

@@ -1,6 +1,6 @@
 <section class="band clay">
   <div class="frame section">
-  <h1><?= e(copy('contact_headline')) ?></h1>
+  <h1><?= e(site_text('contact_headline')) ?></h1>
   <div class="split two">
     <?php if (!empty($sent)): ?>
       <div class="card sage">
@@ -18,10 +18,10 @@
       </form>
     <?php endif; ?>
     <aside class="card">
-      <h2><?= e(copy('contact_card_title')) ?></h2>
-      <?= paragraphs(copy('contact_body')) ?>
-      <p class="philosophy" style="font-size:2.2rem"><?= e(copy('founder_name')) ?></p>
-      <p><a href="mailto:<?= e(copy('founder_email')) ?>"><?= e(copy('founder_email')) ?></a></p>
+      <h2><?= e(site_text('contact_card_title')) ?></h2>
+      <?= paragraphs(site_text('contact_body')) ?>
+      <p class="philosophy" style="font-size:2.2rem"><?= e(site_text('founder_name')) ?></p>
+      <p><a href="mailto:<?= e(site_text('founder_email')) ?>"><?= e(site_text('founder_email')) ?></a></p>
     </aside>
   </div>
   </div>

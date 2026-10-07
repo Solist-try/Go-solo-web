@@ -1,10 +1,10 @@
 <section class="frame section">
-  <h1><?= e(copy('seeds_title')) ?></h1>
-  <p class="lede"><?= e(copy('seeds_line')) ?></p>
-  <p><?= e(copy('seeds_support')) ?></p>
-  <p><?= e(copy('seeds_accountability')) ?></p>
-  <p><?= e(copy('seeds_learning')) ?></p>
-  <p><?= e(copy('seeds_small')) ?></p>
+  <h1><?= e(site_text('seeds_title')) ?></h1>
+  <p class="lede"><?= e(site_text('seeds_line')) ?></p>
+  <p><?= e(site_text('seeds_support')) ?></p>
+  <p><?= e(site_text('seeds_accountability')) ?></p>
+  <p><?= e(site_text('seeds_learning')) ?></p>
+  <p><?= e(site_text('seeds_small')) ?></p>
   <div class="cards two">
     <article class="card sage">
       <h2>SAME</h2>

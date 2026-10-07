@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Share an experience · ' . copy('site_title'); ?>
+<?php $pageTitle = 'Share an experience · ' . site_text('site_title'); ?>
 <section class="frame section narrow">
   <h1>Something that happened</h1>
   <p>Out There is for real experiences. Write what you did, what you expected, what happened, and whether you would do it again.</p>

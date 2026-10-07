@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Start a conversation · ' . copy('site_title'); ?>
+<?php $pageTitle = 'Start a conversation · ' . site_text('site_title'); ?>
 <section class="frame section narrow">
   <h1>Start a conversation</h1>
   <p>A question, an experience, an ordinary day, or something you are figuring out.</p>

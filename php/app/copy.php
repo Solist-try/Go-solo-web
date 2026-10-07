@@ -13,7 +13,7 @@ function copy_defaults(): array
     return $all;
 }
 
-function copy(string $key): string
+function site_text(string $key): string
 {
     $defaults = copy_defaults();
     $default = isset($defaults[$key]) ? (string) $defaults[$key] : '';

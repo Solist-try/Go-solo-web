@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Log In · ' . copy('site_title'); ?>
+<?php $pageTitle = 'Log In · ' . site_text('site_title'); ?>
 <section class="frame section narrow">
   <h1>Log In</h1>
   <p>Come in whenever you are ready.</p>

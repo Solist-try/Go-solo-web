@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Notes · ' . copy('site_title'); ?>
+<?php $pageTitle = 'Notes · ' . site_text('site_title'); ?>
 <section class="frame section narrow">
   <h1>Notes</h1>
   <p class="soft">Quiet things the house wanted you to see. There is no rush.</p>

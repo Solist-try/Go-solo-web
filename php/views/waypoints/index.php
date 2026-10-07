@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Waypoints · ' . copy('site_title'); ?>
+<?php $pageTitle = 'Waypoints · ' . site_text('site_title'); ?>
 <section class="band mist">
   <div class="frame section">
   <h1>Waypoints</h1>

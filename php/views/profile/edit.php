@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Tend your garden · ' . copy('site_title'); ?>
+<?php $pageTitle = 'Tend your garden · ' . site_text('site_title'); ?>
 <section class="frame section narrow">
   <h1>Tend this garden</h1>
   <p><a href="<?= e(url('/profile')) ?>">See it as others do</a></p>

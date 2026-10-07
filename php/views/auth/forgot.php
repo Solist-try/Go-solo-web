@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Forgot password · ' . copy('site_title'); ?>
+<?php $pageTitle = 'Forgot password · ' . site_text('site_title'); ?>
 <section class="frame section narrow">
   <h1>Forgot password</h1>
   <p>Write the email on your account. If it is here, a reset note will be sent. It lasts for two hours.</p>

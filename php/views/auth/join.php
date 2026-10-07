@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Join · ' . copy('site_title'); ?>
+<?php $pageTitle = 'Join · ' . site_text('site_title'); ?>
 <section class="frame section narrow">
   <h1>Join Go Solo</h1>
   <p>A chair is here if you want it. Nothing starts until you do.</p>

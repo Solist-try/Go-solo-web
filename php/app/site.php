@@ -5,23 +5,23 @@ declare(strict_types=1);
 function not_found(): void
 {
     http_response_code(404);
-    view('errors/404', ['pageTitle' => 'Not found · ' . copy('site_title')]);
+    view('errors/404', ['pageTitle' => 'Not found · ' . site_text('site_title')]);
 }
 
 function page_home(array $params): void
 {
-    view('home', ['pageTitle' => copy('site_title')]);
+    view('home', ['pageTitle' => site_text('site_title')]);
 }
 
 function page_about(array $params): void
 {
-    view('about', ['pageTitle' => copy('nav_about') . ' · ' . copy('site_title')]);
+    view('about', ['pageTitle' => site_text('nav_about') . ' · ' . site_text('site_title')]);
 }
 
 function page_contact(array $params): void
 {
     view('contact', [
-        'pageTitle' => copy('contact_headline') . ' · ' . copy('site_title'),
+        'pageTitle' => site_text('contact_headline') . ' · ' . site_text('site_title'),
         'sent' => isset($_GET['sent']),
         'name' => '',
         'email' => '',
@@ -37,7 +37,7 @@ function page_contact_post(array $params): void
     $body = clip(post_text('body', 4000), 4000);
     if ($name === '' || !valid_email($email) || $body === '') {
         view('contact', [
-            'pageTitle' => copy('contact_headline') . ' · ' . copy('site_title'),
+            'pageTitle' => site_text('contact_headline') . ' · ' . site_text('site_title'),
             'sent' => false,
             'name' => $name,
             'email' => $email,
@@ -58,7 +58,7 @@ function page_seeds(array $params): void
 {
     $seeds = q("SELECT slug, title FROM seeds WHERE archived = 0 AND slug NOT IN ('same', 'skill-swap') ORDER BY title");
     view('seeds/index', [
-        'pageTitle' => copy('seeds_title') . ' · ' . copy('site_title'),
+        'pageTitle' => site_text('seeds_title') . ' · ' . site_text('site_title'),
         'seeds' => $seeds,
     ]);
 }
@@ -95,7 +95,7 @@ function page_seed(array $params): void
         $requests = skill_rows('skill_requests');
     }
     view('seeds/show', [
-        'pageTitle' => $seed['title'] . ' · ' . copy('site_title'),
+        'pageTitle' => $seed['title'] . ' · ' . site_text('site_title'),
         'seed' => $seed,
         'open' => $open,
         'planted' => $planted,

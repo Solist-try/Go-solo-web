@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Account · ' . copy('site_title'); ?>
+<?php $pageTitle = 'Account · ' . site_text('site_title'); ?>
 <section class="frame section narrow">
   <h1>Account</h1>
   <form method="post" action="<?= e(url('/account')) ?>">

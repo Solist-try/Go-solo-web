@@ -6,7 +6,7 @@
   <?php foreach (content_groups() as $group => $fields): ?>
     <h2><?= e($group) ?></h2>
     <?php foreach ($fields as $key => $label): ?>
-      <?php $value = copy($key); ?>
+      <?php $value = site_text($key); ?>
       <label><span><?= e($label) ?></span>
         <?php if (long_setting($key, $value)): ?>
           <textarea name="<?= e($key) ?>" maxlength="8000"><?= e($value) ?></textarea>
@@ -18,7 +18,7 @@
   <?php endforeach; ?>
   <h2>How Go Solo works</h2>
   <?php
-  $steps = json_decode(copy('how_steps'), true);
+  $steps = json_decode(site_text('how_steps'), true);
   if (!is_array($steps)) {
       $steps = [];
   }

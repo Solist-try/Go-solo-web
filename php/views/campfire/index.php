@@ -1,15 +1,15 @@
-<?php $pageTitle = 'Campfire · ' . copy('site_title'); ?>
+<?php $pageTitle = 'Campfire · ' . site_text('site_title'); ?>
 <section class="band clay">
   <div class="frame section">
   <h1>Campfire</h1>
   <?php if (!$posts): ?>
     <figure>
-      <img class="photo story-photo" src="<?= e(media(copy('campfire_image'))) ?>" alt="<?= e(copy('campfire_image_alt')) ?>">
+      <img class="photo story-photo" src="<?= e(media(site_text('campfire_image'))) ?>" alt="<?= e(site_text('campfire_image_alt')) ?>">
     </figure>
-    <p class="lede" style="font-size:1.8rem"><?= e(copy('campfire_waiting')) ?></p>
-    <p><?= e(copy('campfire_empty')) ?></p>
+    <p class="lede" style="font-size:1.8rem"><?= e(site_text('campfire_waiting')) ?></p>
+    <p><?= e(site_text('campfire_empty')) ?></p>
   <?php else: ?>
-    <p><?= e(copy('campfire_empty')) ?></p>
+    <p><?= e(site_text('campfire_empty')) ?></p>
   <?php endif; ?>
   <?php if ($currentUser): ?>
     <p style="margin-top:1.4rem"><a class="button sage" href="<?= e(url('/campfire/new')) ?>">Start a conversation</a></p>

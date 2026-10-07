@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Steward Desk · ' . copy('site_title'); $desk = 'overview'; include __DIR__ . '/open.php'; ?>
+<?php $pageTitle = 'Steward Desk · ' . site_text('site_title'); $desk = 'overview'; include __DIR__ . '/open.php'; ?>
 <h1>Steward Desk</h1>
 <p>A quiet look at what the house needs. Nothing here is a score.</p>
 <?php if (!empty($changePassword)): ?>

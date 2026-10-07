@@ -1,11 +1,11 @@
-<?php $pageTitle = 'Out There · ' . copy('site_title'); ?>
+<?php $pageTitle = 'Out There · ' . site_text('site_title'); ?>
 <section class="frame section">
   <h1>Out There</h1>
   <?php if (!$stories): ?>
     <figure>
-      <img class="photo story-photo" src="<?= e(media(copy('out_there_image'))) ?>" alt="<?= e(copy('out_there_image_alt')) ?>">
+      <img class="photo story-photo" src="<?= e(media(site_text('out_there_image'))) ?>" alt="<?= e(site_text('out_there_image_alt')) ?>">
     </figure>
-    <p class="lede" style="font-size:1.7rem"><?= e(copy('out_there_empty')) ?></p>
+    <p class="lede" style="font-size:1.7rem"><?= e(site_text('out_there_empty')) ?></p>
   <?php else: ?>
     <p>Real experiences, and what someone learned from them.</p>
     <div class="stack">

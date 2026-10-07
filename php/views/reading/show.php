@@ -1,4 +1,4 @@
-<?php $pageTitle = ($article['title'] ?? 'Reading') . ' · ' . copy('site_title'); ?>
+<?php $pageTitle = ($article['title'] ?? 'Reading') . ' · ' . site_text('site_title'); ?>
 <section class="band mist">
   <div class="frame section narrow">
   <p class="kicker"><a href="<?= e(url('/reading')) ?>"><?= e($article['category_title']) ?></a></p>

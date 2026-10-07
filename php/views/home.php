@@ -1,36 +1,36 @@
 <section class="frame hero">
   <div>
-    <h1><?= e(copy('hero_title')) ?></h1>
-    <p class="lede"><?= e(copy('hero_subhead')) ?></p>
-    <p class="support"><?= e(copy('hero_support')) ?></p>
+    <h1><?= e(site_text('hero_title')) ?></h1>
+    <p class="lede"><?= e(site_text('hero_subhead')) ?></p>
+    <p class="support"><?= e(site_text('hero_support')) ?></p>
     <div class="actions">
-      <a class="button sage" href="<?= e(url('/join')) ?>"><?= e(copy('hero_primary')) ?></a>
-      <a class="button quiet" href="#how"><?= e(copy('hero_secondary')) ?></a>
+      <a class="button sage" href="<?= e(url('/join')) ?>"><?= e(site_text('hero_primary')) ?></a>
+      <a class="button quiet" href="#how"><?= e(site_text('hero_secondary')) ?></a>
     </div>
-    <p class="philosophy"><?= e(copy('hero_philosophy')) ?></p>
+    <p class="philosophy"><?= e(site_text('hero_philosophy')) ?></p>
   </div>
   <figure>
-    <img class="photo hero-photo" src="<?= e(media(copy('hero_image'))) ?>" alt="<?= e(copy('hero_image_alt')) ?>">
+    <img class="photo hero-photo" src="<?= e(media(site_text('hero_image'))) ?>" alt="<?= e(site_text('hero_image_alt')) ?>">
   </figure>
 </section>
 
 <section class="band white">
   <div class="frame section split two">
     <div>
-      <h2><?= e(copy('freedom_heading')) ?></h2>
-      <p class="callout"><?= e(copy('freedom_body')) ?></p>
+      <h2><?= e(site_text('freedom_heading')) ?></h2>
+      <p class="callout"><?= e(site_text('freedom_body')) ?></p>
     </div>
     <figure>
-      <img class="photo" src="<?= e(media(copy('freedom_image'))) ?>" alt="<?= e(copy('freedom_image_alt')) ?>">
+      <img class="photo" src="<?= e(media(site_text('freedom_image'))) ?>" alt="<?= e(site_text('freedom_image_alt')) ?>">
     </figure>
   </div>
 </section>
 
 <section class="frame section" id="how">
-  <h2><?= e(copy('how_title')) ?></h2>
+  <h2><?= e(site_text('how_title')) ?></h2>
   <div class="cards two">
     <?php
-    $steps = json_decode(copy('how_steps'), true);
+    $steps = json_decode(site_text('how_steps'), true);
     if (!is_array($steps) || $steps === []) {
         $steps = [
             ['name' => 'Find a Seed', 'body' => 'A seed is a tiny future, not a task. Plant something small.', 'href' => '/seeds'],
@@ -61,8 +61,8 @@
 </section>
 
 <section class="frame section">
-  <h2><?= e(copy('home_seeds_title')) ?></h2>
-  <p class="soft"><?= e(copy('home_seeds_line')) ?></p>
+  <h2><?= e(site_text('home_seeds_title')) ?></h2>
+  <p class="soft"><?= e(site_text('home_seeds_line')) ?></p>
   <div class="cards two">
     <a class="card sage stretch" href="<?= e(url('/seeds/same')) ?>"><h3>SAME</h3><p>Be open to someone on a similar stretch. You can take your time.</p></a>
     <a class="card sage stretch" href="<?= e(url('/seeds/skill-swap')) ?>"><h3>Skill Swap</h3><p>Learn something. Teach something.</p></a>
@@ -72,7 +72,7 @@
 
 <section class="band mist">
   <div class="frame section">
-    <h2><?= e(copy('nav_reading')) ?></h2>
+    <h2><?= e(site_text('nav_reading')) ?></h2>
     <p>Practical notes for ordinary days. A trip, a meal, a question, a first try.</p>
     <p><a class="button" href="<?= e(url('/reading')) ?>">Read The Story</a></p>
   </div>
@@ -80,8 +80,8 @@
 
 <section class="band clay">
   <div class="frame section">
-    <h2><?= e(copy('contact_headline')) ?></h2>
-    <p class="philosophy" style="font-size:2rem"><?= e(copy('founder_name')) ?></p>
-    <p><a class="button" href="<?= e(url('/contact')) ?>"><?= e(copy('contact_card_title')) ?></a></p>
+    <h2><?= e(site_text('contact_headline')) ?></h2>
+    <p class="philosophy" style="font-size:2rem"><?= e(site_text('founder_name')) ?></p>
+    <p><a class="button" href="<?= e(url('/contact')) ?>"><?= e(site_text('contact_card_title')) ?></a></p>
   </div>
 </section>

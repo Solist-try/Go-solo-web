@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Reading Room · ' . copy('site_title'); ?>
+<?php $pageTitle = 'Reading Room · ' . site_text('site_title'); ?>
 <section class="band mist">
   <div class="frame section">
   <h1>Reading Room</h1>

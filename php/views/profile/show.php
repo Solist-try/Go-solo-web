@@ -1,5 +1,5 @@
 <?php
-$pageTitle = ($person['display_name'] ?: 'Profile') . ' · ' . copy('site_title');
+$pageTitle = ($person['display_name'] ?: 'Profile') . ' · ' . site_text('site_title');
 $name = $person['display_name'] ?: 'A member';
 ?>
 <section class="frame section">

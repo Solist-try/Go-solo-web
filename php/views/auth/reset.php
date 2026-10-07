@@ -1,4 +1,4 @@
-<?php $pageTitle = 'Reset password · ' . copy('site_title'); ?>
+<?php $pageTitle = 'Reset password · ' . site_text('site_title'); ?>
 <section class="frame section narrow">
   <h1>Choose a new password</h1>
   <?php if (empty($valid)): ?>
