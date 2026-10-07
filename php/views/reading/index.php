@@ -4,7 +4,7 @@
   <h1>Reading Room</h1>
   <p>Practical notes for ordinary days. A trip, a meal, a question, a first try.</p>
   <?php if (!$categories): ?>
-    <p>The shelf is empty for now.</p>
+    <p>The shelves are still bare.</p>
   <?php endif; ?>
   <?php foreach ($categories as $category): ?>
     <article style="margin-top:2.4rem">
@@ -18,13 +18,16 @@
         <?php endif; ?>
       </div>
       <?php if (!$category['articles']): ?>
-        <p class="soft">Nothing on this shelf yet.</p>
+        <p class="soft">This shelf is still bare.</p>
       <?php else: ?>
-        <ul class="list">
+        <div class="previews">
           <?php foreach ($category['articles'] as $article): ?>
-            <li><a href="<?= e(url('/reading/' . $article['slug'])) ?>"><?= e($article['title']) ?></a></li>
+            <a href="<?= e(url('/reading/' . $article['slug'])) ?>">
+              <strong><?= e($article['title']) ?></strong>
+              <?php if (trim((string) $article['standfirst']) !== ''): ?><span><?= e($article['standfirst']) ?></span><?php endif; ?>
+            </a>
           <?php endforeach; ?>
-        </ul>
+        </div>
       <?php endif; ?>
     </article>
   <?php endforeach; ?>

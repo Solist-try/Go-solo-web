@@ -3,7 +3,7 @@ $pageTitle = ($person['display_name'] ?: 'Profile') . ' · ' . site_text('site_t
 $name = $person['display_name'] ?: 'A member';
 ?>
 <section class="frame section">
-  <p class="kicker">A garden</p>
+  <p class="kicker"><?= $isSelf ? 'My Garden' : 'A garden' ?></p>
   <h1><?= e($name) ?></h1>
   <?php if (!empty($person['avatar_path'])): ?>
     <img class="avatar" src="<?= e(media($person['avatar_path'])) ?>" alt="">
@@ -69,7 +69,7 @@ $name = $person['display_name'] ?: 'A member';
   <?php endif; ?>
 
   <h2>Waypoints</h2>
-  <?php if (!$waypoints): ?><p class="soft">No waypoint yet.</p><?php else: ?>
+  <?php if (!$waypoints): ?><p class="soft">No chair chosen yet.</p><?php else: ?>
     <ul class="chips">
       <?php foreach ($waypoints as $waypoint): ?>
         <li><a href="<?= e(url('/waypoints/' . $waypoint['slug'])) ?>"><?= e($waypoint['title']) ?></a></li>
@@ -78,7 +78,7 @@ $name = $person['display_name'] ?: 'A member';
   <?php endif; ?>
 
   <h2>Seeds I'm Growing</h2>
-  <?php if (!$growing && !$planted): ?><p class="soft">No seed planted yet.</p><?php endif; ?>
+  <?php if (!$growing && !$planted): ?><p class="soft">Nothing planted yet.</p><?php endif; ?>
   <ul class="list">
     <?php foreach ($planted as $seed): ?>
       <li><a href="<?= e(url('/seeds/' . $seed['slug'])) ?>"><?= e($seed['title']) ?></a></li>
@@ -89,17 +89,17 @@ $name = $person['display_name'] ?: 'A member';
   </ul>
 
   <h2>Seeds I'd Like Help Growing</h2>
-  <?php if (!$helpRequests): ?><p class="soft">Nothing asked for yet.</p><?php else: ?>
+  <?php if (!$helpRequests): ?><p class="soft">No requests yet.</p><?php else: ?>
     <ul class="chips"><?php foreach ($helpRequests as $title): ?><li><?= e($title) ?></li><?php endforeach; ?></ul>
   <?php endif; ?>
 
   <h2>Seeds I'm Happy To Help Plant</h2>
-  <?php if (!$helpOffers): ?><p class="soft">Nothing offered yet.</p><?php else: ?>
+  <?php if (!$helpOffers): ?><p class="soft">No offers yet.</p><?php else: ?>
     <ul class="chips"><?php foreach ($helpOffers as $title): ?><li><?= e($title) ?></li><?php endforeach; ?></ul>
   <?php endif; ?>
 
   <h2>Support Preferences</h2>
-  <?php if (!$supports): ?><p class="soft">No preference chosen.</p><?php else: ?>
+  <?php if (!$supports): ?><p class="soft">Still finding a rhythm.</p><?php else: ?>
     <ul class="chips"><?php foreach ($supports as $choice): ?><li><?= e($choice) ?></li><?php endforeach; ?></ul>
   <?php endif; ?>
 
@@ -110,7 +110,7 @@ $name = $person['display_name'] ?: 'A member';
   <p><?= e($person['check_in_style'] ?: 'Any way that feels easy.') ?></p>
 
   <h2>Recent Out There Stories</h2>
-  <?php if (!$stories): ?><p class="soft">No Out There story yet.</p><?php else: ?>
+  <?php if (!$stories): ?><p class="soft">No stories brought back yet.</p><?php else: ?>
     <ul class="list">
       <?php foreach ($stories as $story): ?>
         <li>

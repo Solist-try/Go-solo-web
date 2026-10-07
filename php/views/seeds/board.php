@@ -1,7 +1,7 @@
 <div class="cards two">
   <article class="card">
     <h2>Offers</h2>
-    <?php if (!$offers): ?><p class="soft">Nobody has offered a skill yet.</p><?php endif; ?>
+    <?php if (!$offers): ?><p class="soft">No offers yet.</p><?php endif; ?>
     <ul class="list">
       <?php foreach ($offers as $offer): ?>
         <li>
@@ -14,7 +14,7 @@
   </article>
   <article class="card">
     <h2>Requests</h2>
-    <?php if (!$requests): ?><p class="soft">Nobody has asked yet.</p><?php endif; ?>
+    <?php if (!$requests): ?><p class="soft">No requests yet.</p><?php endif; ?>
     <ul class="list">
       <?php foreach ($requests as $request): ?>
         <li>

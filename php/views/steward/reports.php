@@ -1,6 +1,6 @@
 <?php $pageTitle = 'Reports · Steward Desk'; $desk = 'reports'; include __DIR__ . '/open.php'; ?>
 <h1>Reports</h1>
-<?php if (!$reports): ?><p>Nothing is waiting.</p><?php endif; ?>
+<?php if (!$reports): ?><p>Nothing has been brought to the desk.</p><?php endif; ?>
 <?php foreach ($reports as $report): ?>
   <article class="card">
     <p class="soft"><?= e($report['status']) ?> · <?= e($report['target_type']) ?> · <?= e($report['reporter_name'] ?: 'A member') ?> · <?= e(nice_date($report['created_at'])) ?></p>

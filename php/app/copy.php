@@ -32,6 +32,22 @@ function site_text(string $key): string
         'contact_body' => [
             "Hi there, nice to hear from you.\n\nIf you have ideas, questions, concerns, or stories, I'd love to hear from you.\n\nYou can reach me by writing a note.",
         ],
+        'hero_subhead' => [
+            "Your life doesn't have to wait",
+        ],
+        'hero_support' => [
+            'A calm place to plant a seed, learn something, or ask for help.',
+            'Go Solo helps people build meaningful lives on their own terms',
+        ],
+        'hero_secondary' => [
+            'Learn More',
+        ],
+        'out_there_empty' => [
+            'Out There is where members share real-world experiences and what they learned from them.',
+        ],
+        'campfire_empty' => [
+            "Campfire is where members talk about questions, experiences, everyday life, and the things they're figuring out.",
+        ],
     ];
     if (isset($earlier[$key]) && in_array($value, $earlier[$key], true)) {
         return $default;

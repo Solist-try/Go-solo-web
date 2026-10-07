@@ -3,6 +3,8 @@
   <div class="frame section">
   <p class="kicker"><a href="<?= e(url('/waypoints')) ?>">Waypoints</a></p>
   <h1><?= e($waypoint['title']) ?></h1>
+  <?php $sitting = waypoint_sitting((string) $waypoint['slug']); ?>
+  <?php if ($sitting !== ''): ?><p class="kicker">People sit with</p><p><?= e($sitting) ?></p><?php endif; ?>
   <?php if ($waypoint['cover_path']): ?>
     <img class="photo story-photo" src="<?= e(media($waypoint['cover_path'])) ?>" alt="">
   <?php endif; ?>

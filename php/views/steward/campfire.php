@@ -1,6 +1,6 @@
 <?php $pageTitle = 'Campfire · Steward Desk'; $desk = 'campfire'; include __DIR__ . '/open.php'; ?>
 <h1>Campfire</h1>
-<?php if (!$posts): ?><p>No conversations yet.</p><?php endif; ?>
+<?php if (!$posts): ?><p>The campfire is waiting for its first conversation.</p><?php endif; ?>
 <?php foreach ($posts as $post): ?>
   <article class="card">
     <h2><a href="<?= e(url('/campfire/' . $post['id'])) ?>"><?= e($post['title']) ?></a></h2>

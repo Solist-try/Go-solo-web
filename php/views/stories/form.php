@@ -1,7 +1,7 @@
-<?php $pageTitle = 'Share an experience · ' . site_text('site_title'); ?>
+<?php $pageTitle = 'Tell the story · ' . site_text('site_title'); ?>
 <section class="frame section narrow">
-  <h1>Something that happened</h1>
-  <p>Out There is for real experiences. Write what you did, what you expected, what happened, and whether you would do it again.</p>
+  <h1>Tell the story</h1>
+  <p>The walk, the class, the conversation, the first solo trip. Write what you did, what you expected, what happened, and whether you would do it again.</p>
   <form method="post" action="<?= e(url('/out-there')) ?>" enctype="multipart/form-data">
     <?= csrf_field() ?>
     <label><span>Title</span><input type="text" name="title" maxlength="160" required value="<?= e($title ?? '') ?>"></label>
@@ -11,6 +11,6 @@
     <label><span>Would I do it again</span><textarea name="would_do_again" maxlength="5000"><?= e($would_do_again ?? '') ?></textarea></label>
     <label><span>A photograph, if you have one</span><input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif"></label>
     <?php if (!empty($error)): ?><p class="error"><?= e($error) ?></p><?php endif; ?>
-    <button type="submit">Share it</button>
+    <button type="submit">Tell the story</button>
   </form>
 </section>

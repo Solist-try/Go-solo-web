@@ -115,6 +115,6 @@
 <ul class="list"><?php foreach ($notes as $note): ?><li><?= e($note['note']) ?> <span class="soft"><?= e($note['steward_name'] ?: 'Steward') ?> · <?= e(nice_date($note['created_at'])) ?></span></li><?php endforeach; ?></ul>
 
 <h2>Activity</h2>
-<?php if (!$activity): ?><p class="soft">Nothing recorded yet.</p><?php endif; ?>
+<?php if (!$activity): ?><p class="soft">Nothing written down yet.</p><?php endif; ?>
 <ul class="list"><?php foreach ($activity as $item): ?><li><?= e($item['summary']) ?> <span class="soft"><?= e(nice_date($item['created_at'])) ?></span></li><?php endforeach; ?></ul>
 <?php include __DIR__ . '/close.php'; ?>

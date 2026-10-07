@@ -287,6 +287,16 @@ function clip(string $value, int $max): string
     return substr($value, 0, $max);
 }
 
+function waypoint_sitting(string $slug): string
+{
+    $lines = [
+        'emotional-clarity' => 'Starting over, grief, choosing differently.',
+        'independence-lab' => 'Budgeting, home repairs, solo travel.',
+        'solo-among-others' => 'Friendship, rooms built for pairs, staying connected.',
+    ];
+    return $lines[$slug] ?? '';
+}
+
 function slugify(string $value): string
 {
     $value = strtolower(trim($value));

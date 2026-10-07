@@ -3,7 +3,7 @@
   <h1>Notes</h1>
   <p class="soft">Quiet things the house wanted you to see. There is no rush.</p>
   <?php if (!$notices): ?>
-    <p>Nothing is waiting.</p>
+    <p>No notes have been left yet.</p>
   <?php else: ?>
     <ul class="list">
       <?php foreach ($notices as $notice): ?>

@@ -6,7 +6,7 @@
   <?php if (!empty($post['hidden'])): ?><p class="flash">This conversation is hidden from the house. You can still see it.</p><?php endif; ?>
   <?= paragraphs((string) $post['body']) ?>
   <h2>Around the table</h2>
-  <?php if (!$comments): ?><p class="soft">No one has added to this yet.</p><?php endif; ?>
+  <?php if (!$comments): ?><p class="soft">No one has pulled a chair closer yet.</p><?php endif; ?>
   <div class="stack">
     <?php foreach ($comments as $comment): ?>
       <article class="card">

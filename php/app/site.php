@@ -468,7 +468,7 @@ function page_reading(array $params): void
     $categories = q('SELECT * FROM reading_categories ORDER BY sort_order, title');
     foreach ($categories as $i => $category) {
         $categories[$i]['articles'] = q(
-            'SELECT slug, title FROM readings WHERE category_id = ? AND status = ? ORDER BY title',
+            'SELECT slug, title, standfirst FROM readings WHERE category_id = ? AND status = ? ORDER BY title',
             [(int) $category['id'], 'published']
         );
     }

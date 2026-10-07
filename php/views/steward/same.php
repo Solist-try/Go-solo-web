@@ -2,7 +2,7 @@
 <h1>Suggested SAME Matches</h1>
 <p>People are open. A steward makes the match. Nothing here pairs them on its own.</p>
 <h2>Open requests</h2>
-<?php if (!$requests): ?><p class="soft">No one is waiting.</p><?php endif; ?>
+<?php if (!$requests): ?><p class="soft">No one has asked for a partner yet.</p><?php endif; ?>
 <?php foreach ($requests as $request): ?>
   <article class="card">
     <h3><?= e($request['display_name'] ?: 'A member') ?></h3>

@@ -4,7 +4,7 @@
   <h1>Waypoints</h1>
   <p>A chair with people in a similar part of life. You can sit down when you want.</p>
   <?php if (!$waypoints): ?>
-    <p>Waypoints will sit here when they are ready.</p>
+    <p>The chairs will be here when they are ready.</p>
   <?php else: ?>
     <div class="cards">
       <?php foreach ($waypoints as $waypoint): ?>
@@ -13,6 +13,8 @@
             <img class="photo" src="<?= e(media($waypoint['cover_path'])) ?>" alt="">
           <?php endif; ?>
           <h2><?= e($waypoint['title']) ?></h2>
+          <?php $sitting = waypoint_sitting((string) $waypoint['slug']); ?>
+          <?php if ($sitting !== ''): ?><p class="kicker">People sit with</p><p><?= e($sitting) ?></p><?php endif; ?>
           <p><?= e(clip((string) $waypoint['description'], 220)) ?></p>
         </a>
       <?php endforeach; ?>

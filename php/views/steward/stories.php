@@ -1,6 +1,6 @@
 <?php $pageTitle = 'Out There · Steward Desk'; $desk = 'stories'; include __DIR__ . '/open.php'; ?>
 <h1>Out There</h1>
-<?php if (!$stories): ?><p>No stories yet. The public page explains the room until a real one arrives.</p><?php endif; ?>
+<?php if (!$stories): ?><p>No stories brought back yet. The public page keeps the room until a real one arrives.</p><?php endif; ?>
 <?php foreach ($stories as $story): ?>
   <article class="card">
     <h2><a href="<?= e(url('/out-there/' . $story['id'])) ?>"><?= e($story['title']) ?></a></h2>

@@ -7,7 +7,7 @@
     </figure>
     <p class="lede" style="font-size:1.7rem"><?= e(site_text('out_there_empty')) ?></p>
   <?php else: ?>
-    <p>Real experiences, and what someone learned from them.</p>
+    <p><?= e(site_text('out_there_empty')) ?></p>
     <div class="stack">
       <?php foreach ($stories as $story): ?>
         <article class="card">
@@ -19,8 +19,8 @@
     </div>
   <?php endif; ?>
   <?php if ($currentUser): ?>
-    <p style="margin-top:1.4rem"><a class="button sage" href="<?= e(url('/out-there/new')) ?>">Share something that happened</a></p>
+    <p style="margin-top:1.4rem"><a class="button sage" href="<?= e(url('/out-there/new')) ?>">Tell the story</a></p>
   <?php else: ?>
-    <p>When you are a member, you can share something that actually happened.</p>
+    <p>When you have a chair here, you can tell what happened.</p>
   <?php endif; ?>
 </section>

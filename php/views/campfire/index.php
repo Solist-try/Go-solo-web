@@ -12,7 +12,7 @@
     <p><?= e(site_text('campfire_empty')) ?></p>
   <?php endif; ?>
   <?php if ($currentUser): ?>
-    <p style="margin-top:1.4rem"><a class="button sage" href="<?= e(url('/campfire/new')) ?>">Start a conversation</a></p>
+    <p style="margin-top:1.4rem"><a class="button sage" href="<?= e(url('/campfire/new')) ?>">Pull up a chair</a></p>
   <?php endif; ?>
   </div>
 </section>

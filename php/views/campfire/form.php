@@ -1,7 +1,7 @@
-<?php $pageTitle = 'Start a conversation · ' . site_text('site_title'); ?>
+<?php $pageTitle = 'Pull up a chair · ' . site_text('site_title'); ?>
 <section class="frame section narrow">
-  <h1>Start a conversation</h1>
-  <p>A question, an experience, an ordinary day, or something you are figuring out.</p>
+  <h1>Pull up a chair</h1>
+  <p>Talk about something you're wondering about, something that happened, or something you're still working through.</p>
   <form method="post" action="<?= e(url('/campfire')) ?>">
     <?= csrf_field() ?>
     <label><span>Title</span><input type="text" name="title" maxlength="160" required value="<?= e($title ?? '') ?>"></label>
