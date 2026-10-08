@@ -42,7 +42,7 @@
     $stepLinks = [
         '/seeds' => 'Explore Seeds',
         '/out-there' => 'Take The Trip',
-        '/campfire' => 'Pull Up A Chair',
+        '/campfire' => 'Share Your Story',
         '/waypoints' => 'Pull Up A Chair',
         '/reading' => 'Read The Story',
     ];
