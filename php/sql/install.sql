@@ -246,6 +246,7 @@ CREATE TABLE stories (
   expectations TEXT NOT NULL,
   what_happened TEXT NOT NULL,
   would_do_again TEXT NOT NULL,
+  body TEXT NULL,
   image_path VARCHAR(255) NOT NULL DEFAULT '',
   hidden TINYINT(1) NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL,
@@ -272,7 +273,7 @@ CREATE TABLE campfire_posts (
 CREATE TABLE comments (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id INT UNSIGNED NOT NULL,
-  target_type ENUM('story', 'campfire') NOT NULL,
+  target_type ENUM('story', 'campfire', 'waypoint') NOT NULL,
   target_id INT UNSIGNED NOT NULL,
   body TEXT NOT NULL,
   hidden TINYINT(1) NOT NULL DEFAULT 0,
@@ -286,7 +287,7 @@ CREATE TABLE comments (
 CREATE TABLE reports (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   reporter_id INT UNSIGNED NOT NULL,
-  target_type ENUM('story', 'campfire', 'comment', 'profile') NOT NULL,
+  target_type ENUM('story', 'campfire', 'comment', 'profile', 'waypoint') NOT NULL,
   target_id INT UNSIGNED NOT NULL,
   reason TEXT NOT NULL,
   status ENUM('pending', 'reviewed', 'dismissed') NOT NULL DEFAULT 'pending',
@@ -360,6 +361,53 @@ CREATE TABLE readings (
   KEY readings_category (category_id),
   KEY readings_status (status),
   CONSTRAINT readings_category_fk FOREIGN KEY (category_id) REFERENCES reading_categories (id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE waypoint_posts (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  waypoint_id INT UNSIGNED NOT NULL,
+  user_id INT UNSIGNED NOT NULL,
+  title VARCHAR(160) NOT NULL,
+  body TEXT NOT NULL,
+  pinned TINYINT(1) NOT NULL DEFAULT 0,
+  hidden TINYINT(1) NOT NULL DEFAULT 0,
+  locked TINYINT(1) NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL,
+  PRIMARY KEY (id),
+  KEY waypoint_posts_room (waypoint_id, pinned, created_at),
+  KEY waypoint_posts_user (user_id),
+  CONSTRAINT waypoint_posts_waypoint_fk FOREIGN KEY (waypoint_id) REFERENCES waypoints (id) ON DELETE CASCADE,
+  CONSTRAINT waypoint_posts_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE waypoint_readings (
+  waypoint_id INT UNSIGNED NOT NULL,
+  reading_id INT UNSIGNED NOT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (waypoint_id, reading_id),
+  KEY waypoint_readings_reading (reading_id, sort_order),
+  CONSTRAINT waypoint_readings_waypoint_fk FOREIGN KEY (waypoint_id) REFERENCES waypoints (id) ON DELETE CASCADE,
+  CONSTRAINT waypoint_readings_reading_fk FOREIGN KEY (reading_id) REFERENCES readings (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE content_images (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id INT UNSIGNED NOT NULL,
+  parent_type ENUM('story', 'campfire', 'waypoint', 'comment') NOT NULL,
+  parent_id INT UNSIGNED NOT NULL,
+  path VARCHAR(255) NOT NULL,
+  alt VARCHAR(255) NOT NULL DEFAULT '',
+  created_at DATETIME NOT NULL,
+  PRIMARY KEY (id),
+  KEY content_images_parent (parent_type, parent_id),
+  KEY content_images_user (user_id),
+  CONSTRAINT content_images_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE schema_updates (
+  update_key VARCHAR(80) NOT NULL,
+  applied_at DATETIME NOT NULL,
+  PRIMARY KEY (update_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE notices (
@@ -727,4 +775,6 @@ INSERT INTO readings (id, category_id, slug, title, standfirst, body, image_path
 Excitement is one kind of growth. Capability is another. The person who finally keeps a household routine has grown, just as the person who boards a train alone has grown.
 
 Ask of this month: what would make my actual days feel more intentional, more connected, more capable? The answer might be Poland. It might be Tuesday. Both count.', '', 'published', NOW(), NOW());
+
+INSERT INTO schema_updates (update_key, applied_at) VALUES ('rooms-2026-10-08', NOW());
 

@@ -13,7 +13,7 @@
         <article class="card">
           <h2><a href="<?= e(url('/out-there/' . $story['id'])) ?>"><?= e($story['title']) ?></a></h2>
           <p class="soft"><?= e($story['display_name'] ?: 'A member') ?> · <?= e(nice_date($story['created_at'])) ?></p>
-          <p><?= e(clip((string) $story['what_happened'], 220)) ?></p>
+          <p><?= e(story_excerpt($story)) ?></p>
         </article>
       <?php endforeach; ?>
     </div>

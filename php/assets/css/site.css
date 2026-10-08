@@ -237,6 +237,35 @@ th, td { text-align: left; padding: 0.75rem 0.5rem; border-bottom: 1px solid var
 .avatar { width: 4.5rem; height: 4.5rem; border-radius: 50%; object-fit: cover; }
 .inline { display: inline; }
 .narrow { max-width: 40rem; }
+.editor-tools { display: none; flex-wrap: wrap; gap: 0.35rem; margin: 0 0 0.45rem; }
+.editor.is-ready .editor-tools { display: flex; }
+.editor-tools button { background: var(--bg); border: 1px solid var(--line); padding: 0.28rem 0.65rem; }
+.editor-surface {
+  display: none;
+  min-height: 8rem;
+  border: 1px solid var(--line);
+  background: var(--mist);
+  border-radius: 16px;
+  padding: 0.8rem 0.95rem;
+  margin-bottom: 1rem;
+}
+.editor.is-ready .editor-surface { display: block; }
+.editor-compact .editor-surface { min-height: 4.5rem; }
+.editor-surface:focus { outline: 2px solid var(--sage); }
+.editor-source { min-height: 8rem; }
+.editor.is-ready .editor-source {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+.writing blockquote { margin: 0.8rem 0; padding-left: 0.9rem; border-left: 3px solid var(--sage); }
+.writing ul, .writing ol { margin: 0.4rem 0 0.9rem 1.2rem; }
+.writing li + li { margin-top: 0.25rem; }
 
 @media (min-width: 860px) {
   .hero, .split.two { grid-template-columns: 1.1fr 0.9fr; }

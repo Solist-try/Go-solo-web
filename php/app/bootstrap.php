@@ -31,6 +31,7 @@ if (empty($_SESSION['csrf'])) {
 }
 
 require __DIR__ . '/helpers.php';
+require __DIR__ . '/writing.php';
 require __DIR__ . '/auth.php';
 require __DIR__ . '/copy.php';
 

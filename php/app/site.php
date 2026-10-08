@@ -192,8 +192,9 @@ function page_skill_post(array $params): void
 
 function page_stories(array $params): void
 {
+    $body = rooms_ready() ? 's.body, ' : '';
     $stories = q(
-        "SELECT s.id, s.title, s.what_happened, s.created_at, p.display_name
+        "SELECT s.id, s.title, {$body}s.what_happened, s.created_at, p.display_name
          FROM stories s
          JOIN users u ON u.id = s.user_id AND u.status = 'active'
          LEFT JOIN profiles p ON p.user_id = u.id
@@ -206,66 +207,17 @@ function page_stories(array $params): void
 
 function page_story_form(array $params): void
 {
-    require_user();
-    view('stories/form', [
-        'title' => '',
-        'what_i_did' => '',
-        'expectations' => '',
-        'what_happened' => '',
-        'would_do_again' => '',
-        'error' => '',
-    ]);
+    room_story_form($params);
 }
 
 function page_story_save(array $params): void
 {
-    $user = require_user();
-    $title = clip(post_text('title', 160), 160);
-    $did = clip(post_text('what_i_did', 5000), 5000);
-    $expected = clip(post_text('expectations', 5000), 5000);
-    $happened = clip(post_text('what_happened', 5000), 5000);
-    $again = clip(post_text('would_do_again', 5000), 5000);
-    $error = '';
-    if ($title === '' || $did === '' || $happened === '') {
-        $error = 'A story needs a title, what you did, and what happened.';
-    }
-    $problem = upload_problem('image');
-    if ($problem) {
-        $error = $problem;
-    }
-    if ($error !== '') {
-        view('stories/form', [
-            'title' => $title,
-            'what_i_did' => $did,
-            'expectations' => $expected,
-            'what_happened' => $happened,
-            'would_do_again' => $again,
-            'error' => $error,
-        ]);
-        return;
-    }
-    $image = store_upload('image', 'covers') ?? '';
-    exec_sql(
-        'INSERT INTO stories (user_id, title, what_i_did, expectations, what_happened, would_do_again, image_path, hidden, created_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 0, NOW())',
-        [(int) $user['id'], $title, $did, $expected, $happened, $again, $image]
-    );
-    $id = (int) db()->lastInsertId();
-    log_activity((int) $user['id'], 'Shared an Out There story');
-    redirect('/out-there/' . $id);
+    room_story_save($params);
 }
 
 function page_story(array $params): void
 {
-    $story = one(
-        'SELECT s.*, p.display_name FROM stories s LEFT JOIN profiles p ON p.user_id = s.user_id WHERE s.id = ?',
-        [(int) $params['id']]
-    );
-    if (!$story || !can_see_hidden($story) || !author_visible((int) $story['user_id'])) {
-        not_found();
-        return;
-    }
-    view('stories/show', ['story' => $story]);
+    room_story_show($params);
 }
 
 function author_visible(int $userId): bool
@@ -312,79 +264,29 @@ function page_campfire(array $params): void
 
 function page_campfire_form(array $params): void
 {
-    require_user();
-    view('campfire/form', ['title' => '', 'body' => '', 'error' => '']);
+    room_campfire_form($params);
 }
 
 function page_campfire_save(array $params): void
 {
-    $user = require_user();
-    $title = clip(post_text('title', 160), 160);
-    $body = clip(post_text('body', 5000), 5000);
-    if ($title === '' || $body === '') {
-        view('campfire/form', ['title' => $title, 'body' => $body, 'error' => 'A title and a few words are enough.']);
-        return;
-    }
-    exec_sql(
-        'INSERT INTO campfire_posts (user_id, title, body, hidden, locked, created_at) VALUES (?, ?, ?, 0, 0, NOW())',
-        [(int) $user['id'], $title, $body]
-    );
-    $id = (int) db()->lastInsertId();
-    log_activity((int) $user['id'], 'Started a campfire conversation');
-    redirect('/campfire/' . $id);
+    room_campfire_save($params);
 }
 
 function page_campfire_show(array $params): void
 {
-    $post = one(
-        'SELECT c.*, p.display_name FROM campfire_posts c LEFT JOIN profiles p ON p.user_id = c.user_id WHERE c.id = ?',
-        [(int) $params['id']]
-    );
-    if (!$post || !can_see_hidden($post) || !author_visible((int) $post['user_id'])) {
-        not_found();
-        return;
-    }
-    $userId = (int) (current_user()['id'] ?? 0);
-    $steward = is_steward() ? 1 : 0;
-    $comments = q(
-        "SELECT c.*, p.display_name
-         FROM comments c
-         JOIN users u ON u.id = c.user_id AND u.status = 'active'
-         LEFT JOIN profiles p ON p.user_id = u.id
-         WHERE c.target_type = 'campfire' AND c.target_id = ? AND (c.hidden = 0 OR c.user_id = ? OR ? = 1)
-         ORDER BY c.id",
-        [(int) $post['id'], $userId, $steward]
-    );
-    view('campfire/show', ['post' => $post, 'comments' => $comments]);
+    room_campfire_show($params);
 }
 
 function page_campfire_comment(array $params): void
 {
-    $user = require_user();
-    $post = one('SELECT * FROM campfire_posts WHERE id = ?', [(int) $params['id']]);
-    if (!$post || (int) $post['hidden'] === 1 || (int) $post['locked'] === 1) {
-        not_found();
-        return;
-    }
-    $body = clip(post_text('body', 4000), 4000);
-    if ($body !== '') {
-        exec_sql(
-            'INSERT INTO comments (user_id, target_type, target_id, body, hidden, created_at) VALUES (?, ?, ?, ?, 0, NOW())',
-            [(int) $user['id'], 'campfire', (int) $post['id'], $body]
-        );
-        log_activity((int) $user['id'], 'Added to a campfire conversation');
-    }
-    redirect('/campfire/' . (int) $post['id']);
+    room_campfire_comment($params);
 }
 
 function page_comment_report(array $params): void
 {
     $user = require_user();
-    $comment = one('SELECT target_type, target_id FROM comments WHERE id = ?', [(int) $params['id']]);
-    $back = '/campfire';
-    if ($comment && $comment['target_type'] === 'campfire') {
-        $back = '/campfire/' . (int) $comment['target_id'];
-    }
+    $comment = one('SELECT * FROM comments WHERE id = ?', [(int) $params['id']]);
+    $back = $comment ? comment_back($comment) : '/campfire';
     make_report((int) $user['id'], 'comment', (int) $params['id'], $back);
 }
 
@@ -397,7 +299,7 @@ function page_campfire_report(array $params): void
 function make_report(int $reporter, string $type, int $target, string $back): void
 {
     $reason = clip(post_text('reason', 1000), 1000);
-    if ($reason === '' || !in_array($type, ['story', 'campfire', 'comment', 'profile'], true) || $target <= 0) {
+    if ($reason === '' || !in_array($type, ['story', 'campfire', 'comment', 'profile', 'waypoint'], true) || $target <= 0) {
         flash('A report needs a few words.');
         redirect($back);
     }
@@ -420,29 +322,7 @@ function page_waypoints(array $params): void
 
 function page_waypoint(array $params): void
 {
-    $waypoint = one('SELECT * FROM waypoints WHERE slug = ?', [$params['slug']]);
-    if (!$waypoint || ((int) $waypoint['archived'] === 1 && !is_steward())) {
-        not_found();
-        return;
-    }
-    $user = current_user();
-    $joined = false;
-    if ($user) {
-        $joined = (bool) one(
-            'SELECT user_id FROM waypoint_members WHERE waypoint_id = ? AND user_id = ?',
-            [(int) $waypoint['id'], (int) $user['id']]
-        );
-    }
-    $people = q(
-        "SELECT u.id, p.display_name
-         FROM waypoint_members wm
-         JOIN users u ON u.id = wm.user_id AND u.status = 'active'
-         LEFT JOIN profiles p ON p.user_id = u.id
-         WHERE wm.waypoint_id = ?
-         ORDER BY p.display_name",
-        [(int) $waypoint['id']]
-    );
-    view('waypoints/show', ['waypoint' => $waypoint, 'joined' => $joined, 'people' => $people]);
+    room_waypoint($params);
 }
 
 function page_waypoint_join(array $params): void

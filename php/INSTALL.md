@@ -35,6 +35,8 @@ That file creates the tables, the starting steward account, the three waypoints,
 
 Importing it again drops those tables and starts over. Do that only on a new site.
 
+If the site is already installed and you are adding discussions, replies, and reading-room links, import `sql/update-rooms.sql` once instead. It adds tables and one story column. It does not delete stories, members, or the reading room. The script records `rooms-2026-10-08` in `schema_updates`. Importing that file again is safe. The site does not run this update on an ordinary page view.
+
 ## 3. Upload the site
 
 Upload the **contents** of the `php` folder into `public_html`, so `index.php` sits next to `public_html` itself, not inside another folder.

@@ -11,6 +11,7 @@ function desk_overview(array $params): void
         + count_of('SELECT COUNT(*) AS n FROM skill_requests WHERE archived = 0');
     view('steward/overview', [
         'changePassword' => $hash && password_verify('change-this-chair', (string) $hash['password_hash']),
+        'roomsReady' => rooms_ready(),
         'stats' => [
             ['label' => 'Members total', 'n' => count_of('SELECT COUNT(*) AS n FROM users')],
             ['label' => 'Members this month', 'n' => count_of("SELECT COUNT(*) AS n FROM users WHERE created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')")],
@@ -435,8 +436,7 @@ function desk_campfire_action(array $params): void
     if ($action === 'lock' || $action === 'unlock') {
         exec_sql('UPDATE campfire_posts SET locked = ? WHERE id = ?', [$action === 'lock' ? 1 : 0, $id]);
     } elseif ($action === 'delete') {
-        exec_sql('DELETE FROM comments WHERE target_type = ? AND target_id = ?', ['campfire', $id]);
-        exec_sql('DELETE FROM campfire_posts WHERE id = ?', [$id]);
+        remove_campfire($id);
     } else {
         content_flag('campfire_posts', $id, $action, '/steward/campfire');
         return;
@@ -447,7 +447,9 @@ function desk_campfire_action(array $params): void
 function desk_comment_action(array $params): void
 {
     require_steward();
-    content_flag('comments', (int) $params['id'], (string) ($_POST['action'] ?? ''), '/steward/campfire');
+    $comment = one('SELECT * FROM comments WHERE id = ?', [(int) $params['id']]);
+    $back = $comment ? comment_back($comment) : '/steward/campfire';
+    content_flag('comments', (int) $params['id'], (string) ($_POST['action'] ?? ''), $back);
 }
 
 function content_flag(string $table, int $id, string $action, string $back): void
@@ -460,7 +462,17 @@ function content_flag(string $table, int $id, string $action, string $back): voi
     } elseif ($action === 'show') {
         exec_sql("UPDATE {$table} SET hidden = 0 WHERE id = ?", [$id]);
     } elseif ($action === 'delete') {
-        exec_sql("DELETE FROM {$table} WHERE id = ?", [$id]);
+        if ($table === 'stories') {
+            remove_story($id);
+        } elseif ($table === 'campfire_posts') {
+            remove_campfire($id);
+        } else {
+            $paths = rooms_ready() ? release_images('comment', $id) : [];
+            exec_sql("DELETE FROM {$table} WHERE id = ?", [$id]);
+            foreach ($paths as $path) {
+                forget_upload((string) $path);
+            }
+        }
     }
     redirect($back);
 }
@@ -483,7 +495,15 @@ function desk_waypoint_form(array $params): void
         }
         $waypoint = $row;
     }
-    view('steward/waypoint-form', ['waypoint' => $waypoint]);
+    $readings = [];
+    $linked = [];
+    if (!empty($waypoint['id']) && rooms_ready()) {
+        $readings = q('SELECT id, title, status FROM readings ORDER BY title');
+        foreach (q('SELECT reading_id, sort_order FROM waypoint_readings WHERE waypoint_id = ?', [(int) $waypoint['id']]) as $link) {
+            $linked[(int) $link['reading_id']] = (int) $link['sort_order'];
+        }
+    }
+    view('steward/waypoint-form', ['waypoint' => $waypoint, 'readings' => $readings, 'linked' => $linked]);
 }
 
 function desk_waypoint_save(array $params): void

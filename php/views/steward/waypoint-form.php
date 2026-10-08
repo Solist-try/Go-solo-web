@@ -11,4 +11,25 @@
   <label><input type="checkbox" name="archived" value="1"<?= !empty($waypoint['archived']) ? ' checked' : '' ?>> Archive</label>
   <button type="submit">Save waypoint</button>
 </form>
+<?php if (!empty($waypoint['id']) && !empty($readings)): ?>
+  <h2>Food for Thought</h2>
+  <p class="soft">Connect pieces from the reading room. A number sets the order. Uncheck a piece to take it off this chair.</p>
+  <form method="post" action="<?= e(url('/steward/waypoints/readings')) ?>">
+    <?= csrf_field() ?>
+    <input type="hidden" name="waypoint_id" value="<?= e((string) $waypoint['id']) ?>">
+    <?php foreach ($readings as $article): ?>
+      <?php $chosen = isset($linked[(int) $article['id']]); ?>
+      <div class="row-actions">
+        <label>
+          <input type="checkbox" name="reading_id[]" value="<?= e((string) $article['id']) ?>"<?= $chosen ? ' checked' : '' ?>>
+          <?= e($article['title']) ?><?php if ($article['status'] !== 'published'): ?> <span class="soft">(<?= e($article['status']) ?>)</span><?php endif; ?>
+        </label>
+        <label><span class="soft">Order</span>
+          <input type="text" name="sort_order[<?= e((string) $article['id']) ?>]" value="<?= e((string) ($linked[(int) $article['id']] ?? '')) ?>" maxlength="4">
+        </label>
+      </div>
+    <?php endforeach; ?>
+    <button type="submit">Save the reading room pieces</button>
+  </form>
+<?php endif; ?>
 <?php include __DIR__ . '/close.php'; ?>

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/site.php';
 require __DIR__ . '/desk.php';
+require __DIR__ . '/rooms.php';
 
 dispatch();
 
@@ -54,6 +55,7 @@ function route_table(): array
         ['GET', '/out-there/new', 'page_story_form'],
         $post('/out-there', 'page_story_save'),
         ['GET', '/out-there/{id}', 'page_story'],
+        $post('/out-there/{id}/reply', 'room_story_reply'),
         $post('/out-there/{id}/report', 'page_story_report'),
         ['GET', '/campfire', 'page_campfire'],
         ['GET', '/campfire/new', 'page_campfire_form'],
@@ -62,7 +64,12 @@ function route_table(): array
         $post('/campfire/{id}/comment', 'page_campfire_comment'),
         $post('/campfire/{id}/report', 'page_campfire_report'),
         $post('/comments/{id}/report', 'page_comment_report'),
+        $post('/comments/{id}/delete', 'room_comment_delete'),
         ['GET', '/waypoints', 'page_waypoints'],
+        ['GET', '/waypoints/{slug}/discussions/{id}', 'room_discussion'],
+        $post('/waypoints/{slug}/discussions/{id}/reply', 'room_discussion_reply'),
+        $post('/waypoints/{slug}/discussions/{id}/delete', 'room_discussion_delete'),
+        $post('/waypoints/{slug}/discussions', 'room_discussion_save'),
         ['GET', '/waypoints/{slug}', 'page_waypoint'],
         $post('/waypoints/{slug}/join', 'page_waypoint_join'),
         $post('/waypoints/{slug}/leave', 'page_waypoint_leave'),
@@ -111,6 +118,8 @@ function route_table(): array
         ['GET', '/steward/waypoints/new', 'desk_waypoint_form'],
         ['GET', '/steward/waypoints/{id}', 'desk_waypoint_form'],
         $post('/steward/waypoints/save', 'desk_waypoint_save'),
+        $post('/steward/waypoints/readings', 'desk_waypoint_readings'),
+        $post('/steward/waypoint-posts/{id}', 'desk_waypoint_post_action'),
         ['GET', '/steward/reading', 'desk_reading'],
         ['GET', '/steward/reading/new', 'desk_reading_form'],
         ['GET', '/steward/reading/{id}', 'desk_reading_form'],

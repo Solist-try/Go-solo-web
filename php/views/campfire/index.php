@@ -23,7 +23,7 @@
         <article class="card">
           <h2><a href="<?= e(url('/campfire/' . $post['id'])) ?>"><?= e($post['title']) ?></a></h2>
           <p class="soft"><?= e($post['display_name'] ?: 'A member') ?> · <?= e(nice_date($post['created_at'])) ?></p>
-          <p><?= e(clip((string) $post['body'], 240)) ?></p>
+          <p><?= e(writing_plain((string) $post['body'], 240)) ?></p>
         </article>
       <?php endforeach; ?>
     </div>

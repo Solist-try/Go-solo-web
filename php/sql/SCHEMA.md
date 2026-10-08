@@ -116,3 +116,15 @@ Check-in style is one of: Messages, Voice notes, Video calls, Email, Any format.
 Every table uses InnoDB. Primary keys, unique slugs, and the foreign keys named in `install.sql` are created there. Lookups that the desk repeats are indexed: email, status, created date, last seen, hidden stories, open SAME requests, report status, and notes for one member.
 
 Seed rows for settings, waypoints, seeds, six reading categories, and 27 published articles are at the bottom of `install.sql`.
+
+## Room update
+
+An existing database picks up discussions, replies, photographs, and reading-room links by importing `update-rooms.sql` once in phpMyAdmin. That file is additive. It does not drop tables or rewrite Out There answers.
+
+It records `rooms-2026-10-08` in `schema_updates`. The application checks for `stories.body` and `waypoint_posts` before using the new rooms. It does not apply the update during a normal page request.
+
+`stories.body` holds the open story used by new Out There posts. `what_i_did`, `expectations`, `what_happened`, and `would_do_again` stay in place. A story with `body` renders that field. A story without it still renders the four older answers.
+
+`waypoint_readings` links a reading to a waypoint. One article can sit with several waypoints, and one waypoint can hold several articles, in `sort_order`. Deleting an article or a waypoint removes the link. A draft article stays in the link table and stays off the public page until it is published.
+
+`waypoint_posts` are discussions in a chair. Replies use `comments` with `target_type` `story`, `campfire`, or `waypoint`. Photographs live in `content_images`, not in the article text. Uploaded files stay under `uploads/covers/`, which refuses to run PHP.
