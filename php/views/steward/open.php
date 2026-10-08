@@ -11,6 +11,7 @@ $links = [
     'waypoints' => ['/steward/waypoints', 'Waypoints'],
     'reading' => ['/steward/reading', 'Reading Room'],
     'messages' => ['/steward/messages', 'Contact Messages'],
+    'conversations' => ['/steward/conversations', 'Conversations'],
     'reports' => ['/steward/reports', 'Reports'],
 ];
 if (is_admin()) {

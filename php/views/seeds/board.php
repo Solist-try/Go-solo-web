@@ -8,6 +8,9 @@
           <strong><?= e($offer['title']) ?></strong>
           <span class="soft"> · <?= e($offer['display_name'] ?: site_text('garden_member')) ?></span>
           <?php if ($offer['detail']): ?><p><?= e($offer['detail']) ?></p><?php endif; ?>
+          <?php if ($currentUser && (int) $offer['user_id'] !== (int) $currentUser['id'] && talk_can_start($currentUser, (int) $offer['user_id'])): ?>
+            <?php $talkType = 'skill'; $talkKind = 'offer'; $talkId = (int) $offer['id']; $talkLabel = site_text('talk_interested'); $talkBack = '/seeds/skill-swap'; include __DIR__ . '/../partials/talk-start.php'; ?>
+          <?php endif; ?>
         </li>
       <?php endforeach; ?>
     </ul>
@@ -21,6 +24,9 @@
           <strong><?= e($request['title']) ?></strong>
           <span class="soft"> · <?= e($request['display_name'] ?: site_text('garden_member')) ?></span>
           <?php if ($request['detail']): ?><p><?= e($request['detail']) ?></p><?php endif; ?>
+          <?php if ($currentUser && (int) $request['user_id'] !== (int) $currentUser['id'] && talk_can_start($currentUser, (int) $request['user_id'])): ?>
+            <?php $talkType = 'skill'; $talkKind = 'request'; $talkId = (int) $request['id']; $talkLabel = site_text('talk_interested'); $talkBack = '/seeds/skill-swap'; include __DIR__ . '/../partials/talk-start.php'; ?>
+          <?php endif; ?>
         </li>
       <?php endforeach; ?>
     </ul>

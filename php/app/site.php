@@ -323,7 +323,11 @@ function page_campfire_report(array $params): void
 function make_report(int $reporter, string $type, int $target, string $back): void
 {
     $reason = clip(post_text('reason', 1000), 1000);
-    if ($reason === '' || !in_array($type, ['story', 'campfire', 'comment', 'profile', 'waypoint'], true) || $target <= 0) {
+    $allowed = ['story', 'campfire', 'comment', 'profile', 'waypoint'];
+    if (column_type_has('reports', 'target_type', 'conversation')) {
+        $allowed[] = 'conversation';
+    }
+    if ($reason === '' || !in_array($type, $allowed, true) || $target <= 0) {
         flash(site_text('msg_report_needs'));
         redirect($back);
     }
@@ -601,6 +605,7 @@ function show_garden(int $id, bool $self): void
                 'other_name' => display_name_of($other),
             ];
             $sameNotes[(int) $row['id']] = note_rows('same', (int) $row['id']);
+            $matches[count($matches) - 1]['conversation_id'] = talk_find('introduction', '', (int) $row['id'], $id, $other);
         }
         foreach (q(
             'SELECT l.id, l.note, l.from_user_id, l.to_user_id, o.title AS offer_title, r.title AS request_title
@@ -632,7 +637,7 @@ function show_garden(int $id, bool $self): void
             'SELECT s.id, s.slug, s.title FROM planted_seeds ps JOIN seeds s ON s.id = ps.seed_id WHERE ps.user_id = ? ORDER BY ps.created_at DESC',
             [$id]
         ),
-        'helpRequests' => user_titles('help_requests', $id),
+        'helpRequests' => q('SELECT id, title FROM help_requests WHERE user_id = ? ORDER BY id', [$id]),
         'helpOffers' => user_titles('help_offers', $id),
         'waypoints' => q(
             'SELECT w.slug, w.title FROM waypoint_members wm JOIN waypoints w ON w.id = wm.waypoint_id WHERE wm.user_id = ? AND w.archived = 0 ORDER BY w.title',
@@ -644,6 +649,8 @@ function show_garden(int $id, bool $self): void
         'skillLinks' => $skillLinks,
         'skillNotes' => $skillNotes,
         'warnings' => $self ? q('SELECT note, created_at FROM warnings WHERE user_id = ? ORDER BY id DESC', [$id]) : [],
+        'talkFlags' => talk_flags($id),
+        'conversations' => $self ? talk_list($id) : [],
     ]);
 }
 
@@ -720,6 +727,12 @@ function save_garden(int $userId, bool $withVisibility): void
         exec_sql(
             'UPDATE profiles SET display_name = ?, bio = ?, location = ?, contact_frequency = ?, check_in_style = ? WHERE user_id = ?',
             [$name, $bio, $location, $freq, $style, $userId]
+        );
+    }
+    if (isset($_POST['conversations_choice']) && table_has_column('profiles', 'conversations_open')) {
+        exec_sql(
+            'UPDATE profiles SET conversations_open = ? WHERE user_id = ?',
+            [isset($_POST['conversations_open']) ? 1 : 0, $userId]
         );
     }
     replace_supports($userId, (array) ($_POST['support'] ?? []));

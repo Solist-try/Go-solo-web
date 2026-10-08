@@ -1,6 +1,9 @@
 <?php $pageTitle = site_text('edit_title') . ' · ' . site_text('site_title'); ?>
 <section class="frame section narrow">
   <h1><?= e(site_text('edit_title')) ?></h1>
+  <?php if (table_has_column('profiles', 'conversations_open')): ?>
+    <?php $talkFlags = talk_flags((int) ($person['id'] ?? 0)); ?>
+  <?php endif; ?>
   <p><a href="<?= e(url('/profile')) ?>"><?= e(site_text('edit_see')) ?></a></p>
   <form method="post" action="<?= e(url('/profile')) ?>" enctype="multipart/form-data">
     <?= csrf_field() ?>
@@ -11,6 +14,14 @@
     <label><span><?= e(site_text('edit_photo')) ?></span><input type="file" name="avatar" accept="image/jpeg,image/png,image/webp,image/gif"></label>
     <?php if (!empty($person['avatar_path'])): ?>
       <label><input type="checkbox" name="remove_avatar" value="1"> <?= e(site_text('edit_remove_photo')) ?></label>
+    <?php endif; ?>
+    <?php if (table_has_column('profiles', 'conversations_open')): ?>
+      <h2><?= e(site_text('talk_communication')) ?></h2>
+      <input type="hidden" name="conversations_choice" value="1">
+      <div class="checks">
+        <label><input type="checkbox" name="conversations_open" value="1"<?= !empty($talkFlags['open']) ? ' checked' : '' ?>> <?= e(site_text('talk_prefer_open')) ?></label>
+      </div>
+      <p class="soft"><?= e(site_text('talk_prefer_closed')) ?></p>
     <?php endif; ?>
     <h2><?= e(site_text('garden_support')) ?></h2>
     <div class="checks">

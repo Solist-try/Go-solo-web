@@ -19,6 +19,34 @@ $name = $person['display_name'] ?: site_text('garden_member');
     </p>
   <?php endif; ?>
 
+  <?php if (table_has_column('profiles', 'conversations_open')): ?>
+    <h2><?= e(site_text('talk_communication')) ?></h2>
+    <?php if (!empty($talkFlags['open'])): ?>
+      <p><?= e(site_text('talk_open_yes')) ?></p>
+    <?php else: ?>
+      <p><?= e(site_text('talk_open_no')) ?></p>
+    <?php endif; ?>
+    <?php if ($isSelf && !empty($talkFlags['held'])): ?>
+      <p class="soft"><?= e(site_text('talk_held')) ?></p>
+    <?php endif; ?>
+  <?php endif; ?>
+
+  <?php if ($isSelf && conversations_ready()): ?>
+    <h2 id="conversations"><?= e(site_text('talk_active')) ?></h2>
+    <?php if (!$conversations): ?>
+      <p class="soft"><?= e(site_text('talk_empty')) ?></p>
+    <?php else: ?>
+      <ul class="list">
+        <?php foreach ($conversations as $conversation): ?>
+          <li>
+            <a href="<?= e(url('/conversations/' . $conversation['id'])) ?>"><?= e($conversation['context_label'] ?: site_text('talk_heading')) ?></a>
+            <?php if ($conversation['other_name']): ?><span class="soft"> · <?= e($conversation['other_name']) ?></span><?php endif; ?>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+    <?php endif; ?>
+  <?php endif; ?>
+
   <h2><?= e(site_text('garden_bio')) ?></h2>
   <?php if (trim((string) $person['bio']) === ''): ?>
     <p class="soft"><?= e(site_text('empty_bio')) ?></p>
@@ -33,9 +61,13 @@ $name = $person['display_name'] ?: site_text('garden_member');
         <p><?= e(site_line('garden_match', ['name' => $match['other_name']])) ?></p>
         <p><a href="<?= e(url('/members/' . $match['other_id'])) ?>"><?= e($match['other_name']) ?></a></p>
         <?php if ($match['note']): ?><p><?= e($match['note']) ?></p><?php endif; ?>
+        <?php if (!empty($match['conversation_id'])): ?>
+          <p><a href="<?= e(url('/conversations/' . $match['conversation_id'])) ?>"><?= e(site_text('talk_heading')) ?></a></p>
+        <?php endif; ?>
         <?php foreach ($sameNotes[$match['id']] ?? [] as $note): ?>
           <p><strong><?= e($note['display_name'] ?: site_text('garden_member')) ?></strong> <span class="soft"><?= e(nice_date($note['created_at'])) ?></span><br><?= e($note['body']) ?></p>
         <?php endforeach; ?>
+        <?php if (empty($match['conversation_id'])): ?>
         <form method="post" action="<?= e(url('/notes')) ?>">
           <?= csrf_field() ?>
           <input type="hidden" name="context_type" value="same">
@@ -43,6 +75,7 @@ $name = $person['display_name'] ?: site_text('garden_member');
           <label><span><?= e(site_text('garden_note_label')) ?></span><textarea name="body" maxlength="2000"></textarea></label>
           <button type="submit"><?= e(site_text('cta_leave_note')) ?></button>
         </form>
+        <?php endif; ?>
       </article>
     <?php endforeach; ?>
   <?php endif; ?>
@@ -84,13 +117,27 @@ $name = $person['display_name'] ?: site_text('garden_member');
       <li><a href="<?= e(url('/seeds/' . $seed['slug'])) ?>"><?= e($seed['title']) ?></a></li>
     <?php endforeach; ?>
     <?php foreach ($growing as $seed): ?>
-      <li><?= e($seed['title']) ?><?php if ($seed['status'] === 'resting'): ?> <span class="soft">· <?= e(site_text('garden_resting')) ?></span><?php endif; ?><?php if (!empty($seed['looking_for_support'])): ?> <span class="soft">· <?= e(site_text('garden_open_help')) ?></span><?php endif; ?></li>
+      <li>
+        <?= e($seed['title']) ?><?php if ($seed['status'] === 'resting'): ?> <span class="soft">· <?= e(site_text('garden_resting')) ?></span><?php endif; ?><?php if (!empty($seed['looking_for_support'])): ?> <span class="soft">· <?= e(site_text('garden_open_help')) ?></span><?php endif; ?>
+        <?php if (!$isSelf && ($seed['status'] ?? '') === 'active' && !empty($seed['looking_for_support']) && talk_can_start($currentUser, (int) $person['id'])): ?>
+          <?php $talkType = 'seed'; $talkKind = 'growing'; $talkId = (int) $seed['id']; $talkLabel = site_text('talk_offer'); $talkBack = '/members/' . $person['id']; include __DIR__ . '/../partials/talk-start.php'; ?>
+        <?php endif; ?>
+      </li>
     <?php endforeach; ?>
   </ul>
 
   <h2><?= e(site_text('garden_help')) ?></h2>
   <?php if (!$helpRequests): ?><p class="soft"><?= e(site_text('empty_requests')) ?></p><?php else: ?>
-    <ul class="chips"><?php foreach ($helpRequests as $title): ?><li><?= e($title) ?></li><?php endforeach; ?></ul>
+    <ul class="list">
+      <?php foreach ($helpRequests as $request): ?>
+        <li>
+          <?= e($request['title']) ?>
+          <?php if (!$isSelf && talk_can_start($currentUser, (int) $person['id'])): ?>
+            <?php $talkType = 'seed'; $talkKind = 'help'; $talkId = (int) $request['id']; $talkLabel = site_text('talk_offer'); $talkBack = '/members/' . $person['id']; include __DIR__ . '/../partials/talk-start.php'; ?>
+          <?php endif; ?>
+        </li>
+      <?php endforeach; ?>
+    </ul>
   <?php endif; ?>
 
   <h2><?= e(site_text('garden_offers')) ?></h2>

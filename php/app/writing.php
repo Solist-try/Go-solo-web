@@ -233,9 +233,21 @@ function attach_comment_images(array $rows): array
     return $rows;
 }
 
+function image_types(): array
+{
+    $types = ['story', 'campfire', 'waypoint', 'comment'];
+    if (column_type_has('content_images', 'parent_type', 'conversation')) {
+        $types[] = 'conversation';
+    }
+    return $types;
+}
+
 function content_images(string $type, int $id): array
 {
-    if (!rooms_ready() || $id <= 0 || !in_array($type, ['story', 'campfire', 'waypoint', 'comment'], true)) {
+    if ($id <= 0 || !in_array($type, image_types(), true)) {
+        return [];
+    }
+    if ($type !== 'conversation' && !rooms_ready()) {
         return [];
     }
     return q(
@@ -266,7 +278,7 @@ function forget_upload(?string $path): void
 
 function remember_image(int $userId, string $type, int $parentId, string $path, string $alt): void
 {
-    if ($path === '' || !in_array($type, ['story', 'campfire', 'waypoint', 'comment'], true)) {
+    if ($path === '' || !in_array($type, image_types(), true)) {
         return;
     }
     exec_sql(

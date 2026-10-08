@@ -12,6 +12,7 @@ function desk_overview(array $params): void
     view('steward/overview', [
         'changePassword' => $hash && password_verify('change-this-chair', (string) $hash['password_hash']),
         'roomsReady' => rooms_ready(),
+        'conversationsReady' => conversations_ready(),
         'stats' => [
             ['label' => 'Members total', 'n' => count_of('SELECT COUNT(*) AS n FROM users')],
             ['label' => 'Members this month', 'n' => count_of("SELECT COUNT(*) AS n FROM users WHERE created_at >= DATE_FORMAT(NOW(), '%Y-%m-01')")],
@@ -107,6 +108,11 @@ function desk_member_save(array $params): void
         }
         log_activity($id, 'Profile tended by a steward');
         flash('The profile is saved.');
+    } elseif ($action === 'talk' && table_has_column('profiles', 'conversations_held') && $id !== (int) $actor['id']) {
+        $held = (string) ($_POST['held'] ?? '') === '1' ? 1 : 0;
+        exec_sql('UPDATE profiles SET conversations_held = ? WHERE user_id = ?', [$held, $id]);
+        log_activity($id, $held ? 'Private conversations held' : 'Private conversations restored');
+        flash($held ? 'Private conversations are resting.' : 'Private conversations are restored.');
     } elseif ($action === 'status') {
         change_member_status($actor, $person, (string) ($_POST['status'] ?? ''));
     } elseif ($action === 'warn') {
@@ -311,8 +317,10 @@ function desk_same_suggest(array $params): void
     );
     $nameA = display_name_of($a);
     $nameB = display_name_of($b);
-    notify($a, 'A steward suggested ' . $nameB . ' for this stretch. You can take your time.', '/profile');
-    notify($b, 'A steward suggested ' . $nameA . ' for this stretch. You can take your time.', '/profile');
+    $conversationId = talk_open_introduction((int) db()->lastInsertId(), $a, $b, $note, (int) ($request['seed_id'] ?? 0));
+    $href = $conversationId > 0 ? '/conversations/' . $conversationId : '/profile';
+    notify($a, 'A steward suggested ' . $nameB . ' for this stretch. You can take your time.', $href);
+    notify($b, 'A steward suggested ' . $nameA . ' for this stretch. You can take your time.', $href);
     log_activity($a, 'An introduction was suggested');
     log_activity($b, 'An introduction was suggested');
     flash('The suggestion is with both of them.');
@@ -772,6 +780,9 @@ function report_href(array $report): string
     }
     if ($report['target_type'] === 'profile') {
         return '/members/' . $id;
+    }
+    if ($report['target_type'] === 'conversation') {
+        return '/steward/conversations/' . $id;
     }
     if ($report['target_type'] === 'comment') {
         $comment = one('SELECT target_type, target_id FROM comments WHERE id = ?', [$id]);

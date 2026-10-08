@@ -61,6 +61,8 @@ CREATE TABLE profiles (
   contact_frequency VARCHAR(40) NOT NULL DEFAULT '',
   check_in_style VARCHAR(40) NOT NULL DEFAULT '',
   show_location TINYINT(1) NOT NULL DEFAULT 1,
+  conversations_open TINYINT(1) NOT NULL DEFAULT 1,
+  conversations_held TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (user_id),
   CONSTRAINT profiles_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -293,7 +295,7 @@ CREATE TABLE comments (
 CREATE TABLE reports (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   reporter_id INT UNSIGNED NOT NULL,
-  target_type ENUM('story', 'campfire', 'comment', 'profile', 'waypoint') NOT NULL,
+  target_type ENUM('story', 'campfire', 'comment', 'profile', 'waypoint', 'conversation') NOT NULL,
   target_id INT UNSIGNED NOT NULL,
   reason TEXT NOT NULL,
   status ENUM('pending', 'reviewed', 'dismissed') NOT NULL DEFAULT 'pending',
@@ -399,7 +401,7 @@ CREATE TABLE waypoint_readings (
 CREATE TABLE content_images (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id INT UNSIGNED NOT NULL,
-  parent_type ENUM('story', 'campfire', 'waypoint', 'comment') NOT NULL,
+  parent_type ENUM('story', 'campfire', 'waypoint', 'comment', 'conversation') NOT NULL,
   parent_id INT UNSIGNED NOT NULL,
   path VARCHAR(255) NOT NULL,
   alt VARCHAR(255) NOT NULL DEFAULT '',
@@ -449,6 +451,44 @@ CREATE TABLE private_notes (
   KEY private_notes_context (context_type, context_id),
   KEY private_notes_user (user_id),
   CONSTRAINT private_notes_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE conversations (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  context_type ENUM('seed', 'skill', 'introduction', 'waypoint') NOT NULL,
+  context_kind VARCHAR(20) NOT NULL DEFAULT '',
+  context_id INT UNSIGNED NOT NULL,
+  context_label VARCHAR(160) NOT NULL DEFAULT '',
+  context_note TEXT NOT NULL,
+  opened_by INT UNSIGNED NOT NULL,
+  closed TINYINT(1) NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL,
+  PRIMARY KEY (id),
+  KEY conversations_context (context_type, context_id),
+  KEY conversations_opened (opened_by),
+  CONSTRAINT conversations_opened_fk FOREIGN KEY (opened_by) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE conversation_participants (
+  conversation_id INT UNSIGNED NOT NULL,
+  user_id INT UNSIGNED NOT NULL,
+  created_at DATETIME NOT NULL,
+  PRIMARY KEY (conversation_id, user_id),
+  KEY conversation_participants_user (user_id),
+  CONSTRAINT conversation_participants_conversation_fk FOREIGN KEY (conversation_id) REFERENCES conversations (id) ON DELETE CASCADE,
+  CONSTRAINT conversation_participants_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE conversation_messages (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  conversation_id INT UNSIGNED NOT NULL,
+  user_id INT UNSIGNED NOT NULL,
+  body TEXT NOT NULL,
+  created_at DATETIME NOT NULL,
+  PRIMARY KEY (id),
+  KEY conversation_messages_room (conversation_id, id),
+  CONSTRAINT conversation_messages_conversation_fk FOREIGN KEY (conversation_id) REFERENCES conversations (id) ON DELETE CASCADE,
+  CONSTRAINT conversation_messages_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Starting steward. Password is documented in INSTALL.md. Change it after the first login.
