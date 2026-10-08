@@ -5,6 +5,10 @@
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS member_blocks;
+DROP TABLE IF EXISTS conversation_messages;
+DROP TABLE IF EXISTS conversation_participants;
+DROP TABLE IF EXISTS conversations;
 DROP TABLE IF EXISTS private_notes;
 DROP TABLE IF EXISTS activity;
 DROP TABLE IF EXISTS notices;
@@ -61,7 +65,8 @@ CREATE TABLE profiles (
   contact_frequency VARCHAR(40) NOT NULL DEFAULT '',
   check_in_style VARCHAR(40) NOT NULL DEFAULT '',
   show_location TINYINT(1) NOT NULL DEFAULT 1,
-  conversations_open TINYINT(1) NOT NULL DEFAULT 1,
+  conversations_pref ENUM('anyone', 'context', 'none') NOT NULL DEFAULT 'context',
+  conversations_choice_made TINYINT(1) NOT NULL DEFAULT 0,
   conversations_held TINYINT(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (user_id),
   CONSTRAINT profiles_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
@@ -455,12 +460,13 @@ CREATE TABLE private_notes (
 
 CREATE TABLE conversations (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  context_type ENUM('seed', 'skill', 'introduction', 'waypoint') NOT NULL,
+  context_type ENUM('seed', 'skill', 'introduction', 'waypoint', 'campfire', 'story', 'member') NOT NULL,
   context_kind VARCHAR(20) NOT NULL DEFAULT '',
   context_id INT UNSIGNED NOT NULL,
   context_label VARCHAR(160) NOT NULL DEFAULT '',
   context_note TEXT NOT NULL,
   opened_by INT UNSIGNED NOT NULL,
+  status ENUM('requested', 'open', 'declined') NOT NULL DEFAULT 'open',
   closed TINYINT(1) NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL,
   PRIMARY KEY (id),
@@ -489,6 +495,16 @@ CREATE TABLE conversation_messages (
   KEY conversation_messages_room (conversation_id, id),
   CONSTRAINT conversation_messages_conversation_fk FOREIGN KEY (conversation_id) REFERENCES conversations (id) ON DELETE CASCADE,
   CONSTRAINT conversation_messages_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE member_blocks (
+  user_id INT UNSIGNED NOT NULL,
+  blocked_id INT UNSIGNED NOT NULL,
+  created_at DATETIME NOT NULL,
+  PRIMARY KEY (user_id, blocked_id),
+  KEY member_blocks_blocked (blocked_id),
+  CONSTRAINT member_blocks_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+  CONSTRAINT member_blocks_blocked_fk FOREIGN KEY (blocked_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Starting steward. Password is documented in INSTALL.md. Change it after the first login.

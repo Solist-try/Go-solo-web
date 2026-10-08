@@ -136,8 +136,10 @@ It records `rooms-2026-10-08` in `schema_updates`. The application checks for `s
 
 An existing database picks up private conversations by importing `update-talk.sql` once. It records `talk-2026-10-08` in `schema_updates`.
 
-`profiles.conversations_open` defaults to open. `profiles.conversations_held` is set by a steward when private conversations need to rest.
+`profiles.conversations_pref` is `anyone`, `context`, or `none`. Existing members stay on `context` until they save a choice. `conversations_choice_made` records that save. `profiles.conversations_held` is set by a steward when private conversations need to rest.
 
-A conversation belongs to a seed, a skill offer or request, an introduction, or a waypoint. `context_id` is not a foreign key, because it can point at more than one table. The label and the introduction lines are stored on the conversation so they remain if the original post changes.
+A first note is a request (`conversations.status` `requested`) until the other person accepts. A declined request keeps the row so the same sender cannot ask again, and the opening note is removed unless a report is already attached. `member_blocks` stops private contact in either direction.
+
+A conversation belongs to a seed, a skill offer or request, a skill link, an introduction, a waypoint discussion, a campfire note, an Out There story, or a direct hello when the other person allows anyone. Sitting in the same waypoint is not enough. `context_id` is not a foreign key, because it can point at more than one table. The label and the introduction lines are stored on the conversation so they remain if the original post changes.
 
 Only the two participants can read the notes. A steward sees participants and context after a report, and opens the notes only with a recorded look. `reports.target_type` includes `conversation`. A photograph on a note uses `content_images.parent_type` `conversation`.

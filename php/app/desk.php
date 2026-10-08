@@ -317,10 +317,8 @@ function desk_same_suggest(array $params): void
     );
     $nameA = display_name_of($a);
     $nameB = display_name_of($b);
-    $conversationId = talk_open_introduction((int) db()->lastInsertId(), $a, $b, $note, (int) ($request['seed_id'] ?? 0));
-    $href = $conversationId > 0 ? '/conversations/' . $conversationId : '/profile';
-    notify($a, 'A steward suggested ' . $nameB . ' for this stretch. You can take your time.', $href);
-    notify($b, 'A steward suggested ' . $nameA . ' for this stretch. You can take your time.', $href);
+    notify($a, 'A steward suggested ' . $nameB . ' for this stretch. You can take your time.', '/profile');
+    notify($b, 'A steward suggested ' . $nameA . ' for this stretch. You can take your time.', '/profile');
     log_activity($a, 'An introduction was suggested');
     log_activity($b, 'An introduction was suggested');
     flash('The suggestion is with both of them.');

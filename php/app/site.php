@@ -414,7 +414,7 @@ function page_join_form(array $params): void
     if (current_user()) {
         redirect('/profile');
     }
-    view('auth/join', ['name' => '', 'email' => '', 'error' => '']);
+    view('auth/join', ['name' => '', 'email' => '', 'error' => '', 'askTalk' => conversations_ready(), 'talkSelected' => '']);
 }
 
 function page_join(array $params): void
@@ -425,16 +425,20 @@ function page_join(array $params): void
     $name = clip(post_text('name', 80), 80);
     $email = strtolower(trim((string) ($_POST['email'] ?? '')));
     $password = (string) ($_POST['password'] ?? '');
+    $pref = (string) ($_POST['conversations_pref'] ?? '');
+    $askTalk = conversations_ready();
     $error = '';
     if ($name === '' || !valid_email($email)) {
         $error = 'A name and a real email are enough to begin.';
     } elseif (strlen($password) < 8) {
         $error = 'Use at least 8 characters.';
+    } elseif ($askTalk && !in_array($pref, ['anyone', 'context', 'none'], true)) {
+        $error = site_text('msg_talk_choice');
     } elseif (one('SELECT id FROM users WHERE email = ?', [$email])) {
         $error = 'That email already has a chair here. Try logging in.';
     }
     if ($error !== '') {
-        view('auth/join', ['name' => $name, 'email' => $email, 'error' => $error]);
+        view('auth/join', ['name' => $name, 'email' => $email, 'error' => $error, 'askTalk' => $askTalk, 'talkSelected' => $pref]);
         return;
     }
     $db = db();
@@ -445,16 +449,23 @@ function page_join(array $params): void
             [$email, password_hash($password, PASSWORD_DEFAULT), 'member', 'active']
         );
         $id = (int) $db->lastInsertId();
-        exec_sql(
-            'INSERT INTO profiles (user_id, display_name, bio, location, avatar_path, contact_frequency, check_in_style, show_location) VALUES (?, ?, ?, ?, ?, ?, ?, 1)',
-            [$id, $name, '', '', '', '', '']
-        );
+        if ($askTalk) {
+            exec_sql(
+                'INSERT INTO profiles (user_id, display_name, bio, location, avatar_path, contact_frequency, check_in_style, show_location, conversations_pref, conversations_choice_made) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, 1)',
+                [$id, $name, '', '', '', '', '', $pref]
+            );
+        } else {
+            exec_sql(
+                'INSERT INTO profiles (user_id, display_name, bio, location, avatar_path, contact_frequency, check_in_style, show_location) VALUES (?, ?, ?, ?, ?, ?, ?, 1)',
+                [$id, $name, '', '', '', '', '']
+            );
+        }
         $db->commit();
     } catch (Throwable $e) {
         if ($db->inTransaction()) {
             $db->rollBack();
         }
-        view('auth/join', ['name' => $name, 'email' => $email, 'error' => 'That did not save. Try again in a moment.']);
+        view('auth/join', ['name' => $name, 'email' => $email, 'error' => 'That did not save. Try again in a moment.', 'askTalk' => $askTalk, 'talkSelected' => $pref]);
         return;
     }
     session_regenerate_id(true);
@@ -605,7 +616,7 @@ function show_garden(int $id, bool $self): void
                 'other_name' => display_name_of($other),
             ];
             $sameNotes[(int) $row['id']] = note_rows('same', (int) $row['id']);
-            $matches[count($matches) - 1]['conversation_id'] = talk_find('introduction', '', (int) $row['id'], $id, $other);
+            $matches[count($matches) - 1]['conversation_id'] = conversations_ready() ? talk_find('introduction', '', (int) $row['id'], $id, $other) : 0;
         }
         foreach (q(
             'SELECT l.id, l.note, l.from_user_id, l.to_user_id, o.title AS offer_title, r.title AS request_title
@@ -649,8 +660,10 @@ function show_garden(int $id, bool $self): void
         'skillLinks' => $skillLinks,
         'skillNotes' => $skillNotes,
         'warnings' => $self ? q('SELECT note, created_at FROM warnings WHERE user_id = ? ORDER BY id DESC', [$id]) : [],
-        'talkFlags' => talk_flags($id),
         'conversations' => $self ? talk_list($id) : [],
+        'talkRequests' => $self ? talk_incoming($id) : [],
+        'talkWaiting' => $self ? talk_outgoing($id) : [],
+        'talkBlocks' => $self ? talk_block_list($id) : [],
     ]);
 }
 
@@ -727,12 +740,6 @@ function save_garden(int $userId, bool $withVisibility): void
         exec_sql(
             'UPDATE profiles SET display_name = ?, bio = ?, location = ?, contact_frequency = ?, check_in_style = ? WHERE user_id = ?',
             [$name, $bio, $location, $freq, $style, $userId]
-        );
-    }
-    if (isset($_POST['conversations_choice']) && table_has_column('profiles', 'conversations_open')) {
-        exec_sql(
-            'UPDATE profiles SET conversations_open = ? WHERE user_id = ?',
-            [isset($_POST['conversations_open']) ? 1 : 0, $userId]
         );
     }
     replace_supports($userId, (array) ($_POST['support'] ?? []));

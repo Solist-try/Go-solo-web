@@ -8,6 +8,13 @@
     <label><span><?= e(site_text('label_email')) ?></span><input type="email" name="email" maxlength="190" required value="<?= e($email ?? '') ?>"></label>
     <label><span><?= e(site_text('label_password')) ?></span><input type="password" name="password" minlength="8" required autocomplete="new-password"></label>
     <p class="soft"><?= e(site_text('join_password_hint')) ?></p>
+    <?php if (!empty($askTalk)): ?>
+      <fieldset class="choices-set">
+        <legend><?= e(site_text('talk_join_heading')) ?></legend>
+        <p><?= e(site_text('talk_pref_intro')) ?></p>
+        <?php include __DIR__ . '/../partials/talk-choices.php'; ?>
+      </fieldset>
+    <?php endif; ?>
     <?php if (!empty($error)): ?><p class="error"><?= e($error) ?></p><?php endif; ?>
     <button type="submit"><?= e(site_text('cta_join')) ?></button>
   </form>

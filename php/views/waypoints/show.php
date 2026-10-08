@@ -100,9 +100,6 @@
       <?php foreach ($people as $person): ?>
         <li>
           <a href="<?= e(url('/members/' . $person['id'])) ?>"><?= e($person['display_name'] ?: site_text('garden_member')) ?></a>
-          <?php if (!empty($joined) && talk_can_start($currentUser, (int) $person['id']) && sits_with((int) $currentUser['id'], (int) $waypoint['id']) && sits_with((int) $person['id'], (int) $waypoint['id'])): ?>
-            <?php $talkType = 'waypoint'; $talkKind = ''; $talkId = (int) $waypoint['id']; $talkPerson = (int) $person['id']; $talkLabel = site_text('talk_hello'); $talkBack = '/waypoints/' . $waypoint['slug']; include __DIR__ . '/../partials/talk-start.php'; ?>
-          <?php endif; ?>
         </li>
       <?php endforeach; ?>
     </ul>
