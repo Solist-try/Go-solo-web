@@ -224,16 +224,24 @@ function page_skill_post(array $params): void
 function page_stories(array $params): void
 {
     $body = rooms_ready() ? 's.body, ' : '';
+    $pin = pin_ready() ? 's.pinned, s.hidden, ' : '';
+    $order = pin_ready() ? 's.pinned DESC, s.pinned_at DESC, s.created_at DESC' : 's.created_at DESC';
     $stories = q(
-        "SELECT s.id, s.title, {$body}s.what_happened, s.created_at, p.display_name
+        "SELECT s.id, s.title, {$body}{$pin}s.what_happened, s.created_at, p.display_name
          FROM stories s
          JOIN users u ON u.id = s.user_id AND u.status = 'active'
          LEFT JOIN profiles p ON p.user_id = u.id
          WHERE s.hidden = 0
-         ORDER BY s.created_at DESC
+         ORDER BY {$order}
          LIMIT 50"
     );
-    view('stories/index', ['stories' => $stories]);
+    $arranged = pin_arrange($stories, 'story');
+    view('stories/index', [
+        'stories' => $arranged['rows'],
+        'welcome' => $arranged['welcome'],
+        'pinAside' => $arranged['aside'],
+        'pinAsideId' => $arranged['aside_id'],
+    ]);
 }
 
 function page_story_form(array $params): void
@@ -281,16 +289,24 @@ function page_story_report(array $params): void
 
 function page_campfire(array $params): void
 {
+    $pin = pin_ready() ? 'c.pinned, c.hidden, ' : '';
+    $order = pin_ready() ? 'c.pinned DESC, c.pinned_at DESC, c.created_at DESC' : 'c.created_at DESC';
     $posts = q(
-        "SELECT c.id, c.title, c.body, c.created_at, p.display_name
+        "SELECT c.id, c.title, c.body, {$pin}c.created_at, p.display_name
          FROM campfire_posts c
          JOIN users u ON u.id = c.user_id AND u.status = 'active'
          LEFT JOIN profiles p ON p.user_id = u.id
          WHERE c.hidden = 0
-         ORDER BY c.created_at DESC
+         ORDER BY {$order}
          LIMIT 50"
     );
-    view('campfire/index', ['posts' => $posts]);
+    $arranged = pin_arrange($posts, 'campfire');
+    view('campfire/index', [
+        'posts' => $arranged['rows'],
+        'welcome' => $arranged['welcome'],
+        'pinAside' => $arranged['aside'],
+        'pinAsideId' => $arranged['aside_id'],
+    ]);
 }
 
 function page_campfire_form(array $params): void
@@ -408,7 +424,10 @@ function page_reading(array $params): void
             [(int) $category['id'], 'published']
         );
     }
-    view('reading/index', ['categories' => $categories]);
+    $featured = pin_ready()
+        ? q("SELECT slug, title, standfirst FROM readings WHERE status = 'published' AND featured = 1 ORDER BY featured_order, title, id")
+        : [];
+    view('reading/index', ['categories' => $categories, 'featured' => $featured]);
 }
 
 function page_reading_show(array $params): void

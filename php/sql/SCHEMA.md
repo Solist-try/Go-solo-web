@@ -48,6 +48,8 @@ Shared rows try not to keep a deleted person's name. `lifecycle_events.user_id`,
 
 Suspending a member keeps their records and their pause choices. It does not publish private reflections.
 
+`pin_hides` remembers when a member sets a Campfire, Waypoint, or Out There welcome aside. Deleting the account removes those rows. Deleting the post removes its pin. A featured Reading Room article stays an article; `featured` and `featured_order` only change where it sits on the shelf.
+
 ## Relationships
 
 ```mermaid

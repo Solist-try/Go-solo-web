@@ -500,7 +500,20 @@ function desk_stories(array $params): void
 function desk_story_action(array $params): void
 {
     require_steward();
-    content_flag('stories', (int) $params['id'], (string) ($_POST['action'] ?? ''), '/steward/out-there');
+    $id = (int) $params['id'];
+    $action = (string) ($_POST['action'] ?? '');
+    if ($action === 'pin' || $action === 'unpin') {
+        if (!pin_ready() || !pin_set('story', $id, $action === 'pin')) {
+            flash(site_text('pin_unavailable'));
+        } else {
+            flash(site_text('pin_msg'));
+        }
+        redirect('/steward/out-there');
+    }
+    if ($action === 'hide' && pin_ready()) {
+        pin_set('story', $id, false);
+    }
+    content_flag('stories', $id, $action, '/steward/out-there');
 }
 
 function desk_campfire(array $params): void
@@ -519,6 +532,17 @@ function desk_campfire_action(array $params): void
     require_steward();
     $id = (int) $params['id'];
     $action = (string) ($_POST['action'] ?? '');
+    if ($action === 'pin' || $action === 'unpin') {
+        if (!pin_ready() || !pin_set('campfire', $id, $action === 'pin')) {
+            flash(site_text('pin_unavailable'));
+        } else {
+            flash(site_text('pin_msg'));
+        }
+        redirect('/steward/campfire');
+    }
+    if ($action === 'hide' && pin_ready()) {
+        pin_set('campfire', $id, false);
+    }
     if ($action === 'lock' || $action === 'unlock') {
         exec_sql('UPDATE campfire_posts SET locked = ? WHERE id = ?', [$action === 'lock' ? 1 : 0, $id]);
     } elseif ($action === 'delete') {
@@ -658,10 +682,13 @@ function desk_reading(array $params): void
     view('steward/reading', [
         'categories' => q('SELECT * FROM reading_categories ORDER BY sort_order, title'),
         'articles' => q(
-            'SELECT r.id, r.title, r.status, c.title AS category_title
+            'SELECT r.id, r.title, r.status, c.title AS category_title' . (pin_ready() ? ', r.featured, r.featured_order' : '') . '
              FROM readings r JOIN reading_categories c ON c.id = r.category_id
              ORDER BY r.updated_at DESC'
         ),
+        'featured' => pin_ready()
+            ? q('SELECT id, title, featured_order FROM readings WHERE featured = 1 ORDER BY featured_order, title, id')
+            : [],
     ]);
 }
 
@@ -774,11 +801,24 @@ function desk_reading_save(array $params): void
                 [$categoryId, $slug, $title, $standfirst, $body, $status, $id]
             );
         }
+        $savedId = $id;
     } else {
         exec_sql(
             'INSERT INTO readings (category_id, slug, title, standfirst, body, image_path, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())',
             [$categoryId, $slug, $title, $standfirst, $body, $image ?? '', $status]
         );
+        $savedId = (int) db()->lastInsertId();
+    }
+    if (pin_ready() && $savedId > 0) {
+        $wantFeature = isset($_POST['featured']) && $status === 'published';
+        if ($wantFeature) {
+            if (!pin_featured_save($savedId, 'feature')) {
+                flash(site_text('pin_unavailable'));
+                redirect('/steward/reading');
+            }
+        } else {
+            pin_featured_save($savedId, 'clear');
+        }
     }
     flash('The article is saved.');
     redirect('/steward/reading');

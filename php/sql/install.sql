@@ -5,6 +5,7 @@
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS pin_hides;
 DROP TABLE IF EXISTS journey_hides;
 DROP TABLE IF EXISTS outcomes;
 DROP TABLE IF EXISTS lifecycle_events;
@@ -297,10 +298,13 @@ CREATE TABLE stories (
   body TEXT NULL,
   image_path VARCHAR(255) NOT NULL DEFAULT '',
   hidden TINYINT(1) NOT NULL DEFAULT 0,
+  pinned TINYINT(1) NOT NULL DEFAULT 0,
+  pinned_at DATETIME NULL,
   created_at DATETIME NOT NULL,
   PRIMARY KEY (id),
   KEY stories_user (user_id),
   KEY stories_hidden (hidden, created_at),
+  KEY stories_pinned (pinned, pinned_at),
   CONSTRAINT stories_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -311,11 +315,24 @@ CREATE TABLE campfire_posts (
   body TEXT NOT NULL,
   hidden TINYINT(1) NOT NULL DEFAULT 0,
   locked TINYINT(1) NOT NULL DEFAULT 0,
+  pinned TINYINT(1) NOT NULL DEFAULT 0,
+  pinned_at DATETIME NULL,
   created_at DATETIME NOT NULL,
   PRIMARY KEY (id),
   KEY campfire_user (user_id),
   KEY campfire_hidden (hidden, created_at),
+  KEY campfire_pinned (pinned, pinned_at),
   CONSTRAINT campfire_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE pin_hides (
+  user_id INT UNSIGNED NOT NULL,
+  subject_type ENUM('campfire', 'waypoint', 'story') NOT NULL,
+  subject_id INT UNSIGNED NOT NULL,
+  created_at DATETIME NOT NULL,
+  PRIMARY KEY (user_id, subject_type, subject_id),
+  KEY pin_hides_subject (subject_type, subject_id),
+  CONSTRAINT pin_hides_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE comments (
@@ -407,12 +424,15 @@ CREATE TABLE readings (
   body MEDIUMTEXT NOT NULL,
   image_path VARCHAR(255) NOT NULL DEFAULT '',
   status ENUM('draft', 'published') NOT NULL DEFAULT 'draft',
+  featured TINYINT(1) NOT NULL DEFAULT 0,
+  featured_order INT NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL,
   updated_at DATETIME NOT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY readings_slug (slug),
   KEY readings_category (category_id),
   KEY readings_status (status),
+  KEY readings_featured (featured, featured_order),
   CONSTRAINT readings_category_fk FOREIGN KEY (category_id) REFERENCES reading_categories (id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -423,6 +443,7 @@ CREATE TABLE waypoint_posts (
   title VARCHAR(160) NOT NULL,
   body TEXT NOT NULL,
   pinned TINYINT(1) NOT NULL DEFAULT 0,
+  pinned_at DATETIME NULL,
   hidden TINYINT(1) NOT NULL DEFAULT 0,
   locked TINYINT(1) NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL,

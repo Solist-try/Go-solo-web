@@ -114,6 +114,27 @@ p { margin: 0 0 0.9rem; }
 .card.clay, .card.gold { background: var(--clay); }
 .card.mist { background: var(--mist); }
 .card.waypoint { border-top: 3px solid var(--sage); }
+.card.welcome {
+  background: #f3f6f4;
+  border: 1px solid #e3ebe4;
+  box-shadow: none;
+}
+.pin-mark {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.45rem;
+  color: var(--soft);
+  font-size: 0.95rem;
+}
+.pin-aside {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+  margin: 0;
+  color: var(--soft);
+}
 .card h2, .card h3 { margin: 0 0 0.6rem; }
 a.card, .card a.stretch { text-decoration: none; display: block; color: inherit; }
 a.card.sage:hover { background: var(--sage-hover); }

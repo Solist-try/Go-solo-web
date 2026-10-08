@@ -3,6 +3,17 @@
   <div class="frame section">
   <h1><?= e(site_text('reading_title')) ?></h1>
   <p><?= e(site_text('reading_intro')) ?></p>
+  <?php if (!empty($featured)): ?>
+    <h2><?= e(site_text('pin_featured')) ?></h2>
+    <div class="previews">
+      <?php foreach ($featured as $article): ?>
+        <a href="<?= e(url('/reading/' . $article['slug'])) ?>">
+          <strong><?= e($article['title']) ?></strong>
+          <?php if (trim((string) $article['standfirst']) !== ''): ?><span><?= e($article['standfirst']) ?></span><?php endif; ?>
+        </a>
+      <?php endforeach; ?>
+    </div>
+  <?php endif; ?>
   <?php if (!$categories): ?>
     <p><?= e(site_text('empty_shelves')) ?></p>
   <?php endif; ?>
