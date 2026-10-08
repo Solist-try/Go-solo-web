@@ -16,6 +16,16 @@
   <label><span>Article</span><textarea name="body" maxlength="20000"><?= e($article['body'] ?? '') ?></textarea></label>
   <p class="soft">Leave a blank line between paragraphs.</p>
   <label><span>Image</span><input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif"></label>
+  <?php if (function_exists('pin_ready') && pin_ready()): ?>
+    <label>
+      <input type="checkbox" name="featured" value="1"<?= !empty($article['featured']) ? ' checked' : '' ?>>
+      <?= e(site_text('pin_feature')) ?>
+    </label>
+    <label><span><?= e(site_text('pin_order')) ?></span>
+      <input type="number" name="featured_order" value="<?= e((string) ($article['featured_order'] ?? 0)) ?>">
+    </label>
+    <p class="soft"><?= e(site_text('pin_feature_note')) ?></p>
+  <?php endif; ?>
   <label><span>Status</span>
     <select name="status">
       <option value="draft"<?= ($article['status'] ?? '') === 'draft' ? ' selected' : '' ?>>Draft</option>

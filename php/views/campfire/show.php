@@ -2,6 +2,7 @@
 <section class="frame section">
   <p class="kicker"><a href="<?= e(url('/campfire')) ?>"><?= e(site_text('campfire_title')) ?></a></p>
   <h1><?= e($post['title']) ?></h1>
+  <?php $pinRow = $post; $pinType = 'campfire'; $pinBack = '/campfire/' . (int) $post['id']; $pinKicker = 'pin_welcome'; $pinHide = 'pin_hide_welcome'; include __DIR__ . '/../partials/pin-status.php'; ?>
   <p class="soft"><a href="<?= e(url('/members/' . $post['user_id'])) ?>"><?= e($post['display_name'] ?: site_text('garden_member')) ?></a> · <?= e(nice_date($post['created_at'])) ?></p>
   <?php if ($currentUser && (int) $currentUser['id'] !== (int) $post['user_id'] && talk_exchange('campfire', (int) $post['id'], (int) $currentUser['id'], (int) $post['user_id'])): ?>
     <?php $talkOffer = talk_offer($currentUser, (int) $post['user_id'], true, '/campfire/' . $post['id'], ['type' => 'campfire', 'kind' => 'post', 'id' => (int) $post['id'], 'person' => (int) $post['user_id']], site_text('talk_hello')); include __DIR__ . '/../partials/talk-offer.php'; ?>

@@ -7,6 +7,7 @@ require __DIR__ . '/desk.php';
 require __DIR__ . '/rooms.php';
 require __DIR__ . '/talk.php';
 require __DIR__ . '/life.php';
+require __DIR__ . '/pin.php';
 
 dispatch();
 
@@ -108,6 +109,7 @@ function route_table(): array
         $post('/outcomes', 'life_outcome_post'),
         ['GET', '/outcomes/{id}', 'life_outcome_page'],
         $post('/journey/hide', 'life_journey_hide'),
+        $post('/pins/hide', 'pin_hide_post'),
         ['GET', '/conversations/{id}', 'page_talk'],
         $post('/conversations/{id}', 'page_talk_send'),
         $post('/conversations/{id}/report', 'page_talk_report'),
@@ -140,8 +142,12 @@ function route_table(): array
         $post('/steward/skills/connect', 'desk_skill_connect'),
         $post('/steward/skills/archive', 'desk_skill_archive'),
         ['GET', '/steward/out-there', 'desk_stories'],
+        ['GET', '/steward/stories/{id}/edit', 'desk_story_edit_form'],
+        $post('/steward/stories/{id}/edit', 'desk_story_edit_save'),
         $post('/steward/stories/{id}', 'desk_story_action'),
         ['GET', '/steward/campfire', 'desk_campfire'],
+        ['GET', '/steward/campfire/{id}/edit', 'desk_campfire_edit_form'],
+        $post('/steward/campfire/{id}/edit', 'desk_campfire_edit_save'),
         $post('/steward/campfire/{id}', 'desk_campfire_action'),
         $post('/steward/comments/{id}', 'desk_comment_action'),
         ['GET', '/steward/waypoints', 'desk_waypoints'],
@@ -149,10 +155,13 @@ function route_table(): array
         ['GET', '/steward/waypoints/{id}', 'desk_waypoint_form'],
         $post('/steward/waypoints/save', 'desk_waypoint_save'),
         $post('/steward/waypoints/readings', 'desk_waypoint_readings'),
+        ['GET', '/steward/waypoint-posts/{id}/edit', 'desk_waypoint_edit_form'],
+        $post('/steward/waypoint-posts/{id}/edit', 'desk_waypoint_edit_save'),
         $post('/steward/waypoint-posts/{id}', 'desk_waypoint_post_action'),
         ['GET', '/steward/reading', 'desk_reading'],
         ['GET', '/steward/reading/new', 'desk_reading_form'],
         ['GET', '/steward/reading/{id}', 'desk_reading_form'],
+        $post('/steward/reading/feature', 'desk_pin_feature'),
         $post('/steward/reading/save', 'desk_reading_save'),
         $post('/steward/reading/delete', 'desk_reading_delete'),
         $post('/steward/reading/category', 'desk_reading_category'),

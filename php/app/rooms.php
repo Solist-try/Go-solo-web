@@ -445,16 +445,20 @@ function room_waypoint(array $params): void
              JOIN users u ON u.id = wp.user_id AND (u.status = 'active' OR wp.user_id = ? OR ? = 1)
              LEFT JOIN profiles p ON p.user_id = wp.user_id
              WHERE wp.waypoint_id = ? AND (wp.hidden = 0 OR wp.user_id = ? OR ? = 1)
-             ORDER BY wp.pinned DESC, wp.created_at DESC",
+             ORDER BY wp.pinned DESC, " . (function_exists('pin_ready') && pin_ready() ? 'wp.pinned_at DESC, ' : '') . "wp.created_at DESC",
             [$userId, $steward, $userId, $steward, (int) $waypoint['id'], $userId, $steward]
         );
     }
+    $arranged = function_exists('pin_arrange') ? pin_arrange($discussions, 'waypoint') : ['welcome' => null, 'rows' => $discussions, 'aside' => false, 'aside_id' => 0];
     view('waypoints/show', [
         'waypoint' => $waypoint,
         'joined' => $joined,
         'people' => $people,
         'readings' => $readings,
-        'discussions' => $discussions,
+        'discussions' => $arranged['rows'],
+        'welcome' => $arranged['welcome'],
+        'pinAside' => $arranged['aside'],
+        'pinAsideId' => $arranged['aside_id'],
         'canSpeak' => $user && can_speak_here($user, (int) $waypoint['id']) && (int) $waypoint['archived'] === 0,
         'editor' => editor_fields([
             'action' => url('/waypoints/' . $waypoint['slug'] . '/discussions'),
@@ -599,6 +603,9 @@ function remove_story(int $id): void
         }
     }
     exec_sql("DELETE FROM comments WHERE target_type = 'story' AND target_id = ?", [$id]);
+    if (function_exists('pin_forget')) {
+        pin_forget('story', $id);
+    }
     exec_sql('DELETE FROM stories WHERE id = ?', [$id]);
     foreach ($paths as $path) {
         forget_upload((string) $path);
@@ -615,6 +622,9 @@ function remove_campfire(int $id): void
         }
     }
     exec_sql("DELETE FROM comments WHERE target_type = 'campfire' AND target_id = ?", [$id]);
+    if (function_exists('pin_forget')) {
+        pin_forget('campfire', $id);
+    }
     exec_sql('DELETE FROM campfire_posts WHERE id = ?', [$id]);
     foreach ($paths as $path) {
         forget_upload((string) $path);
@@ -629,6 +639,9 @@ function remove_discussion(int $id): void
         $paths = array_merge($paths, release_images('comment', (int) $comment['id']));
     }
     exec_sql("DELETE FROM comments WHERE target_type = 'waypoint' AND target_id = ?", [$id]);
+    if (function_exists('pin_forget')) {
+        pin_forget('waypoint', $id);
+    }
     exec_sql('DELETE FROM waypoint_posts WHERE id = ?', [$id]);
     foreach ($paths as $path) {
         forget_upload((string) $path);
@@ -704,8 +717,19 @@ function desk_waypoint_post_action(array $params): void
     $action = (string) ($_POST['action'] ?? '');
     $back = '/waypoints/' . $post['slug'];
     if ($action === 'pin' || $action === 'unpin') {
-        exec_sql('UPDATE waypoint_posts SET pinned = ? WHERE id = ?', [$action === 'pin' ? 1 : 0, (int) $post['id']]);
+        if (function_exists('pin_ready') && pin_ready()) {
+            if (!pin_set('waypoint', (int) $post['id'], $action === 'pin')) {
+                flash(site_text('pin_unavailable'));
+            } else {
+                flash(site_text('pin_msg'));
+            }
+        } else {
+            exec_sql('UPDATE waypoint_posts SET pinned = ? WHERE id = ?', [$action === 'pin' ? 1 : 0, (int) $post['id']]);
+        }
     } elseif ($action === 'hide' || $action === 'show') {
+        if ($action === 'hide' && function_exists('pin_set') && pin_ready()) {
+            pin_set('waypoint', (int) $post['id'], false);
+        }
         exec_sql('UPDATE waypoint_posts SET hidden = ? WHERE id = ?', [$action === 'hide' ? 1 : 0, (int) $post['id']]);
     } elseif ($action === 'lock' || $action === 'unlock') {
         exec_sql('UPDATE waypoint_posts SET locked = ? WHERE id = ?', [$action === 'lock' ? 1 : 0, (int) $post['id']]);

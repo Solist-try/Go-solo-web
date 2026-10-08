@@ -42,10 +42,29 @@
   <?php endif; ?>
 
   <h2><?= e(site_text('waypoints_discussions_title')) ?></h2>
-  <?php if (empty($discussions)): ?>
+  <?php if (empty($discussions) && empty($welcome) && empty($pinAside)): ?>
     <p class="soft"><?= e(waypoint_line($waypoint, 'discussion_empty', 'empty_discussion')) ?></p>
   <?php else: ?>
     <div class="stack">
+      <?php if (!empty($welcome)): ?>
+        <?php
+          $pin = [
+              'id' => (int) $welcome['id'],
+              'href' => '/waypoints/' . $waypoint['slug'] . '/discussions/' . (int) $welcome['id'],
+              'title' => (string) $welcome['title'],
+              'meta' => trim((string) ($welcome['display_name'] ?: site_text('garden_member'))) . ' · ' . nice_date((string) $welcome['created_at']),
+              'excerpt' => writing_plain((string) $welcome['body'], 220),
+          ];
+          $pinType = 'waypoint';
+          $pinBack = '/waypoints/' . $waypoint['slug'];
+          $pinKicker = 'pin_start';
+          $pinHide = 'pin_hide';
+          $pinManage = '/steward/waypoint-posts/' . (int) $welcome['id'];
+          $pinEdit = '/steward/waypoint-posts/' . (int) $welcome['id'] . '/edit';
+          include __DIR__ . '/../partials/pin-card.php';
+        ?>
+      <?php endif; ?>
+      <?php $pinType = 'waypoint'; $pinBack = '/waypoints/' . $waypoint['slug']; $pinAsideId = (int) ($pinAsideId ?? 0); include __DIR__ . '/../partials/pin-aside.php'; ?>
       <?php foreach ($discussions as $discussion): ?>
         <article class="card">
           <h3><a href="<?= e(url('/waypoints/' . $waypoint['slug'] . '/discussions/' . $discussion['id'])) ?>"><?= e($discussion['title']) ?></a></h3>
@@ -53,7 +72,7 @@
             <?= e($discussion['display_name'] ?: site_text('garden_member')) ?>
             · <?= e(nice_date($discussion['created_at'])) ?>
             <?php if ((int) $discussion['replies'] > 0): ?> · <?= e((string) $discussion['replies']) ?> <?= e((int) $discussion['replies'] === 1 ? site_text('waypoints_note_one') : site_text('waypoints_note_many')) ?><?php endif; ?>
-            <?php if (!empty($discussion['pinned'])): ?> · <?= e(site_text('waypoints_pinned')) ?><?php endif; ?>
+            <?php if (!empty($discussion['pinned']) && empty($welcome)): ?> · <?= e(site_text('pin_by')) ?><?php endif; ?>
             <?php if (!empty($discussion['last_reply'])): ?> · <?= e(site_text('waypoints_last_note')) ?> <?= e(nice_date($discussion['last_reply'])) ?><?php endif; ?>
           </p>
           <p><?= e(writing_plain((string) $discussion['body'], 220)) ?></p>
@@ -62,8 +81,11 @@
               <form method="post" action="<?= e(url('/steward/waypoint-posts/' . $discussion['id'])) ?>">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="<?= !empty($discussion['pinned']) ? 'unpin' : 'pin' ?>">
-                <button class="quiet small" type="submit"><?= !empty($discussion['pinned']) ? 'Unpin' : 'Pin' ?></button>
+                <button class="quiet small" type="submit"><?= e(!empty($discussion['pinned']) ? site_text('pin_unpin') : (!empty($welcome) ? site_text('pin_replace') : site_text('pin_pin'))) ?></button>
               </form>
+              <?php if (function_exists('pin_ready') && pin_ready()): ?>
+                <a class="button quiet small" href="<?= e(url('/steward/waypoint-posts/' . $discussion['id'] . '/edit')) ?>"><?= e(site_text('pin_edit')) ?></a>
+              <?php endif; ?>
               <form method="post" action="<?= e(url('/steward/waypoint-posts/' . $discussion['id'])) ?>">
                 <?= csrf_field() ?>
                 <input type="hidden" name="action" value="<?= !empty($discussion['hidden']) ? 'show' : 'hide' ?>">

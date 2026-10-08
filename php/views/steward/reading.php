@@ -27,12 +27,34 @@
   <label><span>Line</span><input type="text" name="line" maxlength="255"></label>
   <button type="submit">Create category</button>
 </form>
+<?php if (function_exists('pin_ready') && !pin_ready()): ?><p class="soft"><?= e(site_text('pin_import')) ?></p><?php endif; ?>
+<?php if (function_exists('pin_ready') && pin_ready() && !empty($featured)): ?>
+  <h2><?= e(site_text('pin_featured')) ?></h2>
+  <form method="post" action="<?= e(url('/steward/reading/feature')) ?>">
+    <?= csrf_field() ?>
+    <input type="hidden" name="action" value="order">
+    <?php foreach ($featured as $article): ?>
+      <label><span><?= e($article['title']) ?></span>
+        <input type="number" name="featured_order[<?= e((string) $article['id']) ?>]" value="<?= e((string) $article['featured_order']) ?>">
+      </label>
+    <?php endforeach; ?>
+    <button class="small" type="submit"><?= e(site_text('pin_save_order')) ?></button>
+  </form>
+<?php endif; ?>
 <h2>Articles</h2>
 <ul class="list">
   <?php foreach ($articles as $article): ?>
     <li>
       <a href="<?= e(url('/steward/reading/' . $article['id'])) ?>"><?= e($article['title']) ?></a>
-      <span class="soft"><?= e($article['category_title']) ?> · <?= e($article['status']) ?></span>
+      <span class="soft"><?= e($article['category_title']) ?> · <?= e($article['status']) ?><?php if (!empty($article['featured'])): ?> · <?= e(site_text('pin_featured')) ?><?php endif; ?></span>
+      <?php if (function_exists('pin_ready') && pin_ready()): ?>
+        <form method="post" action="<?= e(url('/steward/reading/feature')) ?>" class="inline">
+          <?= csrf_field() ?>
+          <input type="hidden" name="id" value="<?= e((string) $article['id']) ?>">
+          <input type="hidden" name="action" value="<?= !empty($article['featured']) ? 'clear' : 'feature' ?>">
+          <button class="quiet small" type="submit"<?= $article['status'] !== 'published' && empty($article['featured']) ? ' disabled' : '' ?>><?= e(!empty($article['featured']) ? site_text('pin_clear') : site_text('pin_feature')) ?></button>
+        </form>
+      <?php endif; ?>
     </li>
   <?php endforeach; ?>
 </ul>
