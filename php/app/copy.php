@@ -16,6 +16,13 @@ function copy_defaults(): array
 function site_text(string $key): string
 {
     $defaults = copy_defaults();
+    if (!array_key_exists($key, $defaults)) {
+        static $logged = [];
+        if (!isset($logged[$key])) {
+            $logged[$key] = true;
+            error_log('Go Solo content key is missing from defaults: ' . $key);
+        }
+    }
     $default = isset($defaults[$key]) ? (string) $defaults[$key] : '';
     $value = setting($key, $default);
     $earlier = [
@@ -55,6 +62,38 @@ function site_text(string $key): string
     return $value;
 }
 
+function site_line(string $key, array $swap = []): string
+{
+    $text = site_text($key);
+    foreach ($swap as $name => $value) {
+        $text = str_replace('{' . $name . '}', (string) $value, $text);
+    }
+    return $text;
+}
+
+function site_lines(string $key): array
+{
+    $lines = preg_split("/\r\n|\n|\r/", site_text($key)) ?: [];
+    $clean = [];
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if ($line !== '') {
+            $clean[] = $line;
+        }
+    }
+    return $clean;
+}
+
+function content_anchor(string $group): string
+{
+    $anchor = strtolower($group);
+    $anchor = preg_replace('/[^a-z0-9]+/', '-', $anchor) ?? 'group';
+    return trim($anchor, '-') ?: 'group';
+}
+
+// Visible copy belongs in this registry, with a default in defaults.json.
+// A new public sentence should be added here so the steward can edit it.
+// Leave a string in a template only when it is security, database, or steward-desk internal text.
 function content_groups(): array
 {
     return [
@@ -62,16 +101,117 @@ function content_groups(): array
             'hero_title' => 'Hero title',
             'hero_subhead' => 'Second line',
             'hero_support' => 'Supporting line',
-            'hero_primary' => 'Primary button',
-            'hero_secondary' => 'Secondary button',
             'hero_philosophy' => 'Philosophy line',
             'freedom_heading' => 'Freedom heading',
             'freedom_body' => 'Freedom text',
             'how_title' => 'How it works heading',
             'home_seeds_title' => 'Seeds heading',
             'home_seeds_line' => 'Seeds line',
+            'home_same_title' => 'SAME card title',
+            'home_same_body' => 'SAME card text',
+            'home_skill_title' => 'Skill Swap card title',
+            'home_skill_body' => 'Skill Swap card text',
+            'home_reading_intro' => 'Reading room line',
+            'home_contact_line' => 'Contact line',
         ],
-        'About' => [
+        'Seeds' => [
+            'seeds_title' => 'Title',
+            'seeds_line' => 'Line under the title',
+            'seeds_support' => 'Support line',
+            'seeds_accountability' => 'Accountability line',
+            'seeds_learning' => 'Learning line',
+            'seeds_small' => 'Small line',
+            'seeds_same_title' => 'SAME title',
+            'seeds_same_meaning' => 'SAME meaning',
+            'seeds_same_body' => 'SAME text',
+            'seeds_support_heading' => 'Support heading',
+            'seeds_examples_label' => 'Examples label',
+            'seeds_skill_title' => 'Skill Swap title',
+            'seeds_skill_body' => 'Skill Swap text',
+            'seeds_skill_examples' => 'Skill examples, one per line',
+            'seeds_growing_title' => 'Growing heading',
+            'seeds_growing_label' => 'What you are growing',
+            'seeds_look' => 'Guest look-around',
+            'seeds_join_rest' => 'Guest plant line',
+            'seeds_similar_title' => 'Similar path heading',
+            'seeds_similar_body' => 'Similar path text',
+            'seeds_match_ready' => 'Introduction is ready',
+            'seeds_asked' => 'Introduction asked',
+            'seeds_company_label' => 'Company question',
+            'seeds_with' => 'Already with this seed',
+            'seeds_kind_practice' => 'Practice seed label',
+            'board_offers' => 'Offers heading',
+            'board_requests' => 'Requests heading',
+            'board_add' => 'Add yours heading',
+            'board_would' => 'I would like to',
+            'board_offer' => 'Offer help',
+            'board_ask' => 'Ask for help',
+            'board_about' => 'A little about it',
+        ],
+        'Campfire' => [
+            'campfire_title' => 'Title',
+            'campfire_form_title' => 'Composer heading',
+            'campfire_prompt' => 'Composer prompt',
+            'campfire_body_label' => 'Writing label',
+            'campfire_around' => 'Replies heading',
+            'campfire_reply_label' => 'Reply label',
+            'campfire_resting' => 'Resting note',
+            'campfire_hidden' => 'Hidden note',
+        ],
+        'Waypoints' => [
+            'waypoints_title' => 'Title',
+            'waypoints_intro' => 'Introduction',
+            'waypoints_sit_label' => 'People sit with',
+            'waypoints_food_title' => 'Food for Thought heading',
+            'waypoints_food_intro' => 'Food for Thought introduction',
+            'waypoints_discussions_title' => 'Discussions heading',
+            'waypoints_start_title' => 'Start heading',
+            'waypoints_discussion_label' => 'Discussion writing label',
+            'waypoints_discussion_prompt' => 'Default discussion prompt',
+            'waypoints_reply_label' => 'Reply label',
+            'waypoints_in_chair' => 'Inside a discussion',
+            'waypoints_resting' => 'Resting note',
+            'waypoints_hidden' => 'Hidden note',
+            'waypoints_people_title' => 'People heading',
+            'waypoints_sit_first' => 'Sit first',
+            'waypoints_join_first' => 'Join first',
+            'waypoints_guest_rest' => 'Guest sit line',
+            'waypoints_note_one' => 'One note',
+            'waypoints_note_many' => 'Several notes',
+            'waypoints_pinned' => 'Pinned',
+            'waypoints_last_note' => 'Last note',
+        ],
+        'Reading Room' => [
+            'reading_title' => 'Title',
+            'reading_intro' => 'Introduction',
+        ],
+        'Out There' => [
+            'out_there_title' => 'Title',
+            'out_there_form_title' => 'Story heading',
+            'out_there_prompt' => 'Story prompt',
+            'out_there_legacy_help' => 'Older story help',
+            'out_there_body_label' => 'Story label',
+            'out_there_did' => 'What I did',
+            'out_there_expected' => 'What I expected',
+            'out_there_happened' => 'What happened',
+            'out_there_again' => 'Would I do it again',
+            'out_there_guest' => 'Guest line',
+            'out_there_after' => 'Replies heading',
+            'out_there_reply_label' => 'Reply label',
+            'out_there_hidden' => 'Hidden note',
+        ],
+        'Contact' => [
+            'contact_headline' => 'Heading',
+            'contact_card_title' => 'Card title',
+            'contact_body' => 'Card note',
+            'contact_name' => 'Name label',
+            'contact_email' => 'Email label',
+            'contact_note' => 'Note label',
+            'contact_thanks_title' => 'Thanks heading',
+            'contact_thanks_body' => 'Thanks note',
+            'contact_reach' => 'Reach line',
+        ],
+        'Founder Story' => [
             'about_heading' => 'Opening heading',
             'about_intro' => 'Opening',
             'about_founder_heading' => 'Founder heading',
@@ -82,27 +222,120 @@ function content_groups(): array
             'about_hello_body' => 'Hello note',
             'about_close_heading' => 'Closing heading',
             'about_close_body' => 'Closing line',
-        ],
-        'Contact' => [
-            'contact_headline' => 'Headline',
-            'contact_card_title' => 'Card title',
-            'contact_body' => 'Card note',
-        ],
-        'Seeds page' => [
-            'seeds_title' => 'Title',
-            'seeds_line' => 'Line under the title',
-            'seeds_support' => 'Support line',
-            'seeds_accountability' => 'Accountability line',
-            'seeds_learning' => 'Learning line',
-            'seeds_small' => 'Small line',
-        ],
-        'Empty rooms' => [
-            'out_there_empty' => 'Out There explanation',
-            'campfire_waiting' => 'Campfire line',
-            'campfire_empty' => 'Campfire explanation',
+            'about_image_alt' => 'Picture description',
+            'label_founder' => 'Founder label',
         ],
         'Footer' => [
             'footer_line' => 'Footer line',
+            'footer_note' => 'Second footer line',
+        ],
+        'Policies' => [
+            'policy_privacy_label' => 'Privacy link',
+            'policy_privacy_body' => 'Privacy text',
+            'policy_terms_label' => 'House notes link',
+            'policy_terms_body' => 'House notes text',
+        ],
+        'Buttons & CTAs' => [
+            'hero_primary' => 'Homepage primary button',
+            'hero_secondary' => 'Homepage secondary button',
+            'cta_explore_seeds' => 'Explore Seeds',
+            'cta_take_trip' => 'Take The Trip',
+            'cta_share_story' => 'Share Your Story',
+            'cta_pull_chair' => 'Pull Up A Chair',
+            'cta_read_story' => 'Read The Story',
+            'cta_learn_more' => 'Learn More',
+            'cta_tell_story' => 'Tell the story',
+            'cta_put_by_fire' => 'Put it by the fire',
+            'cta_start_discussion' => 'Start the discussion',
+            'cta_share_note' => 'Share a note',
+            'cta_share' => 'Share it',
+            'cta_sit' => 'Sit with this waypoint',
+            'cta_leave_chair' => 'Leave this chair',
+            'cta_plant_seed' => 'Plant this seed',
+            'cta_ask_intro' => 'Ask for an introduction',
+            'cta_offer_skill' => 'Offer or request a skill',
+            'cta_join' => 'Join Go Solo',
+            'cta_log_in' => 'Log in',
+            'cta_send_report' => 'Send a report',
+            'cta_remove_note' => 'Remove this note',
+            'cta_remove_discussion' => 'Remove this discussion',
+            'cta_logout' => 'Log out',
+            'cta_tend' => 'Tend this garden',
+            'cta_notes' => 'Notes',
+            'cta_account' => 'Account',
+            'cta_leave_note' => 'Leave the note',
+            'cta_save' => 'Save',
+            'cta_send_note' => 'Send the note',
+            'cta_reset' => 'Send a reset note',
+            'cta_back_home' => 'Back home',
+            'cta_save_email' => 'Save email',
+            'cta_change_password' => 'Change password',
+            'cta_save_password' => 'Save the password',
+            'cta_delete_account' => 'Delete my account',
+            'cta_save_garden' => 'Save the garden',
+            'cta_wake' => 'Wake it',
+            'cta_rest' => 'Let it rest',
+            'cta_set_down' => 'Set it down',
+            'cta_set_this' => 'Set this down',
+            'cta_plant_it' => 'Plant it',
+            'seeds_go_profile' => 'Go to your profile',
+            'editor_list' => 'List',
+            'editor_quote' => 'Quote',
+            'editor_link' => 'Link',
+        ],
+        'Empty States' => [
+            'out_there_empty' => 'Out There explanation',
+            'campfire_waiting' => 'Campfire waiting line',
+            'campfire_empty' => 'Campfire explanation',
+            'empty_campfire_replies' => 'Campfire replies',
+            'empty_story_replies' => 'Story replies',
+            'empty_discussion' => 'Waypoint discussion',
+            'empty_discussion_replies' => 'Discussion replies',
+            'empty_notes' => 'Notes',
+            'empty_people' => 'Empty chairs',
+            'empty_food' => 'Food for Thought',
+            'empty_waypoints' => 'No waypoints yet',
+            'empty_chair' => 'No chair chosen',
+            'empty_planted' => 'Nothing planted',
+            'empty_requests' => 'No requests',
+            'empty_offers' => 'No offers',
+            'empty_rhythm' => 'Still finding a rhythm',
+            'empty_stories' => 'No stories brought back',
+            'empty_bio' => 'Bio waiting',
+            'empty_shelves' => 'Reading room shelves',
+            'empty_shelf' => 'One shelf',
+            'empty_notices' => 'No notes yet',
+            'note_hidden' => 'Hidden from the house',
+        ],
+        'System Messages' => [
+            'msg_seed_planted' => 'Seed planted',
+            'msg_introduction' => 'Introduction asked',
+            'msg_title_enough' => 'Title is enough',
+            'msg_on_board' => 'On the board',
+            'msg_report_needs' => 'Report needs words',
+            'msg_report' => 'Report received',
+            'msg_joined' => 'Joined',
+            'msg_reset' => 'Reset note sent',
+            'msg_password' => 'Password in place',
+            'msg_garden' => 'Garden saved',
+            'msg_email' => 'Email saved',
+            'msg_password_changed' => 'Password changed',
+            'msg_story' => 'Story published',
+            'msg_campfire' => 'Campfire published',
+            'msg_discussion' => 'Discussion created',
+            'msg_few_words' => 'A few words are enough',
+            'msg_story_needs' => 'Story needs more',
+            'msg_campfire_needs' => 'Campfire needs more',
+            'msg_discussion_needs' => 'Discussion needs more',
+            'msg_not_saved' => 'Writing did not save',
+            'msg_come_in' => 'Come in first',
+            'msg_words_saved' => 'Words saved',
+            'msg_picture_failed' => 'Picture failed',
+            'msg_picture_size' => 'Picture too large',
+            'msg_picture_type' => 'Picture type',
+            'msg_contact_needs' => 'Contact form needs more',
+            'missing_title' => 'Missing page heading',
+            'missing_body' => 'Missing page text',
         ],
         'Navigation' => [
             'nav_about' => 'About',
@@ -114,6 +347,78 @@ function content_groups(): array
             'nav_contact' => 'Contact',
             'nav_join' => 'Join',
             'nav_login' => 'Log In',
+            'nav_profile' => 'Profile',
+            'nav_steward' => 'Steward',
+            'skip_content' => 'Skip to content',
+        ],
+        'Garden & Account' => [
+            'garden_kicker_mine' => 'My garden label',
+            'garden_kicker_other' => 'Someone else\'s garden',
+            'garden_member' => 'Nameless member',
+            'garden_bio' => 'Bio heading',
+            'garden_similar' => 'Similar path heading',
+            'garden_match' => 'Introduction line, use {name}',
+            'garden_note_label' => 'Note label',
+            'garden_skill' => 'Skill swap heading',
+            'garden_skill_match' => 'Skill swap line, use {name}',
+            'garden_waypoints' => 'Waypoints heading',
+            'garden_growing' => 'Growing heading',
+            'garden_resting' => 'Resting',
+            'garden_open_help' => 'Open to help',
+            'garden_help' => 'Help growing heading',
+            'garden_offers' => 'Happy to help heading',
+            'garden_support' => 'Support heading',
+            'garden_frequency' => 'Contact frequency heading',
+            'garden_frequency_any' => 'Frequency not set',
+            'garden_style' => 'Check-in heading',
+            'garden_style_any' => 'Style not set',
+            'garden_stories' => 'Stories heading',
+            'garden_hidden' => 'Hidden',
+            'garden_warning' => 'Steward note heading',
+            'label_report' => 'Report label',
+            'label_report_note' => 'Report a note',
+            'label_title' => 'Title',
+            'label_write' => 'Write here',
+            'label_photo' => 'Photograph on a story',
+            'label_photo_alt' => 'Photograph description',
+            'label_email' => 'Email',
+            'label_password' => 'Password',
+            'label_name' => 'Name',
+            'label_note' => 'Note',
+            'label_bio' => 'Bio',
+            'account_title' => 'Account heading',
+            'account_password' => 'Password heading',
+            'account_current' => 'Current password',
+            'account_new' => 'New password',
+            'account_close' => 'Close account heading',
+            'account_close_body' => 'Close account text',
+            'account_confirm' => 'Delete confirmation',
+            'join_title' => 'Join heading',
+            'join_intro' => 'Join introduction',
+            'join_call_you' => 'Name question',
+            'join_password_hint' => 'Password hint',
+            'join_have_chair' => 'Already have a chair',
+            'login_title' => 'Log in heading',
+            'login_intro' => 'Log in introduction',
+            'login_forgot' => 'Forgot password',
+            'login_new' => 'New here',
+            'forgot_title' => 'Forgot heading',
+            'forgot_intro' => 'Forgot introduction',
+            'forgot_back' => 'Back to log in',
+            'reset_title' => 'Reset heading',
+            'reset_invalid' => 'Link finished',
+            'reset_again' => 'Ask for another',
+            'notices_title' => 'Notes heading',
+            'notices_intro' => 'Notes introduction',
+            'edit_title' => 'Tend heading',
+            'edit_see' => 'See it as others do',
+            'edit_location' => 'Location',
+            'edit_show_location' => 'Show location',
+            'edit_photo' => 'Photograph',
+            'edit_remove_photo' => 'Remove photograph',
+            'edit_tiny' => 'A tiny future',
+            'edit_want_help' => 'I would like help',
+            'edit_shelf' => 'From the shelf',
         ],
     ];
 }
@@ -157,5 +462,10 @@ function image_keys(): array
 
 function long_setting(string $key, string $value): bool
 {
-    return str_contains($value, "\n") || str_contains($key, 'body') || str_contains($key, 'intro') || strlen($value) > 140;
+    return str_contains($value, "\n")
+        || str_contains($key, 'body')
+        || str_contains($key, 'intro')
+        || str_contains($key, 'prompt')
+        || str_contains($key, 'policy_')
+        || strlen($value) > 140;
 }

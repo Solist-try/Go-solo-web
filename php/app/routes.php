@@ -46,6 +46,8 @@ function route_table(): array
         ['GET', '/about', 'page_about'],
         ['GET', '/contact', 'page_contact'],
         $post('/contact', 'page_contact_post'),
+        ['GET', '/privacy', 'page_privacy'],
+        ['GET', '/terms', 'page_terms'],
         ['GET', '/seeds', 'page_seeds'],
         $post('/seeds/skill-swap', 'page_skill_post'),
         ['GET', '/seeds/{slug}', 'page_seed'],

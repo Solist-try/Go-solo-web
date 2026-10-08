@@ -124,8 +124,30 @@ function setting(string $key, string $default = ''): string
     return $all[$key];
 }
 
+function table_has_column(string $table, string $column): bool
+{
+    static $cache = [];
+    $name = $table . '.' . $column;
+    if (!array_key_exists($name, $cache)) {
+        $found = one(
+            'SELECT COUNT(*) AS n FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?',
+            [$table, $column]
+        );
+        $cache[$name] = (int) ($found['n'] ?? 0) > 0;
+    }
+    return $cache[$name];
+}
+
 function setting_put(string $key, string $value): void
 {
+    if (table_has_column('settings', 'updated_at')) {
+        exec_sql(
+            'INSERT INTO settings (setting_key, setting_value, updated_at) VALUES (?, ?, NOW())
+             ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_at = NOW()',
+            [$key, $value]
+        );
+        return;
+    }
     exec_sql(
         'INSERT INTO settings (setting_key, setting_value) VALUES (?, ?)
          ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)',
@@ -287,14 +309,29 @@ function clip(string $value, int $max): string
     return substr($value, 0, $max);
 }
 
-function waypoint_sitting(string $slug): string
+function waypoint_sitting(string $slug, array $waypoint = []): string
 {
+    $line = trim((string) ($waypoint['intro_line'] ?? ''));
+    if ($line !== '') {
+        return $line;
+    }
     $lines = [
         'emotional-clarity' => 'Starting over, grief, choosing differently.',
         'independence-lab' => 'Budgeting, home repairs, solo travel.',
         'solo-among-others' => 'Friendship, rooms built for pairs, staying connected.',
     ];
     return $lines[$slug] ?? '';
+}
+
+function waypoint_line(array $waypoint, string $column, string $key): string
+{
+    $value = trim((string) ($waypoint[$column] ?? ''));
+    return $value !== '' ? $value : site_text($key);
+}
+
+function waypoint_copy_ready(): bool
+{
+    return table_has_column('waypoints', 'intro_line');
 }
 
 function slugify(string $value): string
@@ -377,14 +414,14 @@ function upload_problem(string $field): ?string
         return null;
     }
     if ($error !== UPLOAD_ERR_OK) {
-        return 'That picture did not come through. Try a smaller one.';
+        return site_text('msg_picture_failed');
     }
     if (($_FILES[$field]['size'] ?? 0) > 2_000_000) {
-        return 'That picture needs to be under 2 MB.';
+        return site_text('msg_picture_size');
     }
     $info = @getimagesize((string) $_FILES[$field]['tmp_name']);
     if ($info === false || !in_array($info[2], [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP, IMAGETYPE_GIF], true)) {
-        return 'Use a JPG, PNG, WEBP, or GIF.';
+        return site_text('msg_picture_type');
     }
     return null;
 }

@@ -1,15 +1,15 @@
-<?php $pageTitle = 'Log In · ' . site_text('site_title'); ?>
+<?php $pageTitle = site_text('login_title') . ' · ' . site_text('site_title'); ?>
 <section class="frame section narrow">
-  <h1>Log In</h1>
-  <p>Come in whenever you are ready.</p>
+  <h1><?= e(site_text('login_title')) ?></h1>
+  <p><?= e(site_text('login_intro')) ?></p>
   <form method="post" action="<?= e(url('/login')) ?>">
     <?= csrf_field() ?>
     <input type="hidden" name="next" value="<?= e($next ?? '/profile') ?>">
-    <label><span>Email</span><input type="email" name="email" maxlength="190" required value="<?= e($email ?? '') ?>" autocomplete="username"></label>
-    <label><span>Password</span><input type="password" name="password" required autocomplete="current-password"></label>
+    <label><span><?= e(site_text('label_email')) ?></span><input type="email" name="email" maxlength="190" required value="<?= e($email ?? '') ?>" autocomplete="username"></label>
+    <label><span><?= e(site_text('label_password')) ?></span><input type="password" name="password" required autocomplete="current-password"></label>
     <?php if (!empty($error)): ?><p class="error"><?= e($error) ?></p><?php endif; ?>
-    <button type="submit">Log in</button>
+    <button type="submit"><?= e(site_text('cta_log_in')) ?></button>
   </form>
-  <p><a href="<?= e(url('/forgot')) ?>">Forgot password</a></p>
-  <p>New here? <a href="<?= e(url('/join')) ?>">Join Go Solo</a></p>
+  <p><a href="<?= e(url('/forgot')) ?>"><?= e(site_text('login_forgot')) ?></a></p>
+  <p><?= e(site_text('login_new')) ?> <a href="<?= e(url('/join')) ?>"><?= e(site_text('cta_join')) ?></a></p>
 </section>

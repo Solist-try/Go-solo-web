@@ -37,6 +37,8 @@ Importing it again drops those tables and starts over. Do that only on a new sit
 
 If the site is already installed and you are adding discussions, replies, and reading-room links, import `sql/update-rooms.sql` once instead. It adds tables and one story column. It does not delete stories, members, or the reading room. The script records `rooms-2026-10-08` in `schema_updates`. Importing that file again is safe. The site does not run this update on an ordinary page view.
 
+If the site is already installed and you want each waypoint to keep its own sitting line, Food for Thought introduction, discussion prompt, button, and empty line, import `sql/update-content.sql` once as well. Shared page wording does not need that file. The script records `content-2026-10-08` in `schema_updates`. Importing it again is safe.
+
 ## 3. Upload the site
 
 Upload the **contents** of the `php` folder into `public_html`, so `index.php` sits next to `public_html` itself, not inside another folder.

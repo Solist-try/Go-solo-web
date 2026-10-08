@@ -1,10 +1,10 @@
-<?php $pageTitle = 'Reading Room · ' . site_text('site_title'); ?>
+<?php $pageTitle = site_text('reading_title') . ' · ' . site_text('site_title'); ?>
 <section class="band mist">
   <div class="frame section">
-  <h1>Reading Room</h1>
-  <p>Practical notes for ordinary days. A trip, a meal, a question, a first try.</p>
+  <h1><?= e(site_text('reading_title')) ?></h1>
+  <p><?= e(site_text('reading_intro')) ?></p>
   <?php if (!$categories): ?>
-    <p>The shelves are still bare.</p>
+    <p><?= e(site_text('empty_shelves')) ?></p>
   <?php endif; ?>
   <?php foreach ($categories as $category): ?>
     <article style="margin-top:2.4rem">
@@ -18,7 +18,7 @@
         <?php endif; ?>
       </div>
       <?php if (!$category['articles']): ?>
-        <p class="soft">This shelf is still bare.</p>
+        <p class="soft"><?= e(site_text('empty_shelf')) ?></p>
       <?php else: ?>
         <div class="previews">
           <?php foreach ($category['articles'] as $article): ?>

@@ -40,11 +40,11 @@
         ];
     }
     $stepLinks = [
-        '/seeds' => 'Explore Seeds',
-        '/out-there' => 'Take The Trip',
-        '/campfire' => 'Share Your Story',
-        '/waypoints' => 'Pull Up A Chair',
-        '/reading' => 'Read The Story',
+        '/seeds' => site_text('cta_explore_seeds'),
+        '/out-there' => site_text('cta_take_trip'),
+        '/campfire' => site_text('cta_share_story'),
+        '/waypoints' => site_text('cta_pull_chair'),
+        '/reading' => site_text('cta_read_story'),
     ];
     foreach ($steps as $step):
         $href = (string) ($step['href'] ?? '');
@@ -53,7 +53,7 @@
         <h3><?= e((string) ($step['name'] ?? '')) ?></h3>
         <p><?= e((string) ($step['body'] ?? '')) ?></p>
         <?php if ($href !== ''): ?>
-          <p><a href="<?= e(url($href)) ?>"><?= e($stepLinks[$href] ?? 'Learn More') ?></a></p>
+          <p><a href="<?= e(url($href)) ?>"><?= e($stepLinks[$href] ?? site_text('cta_learn_more')) ?></a></p>
         <?php endif; ?>
       </article>
     <?php endforeach; ?>
@@ -64,24 +64,24 @@
   <h2><?= e(site_text('home_seeds_title')) ?></h2>
   <p class="soft"><?= e(site_text('home_seeds_line')) ?></p>
   <div class="cards two">
-    <a class="card sage stretch" href="<?= e(url('/seeds/same')) ?>"><h3>SAME</h3><p>Someone on a similar path. A steward can introduce you. There is no rush.</p></a>
-    <a class="card sage stretch" href="<?= e(url('/seeds/skill-swap')) ?>"><h3>Skill Swap</h3><p>Learn something. Teach something.</p></a>
+    <a class="card sage stretch" href="<?= e(url('/seeds/same')) ?>"><h3><?= e(site_text('home_same_title')) ?></h3><p><?= e(site_text('home_same_body')) ?></p></a>
+    <a class="card sage stretch" href="<?= e(url('/seeds/skill-swap')) ?>"><h3><?= e(site_text('home_skill_title')) ?></h3><p><?= e(site_text('home_skill_body')) ?></p></a>
   </div>
-  <p><a href="<?= e(url('/seeds')) ?>">Explore Seeds</a></p>
+  <p><a href="<?= e(url('/seeds')) ?>"><?= e(site_text('cta_explore_seeds')) ?></a></p>
 </section>
 
 <section class="band mist">
   <div class="frame section">
     <h2><?= e(site_text('nav_reading')) ?></h2>
-    <p>Practical notes for ordinary days. A trip, a meal, a question, a first try.</p>
-    <p><a class="button" href="<?= e(url('/reading')) ?>">Read The Story</a></p>
+    <p><?= e(site_text('home_reading_intro')) ?></p>
+    <p><a class="button" href="<?= e(url('/reading')) ?>"><?= e(site_text('cta_read_story')) ?></a></p>
   </div>
 </section>
 
 <section class="band clay">
   <div class="frame section">
     <h2><?= e(site_text('contact_headline')) ?></h2>
-    <p>A question, an idea, or a story is welcome.</p>
+    <p><?= e(site_text('home_contact_line')) ?></p>
     <p><a class="button" href="<?= e(url('/contact')) ?>"><?= e(site_text('contact_card_title')) ?></a></p>
   </div>
 </section>

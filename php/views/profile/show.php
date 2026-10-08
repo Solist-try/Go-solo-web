@@ -1,9 +1,9 @@
 <?php
 $pageTitle = ($person['display_name'] ?: 'Profile') . ' · ' . site_text('site_title');
-$name = $person['display_name'] ?: 'A member';
+$name = $person['display_name'] ?: site_text('garden_member');
 ?>
 <section class="frame section">
-  <p class="kicker"><?= $isSelf ? 'My Garden' : 'A garden' ?></p>
+  <p class="kicker"><?= e($isSelf ? site_text('garden_kicker_mine') : site_text('garden_kicker_other')) ?></p>
   <h1><?= e($name) ?></h1>
   <?php if (!empty($person['avatar_path'])): ?>
     <img class="avatar" src="<?= e(media($person['avatar_path'])) ?>" alt="">
@@ -13,63 +13,63 @@ $name = $person['display_name'] ?: 'A member';
   <?php endif; ?>
   <?php if ($isSelf): ?>
     <p class="row-actions">
-      <a class="button quiet small" href="<?= e(url('/profile/edit')) ?>">Tend this garden</a>
-      <a class="button quiet small" href="<?= e(url('/notices')) ?>">Notes</a>
-      <a class="button quiet small" href="<?= e(url('/account')) ?>">Account</a>
+      <a class="button quiet small" href="<?= e(url('/profile/edit')) ?>"><?= e(site_text('cta_tend')) ?></a>
+      <a class="button quiet small" href="<?= e(url('/notices')) ?>"><?= e(site_text('cta_notes')) ?></a>
+      <a class="button quiet small" href="<?= e(url('/account')) ?>"><?= e(site_text('cta_account')) ?></a>
     </p>
   <?php endif; ?>
 
-  <h2>Bio</h2>
+  <h2><?= e(site_text('garden_bio')) ?></h2>
   <?php if (trim((string) $person['bio']) === ''): ?>
-    <p class="soft">A few words can wait.</p>
+    <p class="soft"><?= e(site_text('empty_bio')) ?></p>
   <?php else: ?>
     <?= paragraphs((string) $person['bio']) ?>
   <?php endif; ?>
 
   <?php if ($isSelf && $matches): ?>
-    <h2>Someone on a similar path</h2>
+    <h2><?= e(site_text('garden_similar')) ?></h2>
     <?php foreach ($matches as $match): ?>
       <article class="card sage">
-        <p>A steward suggested <?= e($match['other_name']) ?> for this stretch. You can take your time.</p>
+        <p><?= e(site_line('garden_match', ['name' => $match['other_name']])) ?></p>
         <p><a href="<?= e(url('/members/' . $match['other_id'])) ?>"><?= e($match['other_name']) ?></a></p>
         <?php if ($match['note']): ?><p><?= e($match['note']) ?></p><?php endif; ?>
         <?php foreach ($sameNotes[$match['id']] ?? [] as $note): ?>
-          <p><strong><?= e($note['display_name'] ?: 'A member') ?></strong> <span class="soft"><?= e(nice_date($note['created_at'])) ?></span><br><?= e($note['body']) ?></p>
+          <p><strong><?= e($note['display_name'] ?: site_text('garden_member')) ?></strong> <span class="soft"><?= e(nice_date($note['created_at'])) ?></span><br><?= e($note['body']) ?></p>
         <?php endforeach; ?>
         <form method="post" action="<?= e(url('/notes')) ?>">
           <?= csrf_field() ?>
           <input type="hidden" name="context_type" value="same">
           <input type="hidden" name="context_id" value="<?= e((string) $match['id']) ?>">
-          <label><span>A note, whenever you want</span><textarea name="body" maxlength="2000"></textarea></label>
-          <button type="submit">Leave the note</button>
+          <label><span><?= e(site_text('garden_note_label')) ?></span><textarea name="body" maxlength="2000"></textarea></label>
+          <button type="submit"><?= e(site_text('cta_leave_note')) ?></button>
         </form>
       </article>
     <?php endforeach; ?>
   <?php endif; ?>
 
   <?php if ($isSelf && $skillLinks): ?>
-    <h2>A skill swap</h2>
+    <h2><?= e(site_text('garden_skill')) ?></h2>
     <?php foreach ($skillLinks as $link): ?>
       <article class="card clay">
-        <p>A steward connected you with <?= e($link['other_name']) ?> for a skill swap. You can take your time.</p>
+        <p><?= e(site_line('garden_skill_match', ['name' => $link['other_name']])) ?></p>
         <?php if ($link['title']): ?><p><?= e($link['title']) ?></p><?php endif; ?>
         <p><a href="<?= e(url('/members/' . $link['other_id'])) ?>"><?= e($link['other_name']) ?></a></p>
         <?php foreach ($skillNotes[$link['id']] ?? [] as $note): ?>
-          <p><strong><?= e($note['display_name'] ?: 'A member') ?></strong> <span class="soft"><?= e(nice_date($note['created_at'])) ?></span><br><?= e($note['body']) ?></p>
+          <p><strong><?= e($note['display_name'] ?: site_text('garden_member')) ?></strong> <span class="soft"><?= e(nice_date($note['created_at'])) ?></span><br><?= e($note['body']) ?></p>
         <?php endforeach; ?>
         <form method="post" action="<?= e(url('/notes')) ?>">
           <?= csrf_field() ?>
           <input type="hidden" name="context_type" value="skill">
           <input type="hidden" name="context_id" value="<?= e((string) $link['id']) ?>">
-          <label><span>A note, whenever you want</span><textarea name="body" maxlength="2000"></textarea></label>
-          <button type="submit">Leave the note</button>
+          <label><span><?= e(site_text('garden_note_label')) ?></span><textarea name="body" maxlength="2000"></textarea></label>
+          <button type="submit"><?= e(site_text('cta_leave_note')) ?></button>
         </form>
       </article>
     <?php endforeach; ?>
   <?php endif; ?>
 
-  <h2>Waypoints</h2>
-  <?php if (!$waypoints): ?><p class="soft">No chair chosen yet.</p><?php else: ?>
+  <h2><?= e(site_text('garden_waypoints')) ?></h2>
+  <?php if (!$waypoints): ?><p class="soft"><?= e(site_text('empty_chair')) ?></p><?php else: ?>
     <ul class="chips">
       <?php foreach ($waypoints as $waypoint): ?>
         <li><a href="<?= e(url('/waypoints/' . $waypoint['slug'])) ?>"><?= e($waypoint['title']) ?></a></li>
@@ -77,53 +77,53 @@ $name = $person['display_name'] ?: 'A member';
     </ul>
   <?php endif; ?>
 
-  <h2>Seeds I'm Growing</h2>
-  <?php if (!$growing && !$planted): ?><p class="soft">Nothing planted yet.</p><?php endif; ?>
+  <h2><?= e(site_text('garden_growing')) ?></h2>
+  <?php if (!$growing && !$planted): ?><p class="soft"><?= e(site_text('empty_planted')) ?></p><?php endif; ?>
   <ul class="list">
     <?php foreach ($planted as $seed): ?>
       <li><a href="<?= e(url('/seeds/' . $seed['slug'])) ?>"><?= e($seed['title']) ?></a></li>
     <?php endforeach; ?>
     <?php foreach ($growing as $seed): ?>
-      <li><?= e($seed['title']) ?><?php if ($seed['status'] === 'resting'): ?> <span class="soft">· resting</span><?php endif; ?><?php if (!empty($seed['looking_for_support'])): ?> <span class="soft">· open to help</span><?php endif; ?></li>
+      <li><?= e($seed['title']) ?><?php if ($seed['status'] === 'resting'): ?> <span class="soft">· <?= e(site_text('garden_resting')) ?></span><?php endif; ?><?php if (!empty($seed['looking_for_support'])): ?> <span class="soft">· <?= e(site_text('garden_open_help')) ?></span><?php endif; ?></li>
     <?php endforeach; ?>
   </ul>
 
-  <h2>Seeds I'd Like Help Growing</h2>
-  <?php if (!$helpRequests): ?><p class="soft">No requests yet.</p><?php else: ?>
+  <h2><?= e(site_text('garden_help')) ?></h2>
+  <?php if (!$helpRequests): ?><p class="soft"><?= e(site_text('empty_requests')) ?></p><?php else: ?>
     <ul class="chips"><?php foreach ($helpRequests as $title): ?><li><?= e($title) ?></li><?php endforeach; ?></ul>
   <?php endif; ?>
 
-  <h2>Seeds I'm Happy To Help Plant</h2>
-  <?php if (!$helpOffers): ?><p class="soft">No offers yet.</p><?php else: ?>
+  <h2><?= e(site_text('garden_offers')) ?></h2>
+  <?php if (!$helpOffers): ?><p class="soft"><?= e(site_text('empty_offers')) ?></p><?php else: ?>
     <ul class="chips"><?php foreach ($helpOffers as $title): ?><li><?= e($title) ?></li><?php endforeach; ?></ul>
   <?php endif; ?>
 
-  <h2>Support Preferences</h2>
-  <?php if (!$supports): ?><p class="soft">Still finding a rhythm.</p><?php else: ?>
+  <h2><?= e(site_text('garden_support')) ?></h2>
+  <?php if (!$supports): ?><p class="soft"><?= e(site_text('empty_rhythm')) ?></p><?php else: ?>
     <ul class="chips"><?php foreach ($supports as $choice): ?><li><?= e($choice) ?></li><?php endforeach; ?></ul>
   <?php endif; ?>
 
-  <h2>Contact Frequency</h2>
-  <p><?= e($person['contact_frequency'] ?: 'Whenever it suits.') ?></p>
+  <h2><?= e(site_text('garden_frequency')) ?></h2>
+  <p><?= e($person['contact_frequency'] ?: site_text('garden_frequency_any')) ?></p>
 
-  <h2>Check-In Style</h2>
-  <p><?= e($person['check_in_style'] ?: 'Any way that feels easy.') ?></p>
+  <h2><?= e(site_text('garden_style')) ?></h2>
+  <p><?= e($person['check_in_style'] ?: site_text('garden_style_any')) ?></p>
 
-  <h2>Recent Out There Stories</h2>
-  <?php if (!$stories): ?><p class="soft">No stories brought back yet.</p><?php else: ?>
+  <h2><?= e(site_text('garden_stories')) ?></h2>
+  <?php if (!$stories): ?><p class="soft"><?= e(site_text('empty_stories')) ?></p><?php else: ?>
     <ul class="list">
       <?php foreach ($stories as $story): ?>
         <li>
           <a href="<?= e(url('/out-there/' . $story['id'])) ?>"><?= e($story['title']) ?></a>
           <span class="soft"> · <?= e(nice_date($story['created_at'])) ?></span>
-          <?php if (!empty($story['hidden'])): ?><span class="soft"> · hidden</span><?php endif; ?>
+          <?php if (!empty($story['hidden'])): ?><span class="soft"> · <?= e(site_text('garden_hidden')) ?></span><?php endif; ?>
         </li>
       <?php endforeach; ?>
     </ul>
   <?php endif; ?>
 
   <?php if ($isSelf && $warnings): ?>
-    <h2>A note from the steward</h2>
+    <h2><?= e(site_text('garden_warning')) ?></h2>
     <?php foreach ($warnings as $warning): ?>
       <article class="card clay">
         <p><?= e($warning['note']) ?></p>
@@ -135,8 +135,8 @@ $name = $person['display_name'] ?: 'A member';
   <?php if ($currentUser && !$isSelf): ?>
     <form method="post" action="<?= e(url('/members/' . $person['id'] . '/report')) ?>">
       <?= csrf_field() ?>
-      <label><span>If something here is not right, tell the steward</span><textarea name="reason" maxlength="1000" required></textarea></label>
-      <button class="quiet small" type="submit">Send a report</button>
+      <label><span><?= e(site_text('label_report')) ?></span><textarea name="reason" maxlength="1000" required></textarea></label>
+      <button class="quiet small" type="submit"><?= e(site_text('cta_send_report')) ?></button>
     </form>
   <?php endif; ?>
 </section>

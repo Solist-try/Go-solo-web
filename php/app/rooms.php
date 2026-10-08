@@ -14,7 +14,7 @@ function room_transaction(callable $work, ?string $uploadPath): ?string
             db()->rollBack();
         }
         forget_upload($uploadPath);
-        return 'That did not save. The writing is still here.';
+        return site_text('msg_not_saved');
     }
 }
 
@@ -26,14 +26,36 @@ function editor_fields(array $over): array
         'title' => '',
         'body' => '',
         'show_image' => false,
-        'title_label' => 'Title',
-        'body_label' => 'Write here',
+        'title_label' => site_text('label_title'),
+        'body_label' => site_text('label_write'),
         'help' => '',
-        'submit' => 'Share it',
+        'submit' => site_text('cta_share'),
         'error' => '',
-        'image_label' => 'A photograph, if you have one',
+        'image_label' => site_text('label_photo'),
         'image_alt' => '',
     ], $over);
+}
+
+function story_editor(array $over = []): array
+{
+    return editor_fields(array_merge([
+        'action' => url('/out-there'),
+        'body_label' => site_text('out_there_body_label'),
+        'help' => site_text('out_there_prompt'),
+        'submit' => site_text('cta_tell_story'),
+        'show_image' => true,
+    ], $over));
+}
+
+function campfire_editor(array $over = []): array
+{
+    return editor_fields(array_merge([
+        'action' => url('/campfire'),
+        'body_label' => site_text('campfire_body_label'),
+        'help' => site_text('campfire_prompt'),
+        'submit' => site_text('cta_put_by_fire'),
+        'show_image' => rooms_ready(),
+    ], $over));
 }
 
 function show_editor(string $view, array $editor, array $extra = []): void
@@ -89,14 +111,7 @@ function room_story_form(array $params): void
         ]);
         return;
     }
-    show_editor('stories/form', editor_fields([
-        'action' => url('/out-there'),
-        'title_label' => 'Title',
-        'body_label' => 'The story',
-        'help' => 'The walk, the class, the conversation, the first solo trip.',
-        'submit' => 'Tell the story',
-        'show_image' => true,
-    ]));
+    show_editor('stories/form', story_editor());
 }
 
 function room_story_save(array $params): void
@@ -112,18 +127,12 @@ function room_story_save(array $params): void
     $upload = take_upload('image');
     $error = $upload['error'] ?? '';
     if ($error === '' && ($title === '' || writing_is_empty($body))) {
-        $error = 'A story needs a title and what happened.';
+        $error = site_text('msg_story_needs');
     }
-    $editor = editor_fields([
-        'action' => url('/out-there'),
+    $editor = story_editor([
         'title' => $title,
         'body' => $body,
         'image_alt' => $alt,
-        'title_label' => 'Title',
-        'body_label' => 'The story',
-        'help' => 'The walk, the class, the conversation, the first solo trip.',
-        'submit' => 'Tell the story',
-        'show_image' => true,
         'error' => $error,
     ]);
     if ($error !== '') {
@@ -148,6 +157,7 @@ function room_story_save(array $params): void
         return;
     }
     log_activity((int) $user['id'], 'Told an Out There story');
+    flash(site_text('msg_story'));
     redirect('/out-there/' . $id);
 }
 
@@ -205,8 +215,8 @@ function room_story_show(array $params): void
         'editor' => editor_fields([
             'mode' => 'compact',
             'action' => url('/out-there/' . (int) $story['id'] . '/reply'),
-            'body_label' => 'Add to the story',
-            'submit' => 'Share a note',
+            'body_label' => site_text('out_there_reply_label'),
+            'submit' => site_text('cta_share_note'),
             'show_image' => rooms_ready(),
         ]),
     ]);
@@ -242,13 +252,7 @@ function room_story_reply(array $params): void
 function room_campfire_form(array $params): void
 {
     require_user();
-    show_editor('campfire/form', editor_fields([
-        'action' => url('/campfire'),
-        'body_label' => 'What is on your mind?',
-        'help' => "Talk about something you're wondering about, something that happened, or something you're still working through.",
-        'submit' => 'Put it by the fire',
-        'show_image' => rooms_ready(),
-    ]));
+    show_editor('campfire/form', campfire_editor());
 }
 
 function room_campfire_save(array $params): void
@@ -260,17 +264,12 @@ function room_campfire_save(array $params): void
     $upload = rooms_ready() ? take_upload('image') : ['error' => null, 'path' => null];
     $error = $upload['error'] ?? '';
     if ($error === '' && ($title === '' || writing_is_empty($body))) {
-        $error = 'A title and a few words are enough.';
+        $error = site_text('msg_campfire_needs');
     }
-    $editor = editor_fields([
-        'action' => url('/campfire'),
+    $editor = campfire_editor([
         'title' => $title,
         'body' => $body,
         'image_alt' => $alt,
-        'body_label' => 'What is on your mind?',
-        'help' => "Talk about something you're wondering about, something that happened, or something you're still working through.",
-        'submit' => 'Put it by the fire',
-        'show_image' => rooms_ready(),
         'error' => $error,
     ]);
     if ($error !== '') {
@@ -294,6 +293,7 @@ function room_campfire_save(array $params): void
         return;
     }
     log_activity((int) $user['id'], 'Started a campfire conversation');
+    flash(site_text('msg_campfire'));
     redirect('/campfire/' . $id);
 }
 
@@ -311,8 +311,8 @@ function room_campfire_show(array $params): void
         'editor' => editor_fields([
             'mode' => 'compact',
             'action' => url('/campfire/' . (int) $post['id'] . '/comment'),
-            'body_label' => 'Add to the conversation',
-            'submit' => 'Share it',
+            'body_label' => site_text('campfire_reply_label'),
+            'submit' => site_text('cta_share'),
             'show_image' => rooms_ready(),
         ]),
     ]);
@@ -343,7 +343,7 @@ function save_reply(array $user, string $type, int $targetId, string $back, stri
         redirect($back);
     }
     if (writing_is_empty($body)) {
-        flash('A few words are enough.');
+        flash(site_text('msg_few_words'));
         forget_upload($upload['path'] ?? null);
         redirect($back);
     }
@@ -458,9 +458,9 @@ function room_waypoint(array $params): void
         'canSpeak' => $user && can_speak_here($user, (int) $waypoint['id']) && (int) $waypoint['archived'] === 0,
         'editor' => editor_fields([
             'action' => url('/waypoints/' . $waypoint['slug'] . '/discussions'),
-            'body_label' => 'What should this chair talk about?',
-            'help' => 'A question, something that happened, or something you are still working through.',
-            'submit' => 'Start the discussion',
+            'body_label' => site_text('waypoints_discussion_label'),
+            'help' => waypoint_line($waypoint, 'discussion_prompt', 'waypoints_discussion_prompt'),
+            'submit' => waypoint_line($waypoint, 'discussion_cta', 'cta_start_discussion'),
             'show_image' => true,
         ]),
     ]);
@@ -488,7 +488,7 @@ function room_discussion_save(array $params): void
         redirect($back);
     }
     if ($title === '' || writing_is_empty($body)) {
-        flash('A discussion needs a title and a few words.');
+        flash(site_text('msg_discussion_needs'));
         forget_upload($upload['path'] ?? null);
         redirect($back);
     }
@@ -509,6 +509,7 @@ function room_discussion_save(array $params): void
         redirect($back);
     }
     log_activity((int) $user['id'], 'Started a discussion in ' . $waypoint['title']);
+    flash(site_text('msg_discussion'));
     redirect($back . '/discussions/' . $id);
 }
 
@@ -530,8 +531,8 @@ function room_discussion(array $params): void
         'editor' => editor_fields([
             'mode' => 'compact',
             'action' => url('/waypoints/' . $waypoint['slug'] . '/discussions/' . (int) $post['id'] . '/reply'),
-            'body_label' => 'Add to the discussion',
-            'submit' => 'Share a note',
+            'body_label' => site_text('waypoints_reply_label'),
+            'submit' => site_text('cta_share_note'),
             'show_image' => true,
         ]),
     ]);

@@ -1,11 +1,11 @@
-<?php $pageTitle = 'Forgot password · ' . site_text('site_title'); ?>
+<?php $pageTitle = site_text('forgot_title') . ' · ' . site_text('site_title'); ?>
 <section class="frame section narrow">
-  <h1>Forgot password</h1>
-  <p>Write the email on your account. If it is here, a reset note will be sent. It lasts for two hours.</p>
+  <h1><?= e(site_text('forgot_title')) ?></h1>
+  <p><?= e(site_text('forgot_intro')) ?></p>
   <form method="post" action="<?= e(url('/forgot')) ?>">
     <?= csrf_field() ?>
-    <label><span>Email</span><input type="email" name="email" maxlength="190" required value="<?= e($email ?? '') ?>"></label>
-    <button type="submit">Send a reset note</button>
+    <label><span><?= e(site_text('label_email')) ?></span><input type="email" name="email" maxlength="190" required value="<?= e($email ?? '') ?>"></label>
+    <button type="submit"><?= e(site_text('cta_reset')) ?></button>
   </form>
-  <p><a href="<?= e(url('/login')) ?>">Back to log in</a></p>
+  <p><a href="<?= e(url('/login')) ?>"><?= e(site_text('forgot_back')) ?></a></p>
 </section>

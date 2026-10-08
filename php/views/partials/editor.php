@@ -14,10 +14,10 @@ $editorAction = (string) ($editor['action'] ?? '');
   <div class="editor-tools" role="toolbar" aria-label="Writing">
     <button type="button" data-cmd="bold"><strong>B</strong></button>
     <button type="button" data-cmd="italic"><em>I</em></button>
-    <button type="button" data-cmd="insertUnorderedList">List</button>
+    <button type="button" data-cmd="insertUnorderedList"><?= e(site_text('editor_list')) ?></button>
     <button type="button" data-cmd="insertOrderedList">1.</button>
-    <button type="button" data-cmd="quote">Quote</button>
-    <button type="button" data-cmd="link">Link</button>
+    <button type="button" data-cmd="quote"><?= e(site_text('editor_quote')) ?></button>
+    <button type="button" data-cmd="link"><?= e(site_text('editor_link')) ?></button>
   </div>
   <div class="editor-surface" contenteditable="true" role="textbox" aria-multiline="true"></div>
   <textarea class="editor-source" name="body" maxlength="20000"><?= e((string) ($editor['body'] ?? '')) ?></textarea>
@@ -25,7 +25,7 @@ $editorAction = (string) ($editor['action'] ?? '');
     <label><span><?= e((string) ($editor['image_label'] ?? 'A photograph, if you have one')) ?></span>
       <input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif">
     </label>
-    <label><span>A short description of the photograph</span>
+    <label><span><?= e(site_text('label_photo_alt')) ?></span>
       <input type="text" name="image_alt" maxlength="255" value="<?= e((string) ($editor['image_alt'] ?? '')) ?>">
     </label>
   <?php endif; ?>
