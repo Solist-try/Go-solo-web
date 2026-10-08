@@ -84,6 +84,104 @@ $name = $person['display_name'] ?: site_text('garden_member');
         <?php endforeach; ?>
       </ul>
     <?php endif; ?>
+      <?php if (life_ready()): ?>
+        <?php if (!empty($lifeTalk['archived'])): ?>
+          <h2><?= e(site_text('life_talk_archived')) ?></h2>
+          <ul class="list">
+            <?php foreach ($lifeTalk['archived'] as $conversation): ?>
+              <li><a href="<?= e(url('/conversations/' . $conversation['id'])) ?>"><?= e($conversation['context_label'] ?: site_text('talk_heading')) ?></a></li>
+            <?php endforeach; ?>
+          </ul>
+        <?php endif; ?>
+        <?php if (!empty($lifeTalk['closed'])): ?>
+          <h2><?= e(site_text('life_talk_closed_heading')) ?></h2>
+          <ul class="list">
+            <?php foreach ($lifeTalk['closed'] as $conversation): ?>
+              <li><a href="<?= e(url('/conversations/' . $conversation['id'])) ?>"><?= e($conversation['context_label'] ?: site_text('talk_heading')) ?></a></li>
+            <?php endforeach; ?>
+          </ul>
+        <?php endif; ?>
+        <h2 id="space"><?= e(site_text('life_space_heading')) ?></h2>
+        <p><?= e(site_text('life_space_body')) ?></p>
+        <form method="post" action="<?= e(url('/profile/space')) ?>">
+          <?= csrf_field() ?>
+          <fieldset class="choices-set">
+            <legend><?= e(site_text('life_space_heading')) ?></legend>
+            <div class="choices">
+              <label>
+                <input type="checkbox" name="pause_conversations" value="1"<?= talk_pref((int) $person['id']) === 'none' ? ' checked' : '' ?>>
+                <span class="choice-title"><?= e(site_text('life_space_talk')) ?></span>
+                <p class="soft"><?= e(site_text('life_space_talk_note')) ?></p>
+              </label>
+              <label>
+                <input type="checkbox" name="pause_introductions" value="1"<?= !empty($lifeProfile['pause_introductions']) ? ' checked' : '' ?>>
+                <span class="choice-title"><?= e(site_text('life_space_intro')) ?></span>
+                <p class="soft"><?= e(site_text('life_space_intro_note')) ?></p>
+              </label>
+              <label>
+                <input type="checkbox" name="pause_seed_support" value="1"<?= !empty($lifeProfile['pause_seed_support']) ? ' checked' : '' ?>>
+                <span class="choice-title"><?= e(site_text('life_space_seed')) ?></span>
+                <p class="soft"><?= e(site_text('life_space_seed_note')) ?></p>
+              </label>
+              <label>
+                <input type="checkbox" name="pause_skill_interest" value="1"<?= !empty($lifeProfile['pause_skill_interest']) ? ' checked' : '' ?>>
+                <span class="choice-title"><?= e(site_text('life_space_skill')) ?></span>
+                <p class="soft"><?= e(site_text('life_space_skill_note')) ?></p>
+              </label>
+              <label>
+                <input type="checkbox" name="mute_notices" value="1"<?= !empty($lifeProfile['mute_notices']) ? ' checked' : '' ?>>
+                <span class="choice-title"><?= e(site_text('life_space_notices')) ?></span>
+                <p class="soft"><?= e(site_text('life_space_notices_note')) ?></p>
+              </label>
+            </div>
+          </fieldset>
+          <button type="submit"><?= e(site_text('life_space_save')) ?></button>
+        </form>
+        <h2 id="season"><?= e(site_text('life_season_heading')) ?></h2>
+        <p><?= e(site_text('life_season_help')) ?></p>
+        <form method="post" action="<?= e(url('/profile/season')) ?>">
+          <?= csrf_field() ?>
+          <fieldset class="choices-set">
+            <legend><?= e(site_text('life_season_heading')) ?></legend>
+            <div class="choices">
+              <label>
+                <input type="radio" name="life_season_id" value="0"<?= (int) ($lifeProfile['life_season_id'] ?? 0) === 0 ? ' checked' : '' ?>>
+                <span class="choice-title"><?= e(site_text('life_season_clear')) ?></span>
+              </label>
+              <?php foreach ($lifeSeasons as $season): ?>
+                <label>
+                  <input type="radio" name="life_season_id" value="<?= e((string) $season['id']) ?>"<?= (int) ($lifeProfile['life_season_id'] ?? 0) === (int) $season['id'] ? ' checked' : '' ?>>
+                  <span class="choice-title"><?= e((string) $season['label']) ?></span>
+                </label>
+              <?php endforeach; ?>
+            </div>
+          </fieldset>
+          <fieldset class="choices-set">
+            <legend><?= e(site_text('life_seed_visibility')) ?></legend>
+            <div class="choices">
+              <label>
+                <input type="radio" name="life_season_public" value="0"<?= empty($lifeProfile['life_season_public']) ? ' checked' : '' ?>>
+                <span class="choice-title"><?= e(site_text('life_season_private')) ?></span>
+              </label>
+              <label>
+                <input type="radio" name="life_season_public" value="1"<?= !empty($lifeProfile['life_season_public']) ? ' checked' : '' ?>>
+                <span class="choice-title"><?= e(site_text('life_season_public')) ?></span>
+              </label>
+            </div>
+          </fieldset>
+          <button type="submit"><?= e(site_text('life_season_save')) ?></button>
+        </form>
+        <h2 id="trust"><?= e(site_text('life_trust_heading')) ?></h2>
+        <form method="post" action="<?= e(url('/profile/trust')) ?>">
+          <?= csrf_field() ?>
+          <label>
+            <input type="checkbox" name="show_trust" value="1"<?= !isset($lifeProfile['show_trust']) || (int) $lifeProfile['show_trust'] === 1 ? ' checked' : '' ?>>
+            <?= e(site_text('life_trust_show')) ?>
+          </label>
+          <p class="soft"><?= e(site_text('life_trust_show_note')) ?></p>
+          <button type="submit"><?= e(site_text('life_trust_save')) ?></button>
+        </form>
+      <?php endif; ?>
   <?php elseif (!$isSelf): ?>
     <?php $talkOffer = talk_profile_offer($currentUser, (int) $person['id']); include __DIR__ . '/../partials/talk-offer.php'; ?>
   <?php endif; ?>
@@ -95,6 +193,23 @@ $name = $person['display_name'] ?: site_text('garden_member');
     <?= paragraphs((string) $person['bio']) ?>
   <?php endif; ?>
 
+  <?php if (life_ready() && $lifeSeason !== ''): ?>
+    <h2><?= e(site_text('life_season_heading')) ?></h2>
+    <p><?= e($lifeSeason) ?></p>
+  <?php endif; ?>
+  <?php if (life_ready() && $lifeTrust): ?>
+    <h2><?= e(site_text('life_trust_heading')) ?></h2>
+    <ul class="list">
+      <?php foreach ($lifeTrust as $line): ?><li><?= e($line) ?></li><?php endforeach; ?>
+    </ul>
+  <?php endif; ?>
+  <?php if (life_ready() && $lifeOutcomes): ?>
+    <h2><?= e(site_text('life_path_reflections')) ?></h2>
+    <?php foreach ($lifeOutcomes as $outcome): ?>
+      <article class="card"><?= paragraphs((string) $outcome['body']) ?></article>
+    <?php endforeach; ?>
+  <?php endif; ?>
+
   <?php if ($isSelf && $matches): ?>
     <h2><?= e(site_text('garden_similar')) ?></h2>
     <?php foreach ($matches as $match): ?>
@@ -102,10 +217,57 @@ $name = $person['display_name'] ?: site_text('garden_member');
         <p><?= e(site_line('garden_match', ['name' => $match['other_name']])) ?></p>
         <p><a href="<?= e(url('/members/' . $match['other_id'])) ?>"><?= e($match['other_name']) ?></a></p>
         <?php if ($match['note']): ?><p><?= e($match['note']) ?></p><?php endif; ?>
+        <?php if (!empty($match['life'])): ?>
+          <p><?= e((string) $match['status_label']) ?></p>
+          <?php if (!empty($match['can_respond']) || !empty($match['can_decline'])): ?>
+            <p class="soft"><?= e(site_text('life_intro_close_note')) ?></p>
+          <?php endif; ?>
+          <?php if (!empty($match['can_respond'])): ?>
+            <form method="post" action="<?= e(url('/introductions/' . $match['id'])) ?>">
+              <?= csrf_field() ?>
+              <input type="hidden" name="action" value="accept">
+              <button type="submit"><?= e(site_text('life_intro_accept')) ?></button>
+            </form>
+          <?php endif; ?>
+          <?php if (!empty($match['can_decline'])): ?>
+            <form method="post" action="<?= e(url('/introductions/' . $match['id'])) ?>">
+              <?= csrf_field() ?>
+              <input type="hidden" name="action" value="decline">
+              <fieldset class="choices-set">
+                <legend><?= e(site_text('life_intro_feedback')) ?> <span class="soft"><?= e(site_text('life_optional')) ?></span></legend>
+                <div class="choices">
+                  <?php foreach (['helpful' => 'life_intro_helpful', 'fit' => 'life_intro_fit', 'changed' => 'life_intro_changed', 'unsay' => 'life_intro_unsay'] as $code => $key): ?>
+                    <label><input type="radio" name="feedback" value="<?= e($code) ?>"><span class="choice-title"><?= e(site_text($key)) ?></span></label>
+                  <?php endforeach; ?>
+                </div>
+              </fieldset>
+              <button class="quiet" type="submit"><?= e(site_text('life_intro_decline')) ?></button>
+            </form>
+          <?php endif; ?>
+          <?php if (!empty($match['can_close'])): ?>
+            <form method="post" action="<?= e(url('/introductions/' . $match['id'])) ?>">
+              <?= csrf_field() ?>
+              <input type="hidden" name="action" value="close">
+              <p><?= e(site_text('life_intro_close_note')) ?></p>
+              <fieldset class="choices-set">
+                <legend><?= e(site_text('life_intro_feedback')) ?> <span class="soft"><?= e(site_text('life_optional')) ?></span></legend>
+                <div class="choices">
+                  <?php foreach (['helpful' => 'life_intro_helpful', 'fit' => 'life_intro_fit', 'changed' => 'life_intro_changed', 'unsay' => 'life_intro_unsay'] as $code => $key): ?>
+                    <label><input type="radio" name="feedback" value="<?= e($code) ?>"><span class="choice-title"><?= e(site_text($key)) ?></span></label>
+                  <?php endforeach; ?>
+                </div>
+              </fieldset>
+              <button class="quiet" type="submit"><?= e(site_text('life_intro_close')) ?></button>
+            </form>
+          <?php endif; ?>
+          <?php if (!empty($match['closed'])): ?>
+            <?php $outcomeType = 'introduction'; $outcomeId = (int) $match['id']; $outcome = life_outcome_of((int) $person['id'], 'introduction', (int) $match['id']); $back = '/profile'; include __DIR__ . '/../partials/life-outcome.php'; ?>
+          <?php endif; ?>
+        <?php endif; ?>
         <?php foreach ($sameNotes[$match['id']] ?? [] as $note): ?>
           <p><strong><?= e($note['display_name'] ?: site_text('garden_member')) ?></strong> <span class="soft"><?= e(nice_date($note['created_at'])) ?></span><br><?= e($note['body']) ?></p>
         <?php endforeach; ?>
-        <?php if (conversations_ready()): ?>
+        <?php if (conversations_ready() && (empty($match['life']) || !empty($match['can_talk']))): ?>
           <?php $talkOffer = talk_offer($currentUser, (int) $match['other_id'], true, '/profile', ['type' => 'introduction', 'kind' => '', 'id' => (int) $match['id'], 'person' => 0], site_text('talk_hello')); include __DIR__ . '/../partials/talk-offer.php'; ?>
         <?php else: ?>
         <form method="post" action="<?= e(url('/notes')) ?>">
@@ -162,8 +324,8 @@ $name = $person['display_name'] ?: site_text('garden_member');
     <?php endforeach; ?>
     <?php foreach ($growing as $seed): ?>
       <li>
-        <?= e($seed['title']) ?><?php if ($seed['status'] === 'resting'): ?> <span class="soft">· <?= e(site_text('garden_resting')) ?></span><?php endif; ?><?php if (!empty($seed['looking_for_support'])): ?> <span class="soft">· <?= e(site_text('garden_open_help')) ?></span><?php endif; ?>
-        <?php if (!$isSelf && ($seed['status'] ?? '') === 'active' && !empty($seed['looking_for_support'])): ?>
+        <?= e($seed['title']) ?><?php if (life_ready()): ?> <span class="soft">· <?= e(life_seed_label((string) $seed['status'])) ?></span><?php elseif ($seed['status'] === 'resting'): ?> <span class="soft">· <?= e(site_text('garden_resting')) ?></span><?php endif; ?><?php if (!empty($seed['looking_for_support']) && ($seed['status'] ?? '') === 'active'): ?> <span class="soft">· <?= e(site_text('garden_open_help')) ?></span><?php endif; ?>
+        <?php if (!$isSelf && life_seed_accepts_support($seed, (int) $person['id'])): ?>
           <?php $talkOffer = talk_offer($currentUser, (int) $person['id'], true, '/members/' . $person['id'], ['type' => 'seed', 'kind' => 'growing', 'id' => (int) $seed['id'], 'person' => 0], site_text('talk_offer')); include __DIR__ . '/../partials/talk-offer.php'; ?>
         <?php endif; ?>
       </li>
@@ -176,7 +338,7 @@ $name = $person['display_name'] ?: site_text('garden_member');
       <?php foreach ($helpRequests as $request): ?>
         <li>
           <?= e($request['title']) ?>
-          <?php if (!$isSelf): ?>
+          <?php if (!$isSelf && !(life_ready() && life_paused((int) $person['id'], 'pause_seed_support'))): ?>
             <?php $talkOffer = talk_offer($currentUser, (int) $person['id'], true, '/members/' . $person['id'], ['type' => 'seed', 'kind' => 'help', 'id' => (int) $request['id'], 'person' => 0], site_text('talk_offer')); include __DIR__ . '/../partials/talk-offer.php'; ?>
           <?php endif; ?>
         </li>
@@ -213,6 +375,39 @@ $name = $person['display_name'] ?: site_text('garden_member');
     </ul>
   <?php endif; ?>
 
+  <?php if ($isSelf && life_ready()): ?>
+    <h2 id="path"><?= e(site_text('life_path_heading')) ?></h2>
+    <?php
+      $pathItems = 0;
+      foreach ($lifeJourney as $section) {
+          $pathItems += count($section['items']);
+      }
+    ?>
+    <?php if ($pathItems === 0): ?><p class="soft"><?= e(site_text('life_empty_path')) ?></p><?php endif; ?>
+    <?php foreach ($lifeJourney as $section): ?>
+      <?php if (!$section['items']) continue; ?>
+      <h3><?= e($section['heading']) ?></h3>
+      <ul class="list">
+        <?php foreach ($section['items'] as $item): ?>
+          <li>
+            <?php if ($item['href'] !== ''): ?><a href="<?= e(url($item['href'])) ?>"><?= e($item['title']) ?></a><?php else: ?><?= e($item['title']) ?><?php endif; ?>
+            <?php if ($item['meta'] !== ''): ?><span class="soft"> · <?= e($item['meta']) ?></span><?php endif; ?>
+            <?php if ($item['hidden']): ?><span class="soft"> · <?= e(site_text('life_path_hidden')) ?></span><?php endif; ?>
+            <form method="post" action="<?= e(url('/journey/hide')) ?>" class="inline">
+              <?= csrf_field() ?>
+              <input type="hidden" name="subject_type" value="<?= e($item['type']) ?>">
+              <input type="hidden" name="subject_id" value="<?= e((string) $item['id']) ?>">
+              <input type="hidden" name="hidden" value="<?= $item['hidden'] ? '0' : '1' ?>">
+              <input type="hidden" name="back" value="/profile#path">
+              <button class="quiet small" type="submit"><?= e($item['hidden'] ? site_text('life_path_show') : site_text('life_path_hide')) ?></button>
+            </form>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+    <?php endforeach; ?>
+    <?php $outcomeType = 'path'; $outcomeId = (int) $person['id']; $outcome = life_outcome_of((int) $person['id'], 'path', (int) $person['id']); $back = '/profile#path'; include __DIR__ . '/../partials/life-outcome.php'; ?>
+  <?php endif; ?>
+
   <?php if ($isSelf && $warnings): ?>
     <h2><?= e(site_text('garden_warning')) ?></h2>
     <?php foreach ($warnings as $warning): ?>
@@ -227,6 +422,7 @@ $name = $person['display_name'] ?: site_text('garden_member');
     <form method="post" action="<?= e(url('/members/' . $person['id'] . '/report')) ?>">
       <?= csrf_field() ?>
       <label><span><?= e(site_text('label_report')) ?></span><textarea name="reason" maxlength="1000" required></textarea></label>
+      <?php include __DIR__ . '/../partials/life-report.php'; ?>
       <button class="quiet small" type="submit"><?= e(site_text('cta_send_report')) ?></button>
     </form>
   <?php endif; ?>

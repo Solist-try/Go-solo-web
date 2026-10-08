@@ -28,6 +28,7 @@
         <form method="post" action="<?= e(url('/comments/' . $comment['id'] . '/report')) ?>">
           <?= csrf_field() ?>
           <label><span><?= e(site_text('label_report_note')) ?></span><textarea name="reason" maxlength="1000" required></textarea></label>
+          <?php include __DIR__ . '/life-report.php'; ?>
           <button class="quiet small" type="submit"><?= e(site_text('cta_send_report')) ?></button>
         </form>
       <?php endif; ?>

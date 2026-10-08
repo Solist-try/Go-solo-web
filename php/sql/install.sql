@@ -5,6 +5,11 @@
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS journey_hides;
+DROP TABLE IF EXISTS outcomes;
+DROP TABLE IF EXISTS lifecycle_events;
+DROP TABLE IF EXISTS skill_parts;
+DROP TABLE IF EXISTS life_seasons;
 DROP TABLE IF EXISTS member_blocks;
 DROP TABLE IF EXISTS conversation_messages;
 DROP TABLE IF EXISTS conversation_participants;
@@ -68,6 +73,13 @@ CREATE TABLE profiles (
   conversations_pref ENUM('anyone', 'context', 'none') NOT NULL DEFAULT 'context',
   conversations_choice_made TINYINT(1) NOT NULL DEFAULT 0,
   conversations_held TINYINT(1) NOT NULL DEFAULT 0,
+  pause_introductions TINYINT(1) NOT NULL DEFAULT 0,
+  pause_seed_support TINYINT(1) NOT NULL DEFAULT 0,
+  pause_skill_interest TINYINT(1) NOT NULL DEFAULT 0,
+  mute_notices TINYINT(1) NOT NULL DEFAULT 0,
+  life_season_id INT UNSIGNED NULL,
+  life_season_public TINYINT(1) NOT NULL DEFAULT 0,
+  show_trust TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (user_id),
   CONSTRAINT profiles_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -145,12 +157,18 @@ CREATE TABLE growing_seeds (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id INT UNSIGNED NOT NULL,
   title VARCHAR(120) NOT NULL,
-  status ENUM('active', 'resting') NOT NULL DEFAULT 'active',
+  status ENUM('active', 'resting', 'grown', 'archived') NOT NULL DEFAULT 'active',
   looking_for_support TINYINT(1) NOT NULL DEFAULT 0,
+  grown_visibility ENUM('garden', 'private') NOT NULL DEFAULT 'private',
+  reflection TEXT NULL,
+  status_at DATETIME NULL,
+  status_by INT UNSIGNED NULL,
   created_at DATETIME NOT NULL,
   PRIMARY KEY (id),
   KEY growing_user (user_id),
-  CONSTRAINT growing_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+  KEY growing_status (status),
+  CONSTRAINT growing_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+  CONSTRAINT growing_status_by_fk FOREIGN KEY (status_by) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE help_requests (
@@ -198,7 +216,13 @@ CREATE TABLE same_matches (
   user_b_id INT UNSIGNED NOT NULL,
   seed_id INT UNSIGNED NULL,
   note TEXT NOT NULL,
-  status ENUM('suggested', 'approved', 'archived') NOT NULL DEFAULT 'suggested',
+  status ENUM('suggested', 'approved', 'awaiting', 'open', 'closed', 'declined', 'archived') NOT NULL DEFAULT 'suggested',
+  consent_a TINYINT(1) NOT NULL DEFAULT 0,
+  consent_b TINYINT(1) NOT NULL DEFAULT 0,
+  feedback_a VARCHAR(40) NOT NULL DEFAULT '',
+  feedback_b VARCHAR(40) NOT NULL DEFAULT '',
+  closed_by INT UNSIGNED NULL,
+  status_at DATETIME NULL,
   created_at DATETIME NOT NULL,
   PRIMARY KEY (id),
   KEY same_matches_a (user_a_id),
@@ -206,7 +230,8 @@ CREATE TABLE same_matches (
   KEY same_matches_status (status),
   CONSTRAINT same_matches_a_fk FOREIGN KEY (user_a_id) REFERENCES users (id) ON DELETE CASCADE,
   CONSTRAINT same_matches_b_fk FOREIGN KEY (user_b_id) REFERENCES users (id) ON DELETE CASCADE,
-  CONSTRAINT same_matches_seed_fk FOREIGN KEY (seed_id) REFERENCES seeds (id) ON DELETE SET NULL
+  CONSTRAINT same_matches_seed_fk FOREIGN KEY (seed_id) REFERENCES seeds (id) ON DELETE SET NULL,
+  CONSTRAINT same_matches_closed_by_fk FOREIGN KEY (closed_by) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE skill_offers (
@@ -215,10 +240,15 @@ CREATE TABLE skill_offers (
   title VARCHAR(120) NOT NULL,
   detail TEXT NOT NULL,
   archived TINYINT(1) NOT NULL DEFAULT 0,
+  listing_status ENUM('open', 'paused', 'completed', 'archived') NOT NULL DEFAULT 'open',
+  status_at DATETIME NULL,
+  status_by INT UNSIGNED NULL,
   created_at DATETIME NOT NULL,
   PRIMARY KEY (id),
   KEY skill_offers_user (user_id),
-  CONSTRAINT skill_offers_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+  KEY skill_offers_status (listing_status),
+  CONSTRAINT skill_offers_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+  CONSTRAINT skill_offers_status_by_fk FOREIGN KEY (status_by) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE skill_requests (
@@ -227,10 +257,15 @@ CREATE TABLE skill_requests (
   title VARCHAR(120) NOT NULL,
   detail TEXT NOT NULL,
   archived TINYINT(1) NOT NULL DEFAULT 0,
+  listing_status ENUM('open', 'paused', 'completed', 'archived') NOT NULL DEFAULT 'open',
+  status_at DATETIME NULL,
+  status_by INT UNSIGNED NULL,
   created_at DATETIME NOT NULL,
   PRIMARY KEY (id),
   KEY skill_requests_user (user_id),
-  CONSTRAINT skill_requests_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+  KEY skill_requests_status (listing_status),
+  CONSTRAINT skill_requests_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+  CONSTRAINT skill_requests_status_by_fk FOREIGN KEY (status_by) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE skill_links (
@@ -303,12 +338,17 @@ CREATE TABLE reports (
   target_type ENUM('story', 'campfire', 'comment', 'profile', 'waypoint', 'conversation') NOT NULL,
   target_id INT UNSIGNED NOT NULL,
   reason TEXT NOT NULL,
+  category VARCHAR(40) NOT NULL DEFAULT '',
   status ENUM('pending', 'reviewed', 'dismissed') NOT NULL DEFAULT 'pending',
+  resolution TEXT NULL,
+  acted_by INT UNSIGNED NULL,
+  acted_at DATETIME NULL,
   created_at DATETIME NOT NULL,
   PRIMARY KEY (id),
   KEY reports_status (status),
   KEY reports_target (target_type, target_id),
-  CONSTRAINT reports_reporter_fk FOREIGN KEY (reporter_id) REFERENCES users (id) ON DELETE CASCADE
+  CONSTRAINT reports_reporter_fk FOREIGN KEY (reporter_id) REFERENCES users (id) ON DELETE CASCADE,
+  CONSTRAINT reports_acted_by_fk FOREIGN KEY (acted_by) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE warnings (
@@ -468,19 +508,27 @@ CREATE TABLE conversations (
   opened_by INT UNSIGNED NOT NULL,
   status ENUM('requested', 'open', 'declined') NOT NULL DEFAULT 'open',
   closed TINYINT(1) NOT NULL DEFAULT 0,
+  member_closed TINYINT(1) NOT NULL DEFAULT 0,
+  closed_by INT UNSIGNED NULL,
   created_at DATETIME NOT NULL,
   PRIMARY KEY (id),
   KEY conversations_context (context_type, context_id),
   KEY conversations_opened (opened_by),
-  CONSTRAINT conversations_opened_fk FOREIGN KEY (opened_by) REFERENCES users (id) ON DELETE CASCADE
+  KEY conversations_member_closed (member_closed),
+  CONSTRAINT conversations_opened_fk FOREIGN KEY (opened_by) REFERENCES users (id) ON DELETE CASCADE,
+  CONSTRAINT conversations_closed_by_fk FOREIGN KEY (closed_by) REFERENCES users (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE conversation_participants (
   conversation_id INT UNSIGNED NOT NULL,
   user_id INT UNSIGNED NOT NULL,
+  archived TINYINT(1) NOT NULL DEFAULT 0,
+  muted TINYINT(1) NOT NULL DEFAULT 0,
+  served TINYINT(1) NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL,
   PRIMARY KEY (conversation_id, user_id),
   KEY conversation_participants_user (user_id),
+  KEY conversation_participants_archived (user_id, archived),
   CONSTRAINT conversation_participants_conversation_fk FOREIGN KEY (conversation_id) REFERENCES conversations (id) ON DELETE CASCADE,
   CONSTRAINT conversation_participants_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -506,6 +554,81 @@ CREATE TABLE member_blocks (
   CONSTRAINT member_blocks_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
   CONSTRAINT member_blocks_blocked_fk FOREIGN KEY (blocked_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE life_seasons (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  label VARCHAR(120) NOT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  archived TINYINT(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (id),
+  UNIQUE KEY life_seasons_label (label)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE skill_parts (
+  conversation_id INT UNSIGNED NOT NULL,
+  user_id INT UNSIGNED NOT NULL,
+  ended TINYINT(1) NOT NULL DEFAULT 0,
+  ended_at DATETIME NULL,
+  PRIMARY KEY (conversation_id, user_id),
+  KEY skill_parts_user (user_id, ended),
+  CONSTRAINT skill_parts_conversation_fk FOREIGN KEY (conversation_id) REFERENCES conversations (id) ON DELETE CASCADE,
+  CONSTRAINT skill_parts_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE journey_hides (
+  user_id INT UNSIGNED NOT NULL,
+  subject_type VARCHAR(40) NOT NULL,
+  subject_id INT UNSIGNED NOT NULL,
+  created_at DATETIME NOT NULL,
+  PRIMARY KEY (user_id, subject_type, subject_id),
+  CONSTRAINT journey_hides_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE outcomes (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id INT UNSIGNED NOT NULL,
+  subject_type VARCHAR(40) NOT NULL,
+  subject_id INT UNSIGNED NOT NULL,
+  body TEXT NOT NULL,
+  share ENUM('private', 'garden', 'offered') NOT NULL DEFAULT 'private',
+  consent ENUM('none', 'offered', 'review', 'permission', 'approved', 'published', 'withdrawn', 'declined') NOT NULL DEFAULT 'none',
+  public_body TEXT NULL,
+  member_confirmed TINYINT(1) NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY outcomes_subject (user_id, subject_type, subject_id),
+  KEY outcomes_consent (consent, updated_at),
+  KEY outcomes_user (user_id),
+  CONSTRAINT outcomes_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE lifecycle_events (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  subject_type VARCHAR(40) NOT NULL,
+  subject_id INT UNSIGNED NOT NULL,
+  from_status VARCHAR(40) NOT NULL DEFAULT '',
+  to_status VARCHAR(40) NOT NULL DEFAULT '',
+  user_id INT UNSIGNED NULL,
+  note VARCHAR(255) NOT NULL DEFAULT '',
+  created_at DATETIME NOT NULL,
+  PRIMARY KEY (id),
+  KEY lifecycle_subject (subject_type, subject_id, id),
+  KEY lifecycle_user (user_id),
+  CONSTRAINT lifecycle_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE profiles ADD CONSTRAINT profiles_season_fk FOREIGN KEY (life_season_id) REFERENCES life_seasons (id) ON DELETE SET NULL;
+
+INSERT INTO life_seasons (label, sort_order) VALUES
+  ('Starting over', 10),
+  ('Building friendships', 20),
+  ('Living independently for the first time', 30),
+  ('Growing confidence', 40),
+  ('Learning practical independence', 50),
+  ('Finding community', 60),
+  ('Exploring what comes next', 70),
+  ('Prefer not to say', 80);
 
 -- Starting steward. Password is documented in INSTALL.md. Change it after the first login.
 INSERT INTO users (id, email, password_hash, role, status, created_at)

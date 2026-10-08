@@ -51,6 +51,10 @@
   <h2><?= e(site_text('garden_growing')) ?></h2>
   <?php foreach ($growing as $seed): ?>
     <div class="card">
+      <?php if (life_ready()): ?>
+        <p><?= e($seed['title']) ?> <span class="soft">· <?= e(life_seed_label((string) $seed['status'])) ?></span></p>
+        <p><a class="button quiet small" href="<?= e(url('/growing/' . $seed['id'])) ?>"><?= e(site_text('life_seed_open')) ?></a></p>
+      <?php else: ?>
       <p><?= e($seed['title']) ?><?php if ($seed['status'] === 'resting'): ?> <span class="soft">· <?= e(site_text('garden_resting')) ?></span><?php endif; ?></p>
       <div class="row-actions">
         <form class="inline" method="post" action="<?= e(url('/growing')) ?>">
@@ -67,6 +71,7 @@
           <button class="quiet small" type="submit"><?= e(site_text('cta_set_down')) ?></button>
         </form>
       </div>
+      <?php endif; ?>
     </div>
   <?php endforeach; ?>
   <form method="post" action="<?= e(url('/growing')) ?>">

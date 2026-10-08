@@ -2,6 +2,7 @@
 $pageTitle = site_text((string) ($conversation['status'] ?? '') === 'requested' ? 'talk_request_heading' : 'talk_heading') . ' · ' . site_text('site_title');
 $reasons = preg_split("/\r\n|\n|\r/", (string) ($conversation['context_note'] ?? '')) ?: [];
 $declined = (string) ($conversation['status'] ?? '') === 'declined';
+$life = $life ?? ['ready' => false];
 ?>
 <section class="frame section narrow">
   <p class="kicker"><a href="<?= e(url('/profile')) ?>"><?= e(site_text('talk_active')) ?></a></p>
@@ -30,6 +31,12 @@ $declined = (string) ($conversation['status'] ?? '') === 'declined';
   <?php endif; ?>
   <?php if (!empty($pauseLine)): ?>
     <p class="soft"><?= e($pauseLine) ?></p>
+  <?php endif; ?>
+  <?php if (!empty($life['context'])): ?>
+    <p><?= e((string) $life['context']) ?></p>
+  <?php endif; ?>
+  <?php if (!empty($life['served'])): ?>
+    <p><?= e(site_text('life_talk_served_note')) ?></p>
   <?php endif; ?>
   <?php if (!$declined): ?>
     <div class="stack">
@@ -63,6 +70,46 @@ $declined = (string) ($conversation['status'] ?? '') === 'declined';
   <?php if (!empty($canReply)): ?>
     <?php include __DIR__ . '/../partials/editor.php'; ?>
   <?php endif; ?>
+  <?php if (!$declined && !empty($life['ready']) && (string) ($conversation['status'] ?? '') !== 'requested'): ?>
+    <div class="row-actions">
+      <form method="post" action="<?= e(url('/conversations/' . $conversation['id'])) ?>">
+        <?= csrf_field() ?>
+        <input type="hidden" name="action" value="<?= !empty($life['archived']) ? 'restore' : 'archive' ?>">
+        <button class="quiet small" type="submit"><?= e(site_text(!empty($life['archived']) ? 'life_talk_restore' : 'life_talk_archive')) ?></button>
+      </form>
+      <form method="post" action="<?= e(url('/conversations/' . $conversation['id'])) ?>">
+        <?= csrf_field() ?>
+        <input type="hidden" name="action" value="<?= !empty($life['muted']) ? 'unmute' : 'mute' ?>">
+        <button class="quiet small" type="submit"><?= e(site_text(!empty($life['muted']) ? 'life_talk_unmute' : 'life_talk_mute')) ?></button>
+      </form>
+      <?php if (empty($life['closed'])): ?>
+        <form method="post" action="<?= e(url('/conversations/' . $conversation['id'])) ?>">
+          <?= csrf_field() ?>
+          <input type="hidden" name="action" value="close">
+          <p class="soft"><?= e(site_text('life_talk_close_note')) ?></p>
+          <button class="quiet small" type="submit"><?= e(site_text('life_talk_close')) ?></button>
+        </form>
+      <?php elseif (!empty($life['canReopen'])): ?>
+        <form method="post" action="<?= e(url('/conversations/' . $conversation['id'])) ?>">
+          <?= csrf_field() ?>
+          <input type="hidden" name="action" value="reopen">
+          <button class="quiet small" type="submit"><?= e(site_text('life_talk_reopen')) ?></button>
+        </form>
+      <?php endif; ?>
+      <form method="post" action="<?= e(url('/conversations/' . $conversation['id'])) ?>">
+        <?= csrf_field() ?>
+        <input type="hidden" name="action" value="<?= !empty($life['served']) ? 'forget' : 'served' ?>">
+        <button class="quiet small" type="submit"><?= e(site_text(!empty($life['served']) ? 'life_talk_forget' : 'life_talk_served')) ?></button>
+      </form>
+      <?php if (!empty($life['skill'])): ?>
+        <form method="post" action="<?= e(url('/conversations/' . $conversation['id'])) ?>">
+          <?= csrf_field() ?>
+          <input type="hidden" name="action" value="<?= !empty($life['ended']) ? 'rejoin' : 'end' ?>">
+          <button class="quiet small" type="submit"><?= e(site_text(!empty($life['ended']) ? 'life_skill_rejoin' : 'life_skill_end')) ?></button>
+        </form>
+      <?php endif; ?>
+    </div>
+  <?php endif; ?>
   <?php if (!$declined && !empty($canBlock)): ?>
     <form method="post" action="<?= e(url('/conversations/' . $conversation['id'])) ?>">
       <?= csrf_field() ?>
@@ -74,6 +121,7 @@ $declined = (string) ($conversation['status'] ?? '') === 'declined';
     <form method="post" action="<?= e(url('/conversations/' . $conversation['id'] . '/report')) ?>">
       <?= csrf_field() ?>
       <label><span><?= e(site_text('label_report')) ?></span><textarea name="reason" maxlength="1000" required></textarea></label>
+      <?php include __DIR__ . '/../partials/life-report.php'; ?>
       <button class="quiet small" type="submit"><?= e(site_text('cta_send_report')) ?></button>
     </form>
   <?php endif; ?>

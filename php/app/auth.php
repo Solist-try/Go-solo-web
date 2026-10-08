@@ -175,7 +175,8 @@ function user_titles(string $table, int $userId): array
         return [];
     }
     if ($table === 'growing_seeds') {
-        return q('SELECT id, title, status, looking_for_support, created_at FROM growing_seeds WHERE user_id = ? ORDER BY created_at DESC', [$userId]);
+        $extra = table_has_column('growing_seeds', 'grown_visibility') ? ', grown_visibility, reflection' : '';
+        return q("SELECT id, title, status, looking_for_support, created_at{$extra} FROM growing_seeds WHERE user_id = ? ORDER BY created_at DESC", [$userId]);
     }
     return array_column(q("SELECT title FROM {$table} WHERE user_id = ? ORDER BY id", [$userId]), 'title');
 }

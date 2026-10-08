@@ -21,6 +21,7 @@
     <form method="post" action="<?= e(url('/campfire/' . $post['id'] . '/report')) ?>">
       <?= csrf_field() ?>
       <label><span><?= e(site_text('label_report')) ?></span><textarea name="reason" maxlength="1000" required></textarea></label>
+      <?php include __DIR__ . '/../partials/life-report.php'; ?>
       <button class="quiet small" type="submit"><?= e(site_text('cta_send_report')) ?></button>
     </form>
   <?php endif; ?>
