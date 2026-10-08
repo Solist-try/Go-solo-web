@@ -78,7 +78,7 @@ erDiagram
 | Table | What it holds |
 | --- | --- |
 | users | Login, role, status, last seen |
-| profiles | Garden: name, bio, location, photograph, contact rhythm |
+| profiles | Garden: name, bio, location, photograph, contact rhythm, and whether private conversations are open |
 | password_resets | Hashed reset token, two-hour expiry |
 | settings | Site words, colours, image paths, mail template. `updated_at` records the last save when that column is present |
 | waypoints | Independence Lab, Solo Among Others, Emotional Clarity, and later ones. Optional copy columns: `intro_line`, `food_intro`, `discussion_prompt`, `discussion_cta`, `discussion_empty` |
@@ -106,6 +106,9 @@ erDiagram
 | notices | A quiet line for one member |
 | activity | A short history for the desk |
 | private_notes | A note between two people who were matched or connected |
+| conversations | A private conversation with a seed, skill, introduction, or waypoint |
+| conversation_participants | The two members in a conversation |
+| conversation_messages | The notes in a conversation |
 
 Contact frequency stored on a profile is one of: Daily, Several times per week, Weekly, Bi-weekly, Monthly, As needed.
 
@@ -128,3 +131,15 @@ It records `rooms-2026-10-08` in `schema_updates`. The application checks for `s
 `waypoint_readings` links a reading to a waypoint. One article can sit with several waypoints, and one waypoint can hold several articles, in `sort_order`. Deleting an article or a waypoint removes the link. A draft article stays in the link table and stays off the public page until it is published.
 
 `waypoint_posts` are discussions in a chair. Replies use `comments` with `target_type` `story`, `campfire`, or `waypoint`. Photographs live in `content_images`, not in the article text. Uploaded files stay under `uploads/covers/`, which refuses to run PHP.
+
+## Private conversations
+
+An existing database picks up private conversations by importing `update-talk.sql` once. It records `talk-2026-10-08` in `schema_updates`.
+
+`profiles.conversations_pref` is `anyone`, `context`, or `none`. Existing members stay on `context` until they save a choice. `conversations_choice_made` records that save. `profiles.conversations_held` is set by a steward when private conversations need to rest.
+
+A first note is a request (`conversations.status` `requested`) until the other person accepts. A declined request keeps the row so the same sender cannot ask again, and the opening note is removed unless a report is already attached. `member_blocks` stops private contact in either direction.
+
+A conversation belongs to a seed, a skill offer or request, a skill link, an introduction, a waypoint discussion, a campfire note, an Out There story, or a direct hello when the other person allows anyone. Sitting in the same waypoint is not enough. `context_id` is not a foreign key, because it can point at more than one table. The label and the introduction lines are stored on the conversation so they remain if the original post changes.
+
+Only the two participants can read the notes. A steward sees participants and context after a report, and opens the notes only with a recorded look. `reports.target_type` includes `conversation`. A photograph on a note uses `content_images.parent_type` `conversation`.

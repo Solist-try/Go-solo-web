@@ -6,6 +6,9 @@
     <article class="card">
       <?php if (!empty($comment['hidden'])): ?><p class="soft"><?= e(site_text('note_hidden')) ?></p><?php endif; ?>
       <p class="soft"><a href="<?= e(url('/members/' . $comment['user_id'])) ?>"><?= e($comment['display_name'] ?: site_text('garden_member')) ?></a> · <?= e(nice_date($comment['created_at'])) ?></p>
+      <?php if (!empty($talkPost) && $currentUser && empty($comment['hidden']) && (int) $currentUser['id'] === (int) $talkPost['author'] && (int) $currentUser['id'] !== (int) $comment['user_id']): ?>
+        <?php $talkOffer = talk_offer($currentUser, (int) $comment['user_id'], true, (string) $talkPost['back'], ['type' => $talkPost['type'], 'kind' => 'post', 'id' => (int) $talkPost['id'], 'person' => (int) $comment['user_id']], site_text('talk_hello')); include __DIR__ . '/talk-offer.php'; ?>
+      <?php endif; ?>
       <?= render_writing((string) $comment['body']) ?>
       <?php $images = $comment['images'] ?? []; include __DIR__ . '/photos.php'; ?>
       <?php if ($currentUser && (int) $currentUser['id'] === (int) $comment['user_id']): ?>

@@ -323,7 +323,11 @@ function page_campfire_report(array $params): void
 function make_report(int $reporter, string $type, int $target, string $back): void
 {
     $reason = clip(post_text('reason', 1000), 1000);
-    if ($reason === '' || !in_array($type, ['story', 'campfire', 'comment', 'profile', 'waypoint'], true) || $target <= 0) {
+    $allowed = ['story', 'campfire', 'comment', 'profile', 'waypoint'];
+    if (column_type_has('reports', 'target_type', 'conversation')) {
+        $allowed[] = 'conversation';
+    }
+    if ($reason === '' || !in_array($type, $allowed, true) || $target <= 0) {
         flash(site_text('msg_report_needs'));
         redirect($back);
     }
@@ -410,7 +414,7 @@ function page_join_form(array $params): void
     if (current_user()) {
         redirect('/profile');
     }
-    view('auth/join', ['name' => '', 'email' => '', 'error' => '']);
+    view('auth/join', ['name' => '', 'email' => '', 'error' => '', 'askTalk' => conversations_ready(), 'talkSelected' => '']);
 }
 
 function page_join(array $params): void
@@ -421,16 +425,20 @@ function page_join(array $params): void
     $name = clip(post_text('name', 80), 80);
     $email = strtolower(trim((string) ($_POST['email'] ?? '')));
     $password = (string) ($_POST['password'] ?? '');
+    $pref = (string) ($_POST['conversations_pref'] ?? '');
+    $askTalk = conversations_ready();
     $error = '';
     if ($name === '' || !valid_email($email)) {
         $error = 'A name and a real email are enough to begin.';
     } elseif (strlen($password) < 8) {
         $error = 'Use at least 8 characters.';
+    } elseif ($askTalk && !in_array($pref, ['anyone', 'context', 'none'], true)) {
+        $error = site_text('msg_talk_choice');
     } elseif (one('SELECT id FROM users WHERE email = ?', [$email])) {
         $error = 'That email already has a chair here. Try logging in.';
     }
     if ($error !== '') {
-        view('auth/join', ['name' => $name, 'email' => $email, 'error' => $error]);
+        view('auth/join', ['name' => $name, 'email' => $email, 'error' => $error, 'askTalk' => $askTalk, 'talkSelected' => $pref]);
         return;
     }
     $db = db();
@@ -441,16 +449,23 @@ function page_join(array $params): void
             [$email, password_hash($password, PASSWORD_DEFAULT), 'member', 'active']
         );
         $id = (int) $db->lastInsertId();
-        exec_sql(
-            'INSERT INTO profiles (user_id, display_name, bio, location, avatar_path, contact_frequency, check_in_style, show_location) VALUES (?, ?, ?, ?, ?, ?, ?, 1)',
-            [$id, $name, '', '', '', '', '']
-        );
+        if ($askTalk) {
+            exec_sql(
+                'INSERT INTO profiles (user_id, display_name, bio, location, avatar_path, contact_frequency, check_in_style, show_location, conversations_pref, conversations_choice_made) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, 1)',
+                [$id, $name, '', '', '', '', '', $pref]
+            );
+        } else {
+            exec_sql(
+                'INSERT INTO profiles (user_id, display_name, bio, location, avatar_path, contact_frequency, check_in_style, show_location) VALUES (?, ?, ?, ?, ?, ?, ?, 1)',
+                [$id, $name, '', '', '', '', '']
+            );
+        }
         $db->commit();
     } catch (Throwable $e) {
         if ($db->inTransaction()) {
             $db->rollBack();
         }
-        view('auth/join', ['name' => $name, 'email' => $email, 'error' => 'That did not save. Try again in a moment.']);
+        view('auth/join', ['name' => $name, 'email' => $email, 'error' => 'That did not save. Try again in a moment.', 'askTalk' => $askTalk, 'talkSelected' => $pref]);
         return;
     }
     session_regenerate_id(true);
@@ -601,6 +616,7 @@ function show_garden(int $id, bool $self): void
                 'other_name' => display_name_of($other),
             ];
             $sameNotes[(int) $row['id']] = note_rows('same', (int) $row['id']);
+            $matches[count($matches) - 1]['conversation_id'] = conversations_ready() ? talk_find('introduction', '', (int) $row['id'], $id, $other) : 0;
         }
         foreach (q(
             'SELECT l.id, l.note, l.from_user_id, l.to_user_id, o.title AS offer_title, r.title AS request_title
@@ -632,7 +648,7 @@ function show_garden(int $id, bool $self): void
             'SELECT s.id, s.slug, s.title FROM planted_seeds ps JOIN seeds s ON s.id = ps.seed_id WHERE ps.user_id = ? ORDER BY ps.created_at DESC',
             [$id]
         ),
-        'helpRequests' => user_titles('help_requests', $id),
+        'helpRequests' => q('SELECT id, title FROM help_requests WHERE user_id = ? ORDER BY id', [$id]),
         'helpOffers' => user_titles('help_offers', $id),
         'waypoints' => q(
             'SELECT w.slug, w.title FROM waypoint_members wm JOIN waypoints w ON w.id = wm.waypoint_id WHERE wm.user_id = ? AND w.archived = 0 ORDER BY w.title',
@@ -644,6 +660,10 @@ function show_garden(int $id, bool $self): void
         'skillLinks' => $skillLinks,
         'skillNotes' => $skillNotes,
         'warnings' => $self ? q('SELECT note, created_at FROM warnings WHERE user_id = ? ORDER BY id DESC', [$id]) : [],
+        'conversations' => $self ? talk_list($id) : [],
+        'talkRequests' => $self ? talk_incoming($id) : [],
+        'talkWaiting' => $self ? talk_outgoing($id) : [],
+        'talkBlocks' => $self ? talk_block_list($id) : [],
     ]);
 }
 

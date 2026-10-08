@@ -124,6 +124,20 @@ function setting(string $key, string $default = ''): string
     return $all[$key];
 }
 
+function column_type_has(string $table, string $column, string $value): bool
+{
+    static $cache = [];
+    $name = $table . '.' . $column . '.' . $value;
+    if (!array_key_exists($name, $cache)) {
+        $found = one(
+            'SELECT COLUMN_TYPE AS kind FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?',
+            [$table, $column]
+        );
+        $cache[$name] = $found && str_contains((string) $found['kind'], "'" . $value . "'");
+    }
+    return $cache[$name];
+}
+
 function table_has_column(string $table, string $column): bool
 {
     static $cache = [];

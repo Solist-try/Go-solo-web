@@ -39,6 +39,8 @@ If the site is already installed and you are adding discussions, replies, and re
 
 If the site is already installed and you want each waypoint to keep its own sitting line, Food for Thought introduction, discussion prompt, button, and empty line, import `sql/update-content.sql` once as well. Shared page wording does not need that file. The script records `content-2026-10-08` in `schema_updates`. Importing it again is safe.
 
+If the site is already installed and you want private conversations, import `sql/update-talk.sql` once as well. It adds the conversation tables, member blocks, and the three communication choices. Members who have not chosen yet stay on shared context. It does not delete stories, members, or the reading room. The script records `talk-2026-10-08` and `talk-choice-2026-10-08` in `schema_updates`. Importing it again is safe.
+
 ## 3. Upload the site
 
 Upload the **contents** of the `php` folder into `public_html`, so `index.php` sits next to `public_html` itself, not inside another folder.

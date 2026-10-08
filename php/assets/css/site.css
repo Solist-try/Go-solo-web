@@ -193,6 +193,23 @@ input:focus, textarea:focus, select:focus {
   border-color: transparent;
 }
 textarea { min-height: 8rem; }
+.choices { display: grid; gap: 0.75rem; margin: 0 0 1rem; }
+.choices label {
+  display: grid;
+  grid-template-columns: 1.1rem 1fr;
+  column-gap: 0.7rem;
+  row-gap: 0.25rem;
+  align-items: start;
+  background: var(--mist);
+  border-radius: 20px;
+  padding: 0.9rem 1rem;
+  margin: 0;
+}
+.choices input { width: auto; margin-top: 0.3rem; grid-column: 1; grid-row: 1; }
+.choices .choice-title { grid-column: 2; grid-row: 1; }
+.choices p { grid-column: 2; margin: 0; }
+.choices-set { border: 0; margin: 0 0 1rem; padding: 0; }
+.choices-set legend { font-weight: 600; margin-bottom: 0.4rem; }
 .checks { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .checks label { margin: 0; display: flex; gap: 0.4rem; align-items: center; background: var(--mist); border-radius: 999px; padding: 0.45rem 0.8rem; }
 .checks input { width: auto; }

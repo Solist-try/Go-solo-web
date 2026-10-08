@@ -8,6 +8,9 @@
           <strong><?= e($offer['title']) ?></strong>
           <span class="soft"> · <?= e($offer['display_name'] ?: site_text('garden_member')) ?></span>
           <?php if ($offer['detail']): ?><p><?= e($offer['detail']) ?></p><?php endif; ?>
+          <?php if ($currentUser && (int) $offer['user_id'] !== (int) $currentUser['id']): ?>
+            <?php $talkOffer = talk_offer($currentUser, (int) $offer['user_id'], true, '/seeds/skill-swap', ['type' => 'skill', 'kind' => 'offer', 'id' => (int) $offer['id'], 'person' => 0], site_text('talk_interested')); include __DIR__ . '/../partials/talk-offer.php'; ?>
+          <?php endif; ?>
         </li>
       <?php endforeach; ?>
     </ul>
@@ -21,6 +24,9 @@
           <strong><?= e($request['title']) ?></strong>
           <span class="soft"> · <?= e($request['display_name'] ?: site_text('garden_member')) ?></span>
           <?php if ($request['detail']): ?><p><?= e($request['detail']) ?></p><?php endif; ?>
+          <?php if ($currentUser && (int) $request['user_id'] !== (int) $currentUser['id']): ?>
+            <?php $talkOffer = talk_offer($currentUser, (int) $request['user_id'], true, '/seeds/skill-swap', ['type' => 'skill', 'kind' => 'request', 'id' => (int) $request['id'], 'person' => 0], site_text('talk_interested')); include __DIR__ . '/../partials/talk-offer.php'; ?>
+          <?php endif; ?>
         </li>
       <?php endforeach; ?>
     </ul>

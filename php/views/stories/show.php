@@ -3,6 +3,10 @@
   <p class="kicker"><a href="<?= e(url('/out-there')) ?>"><?= e(site_text('out_there_title')) ?></a></p>
   <h1><?= e($story['title']) ?></h1>
   <p class="soft"><a href="<?= e(url('/members/' . $story['user_id'])) ?>"><?= e($story['display_name'] ?: site_text('garden_member')) ?></a> · <?= e(nice_date($story['created_at'])) ?></p>
+  <?php if ($currentUser && (int) $currentUser['id'] !== (int) $story['user_id'] && talk_exchange('story', (int) $story['id'], (int) $currentUser['id'], (int) $story['user_id'])): ?>
+    <?php $talkOffer = talk_offer($currentUser, (int) $story['user_id'], true, '/out-there/' . $story['id'], ['type' => 'story', 'kind' => 'post', 'id' => (int) $story['id'], 'person' => (int) $story['user_id']], site_text('talk_hello')); include __DIR__ . '/../partials/talk-offer.php'; ?>
+  <?php endif; ?>
+  <?php $talkPost = ['type' => 'story', 'id' => (int) $story['id'], 'author' => (int) $story['user_id'], 'back' => '/out-there/' . $story['id']]; ?>
   <?php if (!empty($story['hidden'])): ?><p class="flash"><?= e(site_text('out_there_hidden')) ?></p><?php endif; ?>
   <?php if (!empty($story['image_path']) && empty($images)): ?>
     <img class="photo story-photo" src="<?= e(media($story['image_path'])) ?>" alt="">

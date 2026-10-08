@@ -2,6 +2,9 @@
 <section class="frame section narrow">
   <h1><?= e(site_text('edit_title')) ?></h1>
   <p><a href="<?= e(url('/profile')) ?>"><?= e(site_text('edit_see')) ?></a></p>
+  <?php if (conversations_ready()): ?>
+    <p><a href="<?= e(url('/profile#communication')) ?>"><?= e(site_text('talk_edit_link')) ?></a></p>
+  <?php endif; ?>
   <form method="post" action="<?= e(url('/profile')) ?>" enctype="multipart/form-data">
     <?= csrf_field() ?>
     <label><span><?= e(site_text('label_name')) ?></span><input type="text" name="display_name" maxlength="80" required value="<?= e($person['display_name'] ?? '') ?>"></label>

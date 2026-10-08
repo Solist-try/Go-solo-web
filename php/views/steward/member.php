@@ -50,6 +50,21 @@
   <button type="submit">Save profile</button>
 </form>
 
+<?php if (table_has_column('profiles', 'conversations_held') && (int) $person['id'] !== (int) $currentUser['id']): ?>
+  <?php $talkHeld = talk_held((int) $person['id']); ?>
+  <h2>Private conversations</h2>
+  <?php if (conversations_ready()): ?>
+    <p class="soft"><?php if (talk_pref((int) $person['id']) === 'anyone'): ?>Anyone in the community.<?php elseif (talk_pref((int) $person['id']) === 'none'): ?>No private conversations at this time.<?php else: ?>Only through shared context.<?php endif; ?><?php if ($talkHeld): ?> Resting.<?php endif; ?></p>
+  <?php elseif ($talkHeld): ?>
+    <p class="soft">Resting.</p>
+  <?php endif; ?>
+  <form method="post" action="<?= e(url('/steward/members/' . $person['id'])) ?>">
+    <?= csrf_field() ?>
+    <input type="hidden" name="action" value="talk">
+    <input type="hidden" name="held" value="<?= $talkHeld ? '0' : '1' ?>">
+    <button class="quiet small" type="submit"><?= $talkHeld ? 'Restore private conversations' : 'Rest private conversations' ?></button>
+  </form>
+<?php endif; ?>
 <?php if ((int) $person['id'] !== (int) $currentUser['id']): ?>
   <h2>Trust</h2>
   <div class="row-actions">

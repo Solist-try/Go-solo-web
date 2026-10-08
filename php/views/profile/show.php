@@ -19,6 +19,75 @@ $name = $person['display_name'] ?: site_text('garden_member');
     </p>
   <?php endif; ?>
 
+  <?php if ($isSelf && conversations_ready()): ?>
+    <h2 id="communication"><?= e(site_text('talk_communication')) ?></h2>
+    <p><?= e(site_text('talk_pref_intro')) ?></p>
+    <?php if (!talk_choice_made((int) $person['id'])): ?>
+      <p class="soft"><?= e(site_text('talk_pref_prompt')) ?></p>
+    <?php endif; ?>
+    <?php if (talk_held((int) $person['id'])): ?>
+      <p class="soft"><?= e(site_text('talk_held')) ?></p>
+    <?php endif; ?>
+    <form method="post" action="<?= e(url('/profile/conversations')) ?>">
+      <?= csrf_field() ?>
+      <?php $talkSelected = talk_pref((int) $person['id']); include __DIR__ . '/../partials/talk-choices.php'; ?>
+      <button type="submit"><?= e(site_text('talk_pref_save')) ?></button>
+    </form>
+    <?php if ($talkRequests): ?>
+      <h2><?= e(site_text('talk_requests')) ?></h2>
+      <ul class="list">
+        <?php foreach ($talkRequests as $conversation): ?>
+          <li>
+            <a href="<?= e(url('/conversations/' . $conversation['id'])) ?>"><?= e($conversation['context_label'] ?: site_text('talk_request_heading')) ?></a>
+            <?php if ($conversation['other_name']): ?><span class="soft"> · <?= e($conversation['other_name']) ?></span><?php endif; ?>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+    <?php endif; ?>
+    <?php if ($talkWaiting): ?>
+      <h2><?= e(site_text('talk_waiting')) ?></h2>
+      <ul class="list">
+        <?php foreach ($talkWaiting as $conversation): ?>
+          <li>
+            <a href="<?= e(url('/conversations/' . $conversation['id'])) ?>"><?= e($conversation['context_label'] ?: site_text('talk_heading')) ?></a>
+            <?php if ($conversation['other_name']): ?><span class="soft"> · <?= e($conversation['other_name']) ?></span><?php endif; ?>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+    <?php endif; ?>
+    <h2 id="conversations"><?= e(site_text('talk_active')) ?></h2>
+    <?php if (!$conversations): ?>
+      <p class="soft"><?= e(site_text('talk_empty')) ?></p>
+    <?php else: ?>
+      <ul class="list">
+        <?php foreach ($conversations as $conversation): ?>
+          <li>
+            <a href="<?= e(url('/conversations/' . $conversation['id'])) ?>"><?= e($conversation['context_label'] ?: site_text('talk_heading')) ?></a>
+            <?php if ($conversation['other_name']): ?><span class="soft"> · <?= e($conversation['other_name']) ?></span><?php endif; ?>
+            <?php if ((int) $conversation['closed'] === 1): ?><span class="soft"> · <?= e(site_text('talk_closed')) ?></span><?php endif; ?>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+    <?php endif; ?>
+    <?php if ($talkBlocks): ?>
+      <h2><?= e(site_text('talk_blocks')) ?></h2>
+      <ul class="list">
+        <?php foreach ($talkBlocks as $block): ?>
+          <li>
+            <?= e($block['display_name'] ?: site_text('garden_member')) ?>
+            <form method="post" action="<?= e(url('/profile/blocks')) ?>" class="inline">
+              <?= csrf_field() ?>
+              <input type="hidden" name="person_id" value="<?= e((string) $block['blocked_id']) ?>">
+              <button class="quiet small" type="submit"><?= e(site_text('talk_unblock')) ?></button>
+            </form>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+    <?php endif; ?>
+  <?php elseif (!$isSelf): ?>
+    <?php $talkOffer = talk_profile_offer($currentUser, (int) $person['id']); include __DIR__ . '/../partials/talk-offer.php'; ?>
+  <?php endif; ?>
+
   <h2><?= e(site_text('garden_bio')) ?></h2>
   <?php if (trim((string) $person['bio']) === ''): ?>
     <p class="soft"><?= e(site_text('empty_bio')) ?></p>
@@ -36,6 +105,9 @@ $name = $person['display_name'] ?: site_text('garden_member');
         <?php foreach ($sameNotes[$match['id']] ?? [] as $note): ?>
           <p><strong><?= e($note['display_name'] ?: site_text('garden_member')) ?></strong> <span class="soft"><?= e(nice_date($note['created_at'])) ?></span><br><?= e($note['body']) ?></p>
         <?php endforeach; ?>
+        <?php if (conversations_ready()): ?>
+          <?php $talkOffer = talk_offer($currentUser, (int) $match['other_id'], true, '/profile', ['type' => 'introduction', 'kind' => '', 'id' => (int) $match['id'], 'person' => 0], site_text('talk_hello')); include __DIR__ . '/../partials/talk-offer.php'; ?>
+        <?php else: ?>
         <form method="post" action="<?= e(url('/notes')) ?>">
           <?= csrf_field() ?>
           <input type="hidden" name="context_type" value="same">
@@ -43,6 +115,7 @@ $name = $person['display_name'] ?: site_text('garden_member');
           <label><span><?= e(site_text('garden_note_label')) ?></span><textarea name="body" maxlength="2000"></textarea></label>
           <button type="submit"><?= e(site_text('cta_leave_note')) ?></button>
         </form>
+        <?php endif; ?>
       </article>
     <?php endforeach; ?>
   <?php endif; ?>
@@ -57,6 +130,9 @@ $name = $person['display_name'] ?: site_text('garden_member');
         <?php foreach ($skillNotes[$link['id']] ?? [] as $note): ?>
           <p><strong><?= e($note['display_name'] ?: site_text('garden_member')) ?></strong> <span class="soft"><?= e(nice_date($note['created_at'])) ?></span><br><?= e($note['body']) ?></p>
         <?php endforeach; ?>
+        <?php if (conversations_ready()): ?>
+          <?php $talkOffer = talk_offer($currentUser, (int) $link['other_id'], true, '/profile', ['type' => 'skill', 'kind' => 'link', 'id' => (int) $link['id'], 'person' => 0], site_text('talk_hello')); include __DIR__ . '/../partials/talk-offer.php'; ?>
+        <?php else: ?>
         <form method="post" action="<?= e(url('/notes')) ?>">
           <?= csrf_field() ?>
           <input type="hidden" name="context_type" value="skill">
@@ -64,6 +140,7 @@ $name = $person['display_name'] ?: site_text('garden_member');
           <label><span><?= e(site_text('garden_note_label')) ?></span><textarea name="body" maxlength="2000"></textarea></label>
           <button type="submit"><?= e(site_text('cta_leave_note')) ?></button>
         </form>
+        <?php endif; ?>
       </article>
     <?php endforeach; ?>
   <?php endif; ?>
@@ -84,13 +161,27 @@ $name = $person['display_name'] ?: site_text('garden_member');
       <li><a href="<?= e(url('/seeds/' . $seed['slug'])) ?>"><?= e($seed['title']) ?></a></li>
     <?php endforeach; ?>
     <?php foreach ($growing as $seed): ?>
-      <li><?= e($seed['title']) ?><?php if ($seed['status'] === 'resting'): ?> <span class="soft">· <?= e(site_text('garden_resting')) ?></span><?php endif; ?><?php if (!empty($seed['looking_for_support'])): ?> <span class="soft">· <?= e(site_text('garden_open_help')) ?></span><?php endif; ?></li>
+      <li>
+        <?= e($seed['title']) ?><?php if ($seed['status'] === 'resting'): ?> <span class="soft">· <?= e(site_text('garden_resting')) ?></span><?php endif; ?><?php if (!empty($seed['looking_for_support'])): ?> <span class="soft">· <?= e(site_text('garden_open_help')) ?></span><?php endif; ?>
+        <?php if (!$isSelf && ($seed['status'] ?? '') === 'active' && !empty($seed['looking_for_support'])): ?>
+          <?php $talkOffer = talk_offer($currentUser, (int) $person['id'], true, '/members/' . $person['id'], ['type' => 'seed', 'kind' => 'growing', 'id' => (int) $seed['id'], 'person' => 0], site_text('talk_offer')); include __DIR__ . '/../partials/talk-offer.php'; ?>
+        <?php endif; ?>
+      </li>
     <?php endforeach; ?>
   </ul>
 
   <h2><?= e(site_text('garden_help')) ?></h2>
   <?php if (!$helpRequests): ?><p class="soft"><?= e(site_text('empty_requests')) ?></p><?php else: ?>
-    <ul class="chips"><?php foreach ($helpRequests as $title): ?><li><?= e($title) ?></li><?php endforeach; ?></ul>
+    <ul class="list">
+      <?php foreach ($helpRequests as $request): ?>
+        <li>
+          <?= e($request['title']) ?>
+          <?php if (!$isSelf): ?>
+            <?php $talkOffer = talk_offer($currentUser, (int) $person['id'], true, '/members/' . $person['id'], ['type' => 'seed', 'kind' => 'help', 'id' => (int) $request['id'], 'person' => 0], site_text('talk_offer')); include __DIR__ . '/../partials/talk-offer.php'; ?>
+          <?php endif; ?>
+        </li>
+      <?php endforeach; ?>
+    </ul>
   <?php endif; ?>
 
   <h2><?= e(site_text('garden_offers')) ?></h2>

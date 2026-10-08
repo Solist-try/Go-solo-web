@@ -5,6 +5,7 @@ declare(strict_types=1);
 require __DIR__ . '/site.php';
 require __DIR__ . '/desk.php';
 require __DIR__ . '/rooms.php';
+require __DIR__ . '/talk.php';
 
 dispatch();
 
@@ -94,6 +95,13 @@ function route_table(): array
         $post('/growing', 'page_growing'),
         $post('/planted/remove', 'page_planted_remove'),
         $post('/notes', 'page_notes'),
+        ['GET', '/conversations/new', 'page_talk_compose'],
+        $post('/conversations', 'page_talk_start'),
+        $post('/profile/conversations', 'page_talk_preference'),
+        $post('/profile/blocks', 'page_talk_unblock'),
+        ['GET', '/conversations/{id}', 'page_talk'],
+        $post('/conversations/{id}', 'page_talk_send'),
+        $post('/conversations/{id}/report', 'page_talk_report'),
         ['GET', '/account', 'page_account'],
         $post('/account', 'page_account_save'),
         $post('/account/delete', 'page_account_delete'),
@@ -132,6 +140,9 @@ function route_table(): array
         ['GET', '/steward/messages', 'desk_messages'],
         ['GET', '/steward/messages/{id}', 'desk_message'],
         $post('/steward/messages/{id}', 'desk_message_save'),
+        ['GET', '/steward/conversations', 'desk_conversations'],
+        ['GET', '/steward/conversations/{id}', 'desk_conversation'],
+        $post('/steward/conversations/{id}', 'desk_conversation_action'),
         ['GET', '/steward/reports', 'desk_reports'],
         $post('/steward/reports/{id}', 'desk_report_action'),
         ['GET', '/steward/content', 'desk_content'],
