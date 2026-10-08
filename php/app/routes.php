@@ -6,6 +6,7 @@ require __DIR__ . '/site.php';
 require __DIR__ . '/desk.php';
 require __DIR__ . '/rooms.php';
 require __DIR__ . '/talk.php';
+require __DIR__ . '/life.php';
 
 dispatch();
 
@@ -92,13 +93,21 @@ function route_table(): array
         $post('/profile', 'page_profile_save'),
         ['GET', '/members/{id}', 'page_member'],
         $post('/members/{id}/report', 'page_profile_report'),
+        ['GET', '/growing/{id}', 'life_seed_page'],
         $post('/growing', 'page_growing'),
         $post('/planted/remove', 'page_planted_remove'),
         $post('/notes', 'page_notes'),
         ['GET', '/conversations/new', 'page_talk_compose'],
         $post('/conversations', 'page_talk_start'),
         $post('/profile/conversations', 'page_talk_preference'),
+        $post('/profile/space', 'life_space_post'),
+        $post('/profile/season', 'life_season_post'),
+        $post('/profile/trust', 'life_trust_post'),
         $post('/profile/blocks', 'page_talk_unblock'),
+        $post('/introductions/{id}', 'life_intro_post'),
+        $post('/outcomes', 'life_outcome_post'),
+        ['GET', '/outcomes/{id}', 'life_outcome_page'],
+        $post('/journey/hide', 'life_journey_hide'),
         ['GET', '/conversations/{id}', 'page_talk'],
         $post('/conversations/{id}', 'page_talk_send'),
         $post('/conversations/{id}/report', 'page_talk_report'),
@@ -107,6 +116,17 @@ function route_table(): array
         $post('/account/delete', 'page_account_delete'),
         ['GET', '/notices', 'page_notices'],
         ['GET', '/steward', 'desk_overview'],
+        ['GET', '/steward/community', 'desk_life'],
+        ['GET', '/steward/community/seeds', 'desk_life_seeds'],
+        $post('/steward/community/seeds', 'desk_life_seed_save'),
+        ['GET', '/steward/community/skills', 'desk_life_skills'],
+        $post('/steward/community/skills', 'desk_life_skill_save'),
+        ['GET', '/steward/community/pauses', 'desk_life_pauses'],
+        ['GET', '/steward/community/seasons', 'desk_life_seasons'],
+        $post('/steward/community/seasons', 'desk_life_season_save'),
+        ['GET', '/steward/community/outcomes', 'desk_life_outcomes'],
+        $post('/steward/community/outcomes/{id}', 'desk_life_outcome_save'),
+        ['GET', '/steward/community/links', 'desk_life_links'],
         ['GET', '/steward/members', 'desk_members'],
         ['GET', '/steward/members/{id}', 'desk_member'],
         $post('/steward/members/{id}', 'desk_member_save'),

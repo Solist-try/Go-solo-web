@@ -67,7 +67,7 @@ $logoImage = site_text('logo_image');
     </nav>
   </header>
   <main id="content">
-    <?php if ($flashMessage): ?><div class="frame"><p class="flash"><?= e($flashMessage) ?></p></div><?php endif; ?>
+    <?php if ($flashMessage): ?><div class="frame"><p class="flash" role="status"><?= e($flashMessage) ?></p></div><?php endif; ?>
     <?= $content ?>
   </main>
   <footer class="site-footer">

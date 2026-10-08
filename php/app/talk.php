@@ -227,6 +227,9 @@ function talk_can_reply(array $conversation, int $senderId): bool
     if (talk_status($conversation) !== 'open' || (int) ($conversation['closed'] ?? 1) === 1) {
         return false;
     }
+    if (table_has_column('conversations', 'member_closed') && (int) ($conversation['member_closed'] ?? 0) === 1) {
+        return false;
+    }
     if (!talk_participant((int) $conversation['id'], $senderId) || talk_held($senderId) || talk_pref($senderId) === 'none') {
         return false;
     }
@@ -242,11 +245,18 @@ function talk_list(int $userId): array
     if (!conversations_ready()) {
         return [];
     }
+    $quiet = '';
+    if (table_has_column('conversation_participants', 'archived')) {
+        $quiet .= ' AND p.archived = 0';
+    }
+    if (table_has_column('conversations', 'member_closed')) {
+        $quiet .= ' AND c.member_closed = 0';
+    }
     $rows = q(
         'SELECT c.id, c.context_type, c.context_label, c.closed, c.created_at
          FROM conversations c
          JOIN conversation_participants p ON p.conversation_id = c.id
-         WHERE p.user_id = ? AND c.status = ?
+         WHERE p.user_id = ? AND c.status = ?' . $quiet . '
          ORDER BY c.id DESC',
         [$userId, 'open']
     );
@@ -467,11 +477,13 @@ function talk_shared_context(int $me, int $other): ?array
     if ($request) {
         return ['type' => 'skill', 'kind' => 'request', 'id' => (int) $request['id'], 'person' => 0];
     }
+    $introStatuses = function_exists('life_intro_talk_statuses') ? life_intro_talk_statuses() : ['suggested', 'approved'];
+    $introMarks = implode(', ', array_fill(0, count($introStatuses), '?'));
     $match = one(
         "SELECT id FROM same_matches
-         WHERE status IN ('suggested', 'approved') AND ((user_a_id = ? AND user_b_id = ?) OR (user_a_id = ? AND user_b_id = ?))
+         WHERE status IN ($introMarks) AND ((user_a_id = ? AND user_b_id = ?) OR (user_a_id = ? AND user_b_id = ?))
          ORDER BY id DESC LIMIT 1",
-        [$me, $other, $other, $me]
+        array_merge($introStatuses, [$me, $other, $other, $me])
     );
     if ($match) {
         return ['type' => 'introduction', 'kind' => '', 'id' => (int) $match['id'], 'person' => 0];
@@ -502,14 +514,14 @@ function talk_subject(string $type, string $kind, int $contextId, int $me, int $
     $name = display_name_of($me);
     if ($type === 'seed' && $kind === 'growing') {
         $row = one('SELECT * FROM growing_seeds WHERE id = ? AND status = ? AND looking_for_support = 1', [$contextId, 'active']);
-        if (!$row || (int) $row['user_id'] === $me) {
+        if (!$row || (int) $row['user_id'] === $me || (function_exists('life_seed_accepts_support') && !life_seed_accepts_support($row, (int) $row['user_id']))) {
             return null;
         }
         return ['other' => (int) $row['user_id'], 'label' => (string) $row['title'], 'note' => site_line('talk_line_seed', ['name' => $name]), 'verified' => true];
     }
     if ($type === 'seed' && $kind === 'help') {
         $row = one('SELECT * FROM help_requests WHERE id = ?', [$contextId]);
-        if (!$row || (int) $row['user_id'] === $me) {
+        if (!$row || (int) $row['user_id'] === $me || (function_exists('life_paused') && life_paused((int) $row['user_id'], 'pause_seed_support'))) {
             return null;
         }
         return ['other' => (int) $row['user_id'], 'label' => (string) $row['title'], 'note' => site_line('talk_line_seed', ['name' => $name]), 'verified' => true];
@@ -517,7 +529,7 @@ function talk_subject(string $type, string $kind, int $contextId, int $me, int $
     if ($type === 'skill' && ($kind === 'offer' || $kind === 'request')) {
         $table = $kind === 'offer' ? 'skill_offers' : 'skill_requests';
         $row = one("SELECT * FROM {$table} WHERE id = ? AND archived = 0", [$contextId]);
-        if (!$row || (int) $row['user_id'] === $me) {
+        if (!$row || (int) $row['user_id'] === $me || (function_exists('life_skill_accepts_interest') && !life_skill_accepts_interest($row))) {
             return null;
         }
         return ['other' => (int) $row['user_id'], 'label' => (string) $row['title'], 'note' => site_line('talk_line_skill', ['name' => $name]), 'verified' => true];
@@ -547,7 +559,9 @@ function talk_subject(string $type, string $kind, int $contextId, int $me, int $
         ];
     }
     if ($type === 'introduction' && $kind === '') {
-        $row = one("SELECT * FROM same_matches WHERE id = ? AND status IN ('suggested', 'approved')", [$contextId]);
+        $introStatuses = function_exists('life_intro_talk_statuses') ? life_intro_talk_statuses() : ['suggested', 'approved'];
+        $introMarks = implode(', ', array_fill(0, count($introStatuses), '?'));
+        $row = one("SELECT * FROM same_matches WHERE id = ? AND status IN ($introMarks)", array_merge([$contextId], $introStatuses));
         if (!$row) {
             return null;
         }
@@ -701,6 +715,9 @@ function talk_pause_line(array $conversation, int $me): string
     if (talk_status($conversation) === 'declined') {
         return site_text('talk_not_opened');
     }
+    if ((int) ($conversation['member_closed'] ?? 0) === 1) {
+        return site_text('life_talk_closed');
+    }
     if ((int) ($conversation['closed'] ?? 0) === 1) {
         return site_text('talk_closed');
     }
@@ -822,6 +839,26 @@ function page_talk(array $params): void
     $status = talk_status($conversation);
     $canReply = talk_can_reply($conversation, $mine);
     $recipient = $status === 'requested' && (int) $conversation['opened_by'] !== $mine;
+    $life = ['ready' => false];
+    if (function_exists('life_ready') && life_ready()) {
+        $part = life_part($id, $mine) ?: ['archived' => 0, 'muted' => 0, 'served' => 0];
+        $ended = false;
+        if ((string) $conversation['context_type'] === 'skill' && in_array((string) $conversation['context_kind'], ['offer', 'request'], true)) {
+            $endedRow = one('SELECT ended FROM skill_parts WHERE conversation_id = ? AND user_id = ?', [$id, $mine]);
+            $ended = $endedRow && (int) $endedRow['ended'] === 1;
+        }
+        $life = [
+            'ready' => true,
+            'archived' => (int) $part['archived'] === 1,
+            'muted' => (int) $part['muted'] === 1,
+            'served' => (int) $part['served'] === 1,
+            'closed' => (int) ($conversation['member_closed'] ?? 0) === 1,
+            'canReopen' => (int) ($conversation['member_closed'] ?? 0) === 1 && (int) ($conversation['closed_by'] ?? 0) === $mine,
+            'context' => life_context_line($conversation),
+            'skill' => (string) $conversation['context_type'] === 'skill' && in_array((string) $conversation['context_kind'], ['offer', 'request'], true),
+            'ended' => $ended,
+        ];
+    }
     $clear = $other > 0 && !talk_blocked($mine, $other) && !talk_held($mine) && !talk_held($other) && talk_pref($mine) !== 'none' && talk_pref($other) !== 'none';
     view('talk/show', [
         'conversation' => $conversation,
@@ -832,6 +869,7 @@ function page_talk(array $params): void
         'canDecline' => $recipient,
         'canBlock' => talk_blocks_ready() && $other > 0 && !one('SELECT user_id FROM member_blocks WHERE user_id = ? AND blocked_id = ?', [$mine, $other]),
         'pauseLine' => $canReply ? '' : talk_pause_line($conversation, $mine),
+        'life' => $life,
         'editor' => editor_fields([
             'mode' => 'compact',
             'action' => url('/conversations/' . $id),
@@ -855,6 +893,10 @@ function page_talk_send(array $params): void
     $mine = (int) $me['id'];
     $action = (string) ($_POST['action'] ?? '');
     $other = talk_other($id, $mine);
+    if (function_exists('life_talk_actions') && in_array($action, life_talk_actions(), true)) {
+        life_talk_action($conversation, $mine, $action);
+        redirect($back);
+    }
     if ($action === 'accept') {
         $clear = talk_status($conversation) === 'requested'
             && (int) $conversation['opened_by'] !== $mine
@@ -865,6 +907,9 @@ function page_talk_send(array $params): void
             && !talk_blocked($mine, $other);
         if ($clear) {
             exec_sql('UPDATE conversations SET status = ? WHERE id = ? AND status = ?', ['open', $id, 'requested']);
+            if (function_exists('life_skill_parts_open')) {
+                life_skill_parts_open($conversation);
+            }
             notify((int) $conversation['opened_by'], site_line('talk_notice_open', ['name' => display_name_of($mine)]), $back);
             log_activity($mine, 'Accepted a private conversation');
             flash(site_text('msg_talk_accepted'));

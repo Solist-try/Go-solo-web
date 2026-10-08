@@ -253,6 +253,9 @@ function notify(int $userId, string $body, string $href = ''): void
     if ($userId <= 0 || trim($body) === '') {
         return;
     }
+    if (function_exists('life_notice_allowed') && !life_notice_allowed($userId, $href)) {
+        return;
+    }
     exec_sql(
         'INSERT INTO notices (user_id, body, href, created_at) VALUES (?, ?, ?, NOW())',
         [$userId, clip($body, 255), clip($href, 255)]

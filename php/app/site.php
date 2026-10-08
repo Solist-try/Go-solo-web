@@ -107,9 +107,10 @@ function page_seed(array $params): void
             'SELECT user_id FROM planted_seeds WHERE user_id = ? AND seed_id = ?',
             [(int) $user['id'], (int) $seed['id']]
         );
+        $partnerMarks = implode(', ', array_fill(0, count(life_partner_statuses()), '?'));
         $partnered = (bool) one(
-            "SELECT id FROM same_matches WHERE seed_id = ? AND status IN ('suggested', 'approved') AND (user_a_id = ? OR user_b_id = ?)",
-            [(int) $seed['id'], (int) $user['id'], (int) $user['id']]
+            "SELECT id FROM same_matches WHERE seed_id = ? AND status IN ($partnerMarks) AND (user_a_id = ? OR user_b_id = ?)",
+            array_merge([(int) $seed['id']], life_partner_statuses(), [(int) $user['id'], (int) $user['id']])
         );
     }
     $offers = [];
@@ -136,6 +137,7 @@ function page_seed(array $params): void
         'partnered' => $partnered,
         'offers' => $offers,
         'requests' => $requests,
+        'mySkills' => ($seed['slug'] === 'skill-swap' && $user && function_exists('life_my_skills')) ? life_my_skills((int) $user['id']) : [],
     ]);
 }
 
@@ -144,12 +146,13 @@ function skill_rows(string $table): array
     if (!in_array($table, ['skill_offers', 'skill_requests'], true)) {
         return [];
     }
+    $open = table_has_column($table, 'listing_status') ? " AND s.listing_status IN ('open', 'paused')" : '';
     return q(
         "SELECT s.*, p.display_name
          FROM {$table} s
          JOIN users u ON u.id = s.user_id AND u.status = 'active'
          LEFT JOIN profiles p ON p.user_id = u.id
-         WHERE s.archived = 0
+         WHERE s.archived = 0{$open}
          ORDER BY s.created_at DESC"
     );
 }
@@ -196,6 +199,10 @@ function page_seed_open(array $params): void
 
 function page_skill_post(array $params): void
 {
+    if (function_exists('life_ready') && life_ready() && in_array((string) ($_POST['action'] ?? ''), ['pause', 'resume', 'complete', 'archive', 'restore'], true)) {
+        life_skill_post();
+        return;
+    }
     $user = require_user();
     $kind = ($_POST['kind'] ?? '') === 'request' ? 'request' : 'offer';
     $title = clip(post_text('title', 120), 120);
@@ -331,10 +338,21 @@ function make_report(int $reporter, string $type, int $target, string $back): vo
         flash(site_text('msg_report_needs'));
         redirect($back);
     }
-    exec_sql(
-        'INSERT INTO reports (reporter_id, target_type, target_id, reason, status, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
-        [$reporter, $type, $target, $reason, 'pending']
-    );
+    $category = (string) ($_POST['category'] ?? '');
+    if (!in_array($category, ['concern', 'safety', 'other'], true)) {
+        $category = '';
+    }
+    if (table_has_column('reports', 'category')) {
+        exec_sql(
+            'INSERT INTO reports (reporter_id, target_type, target_id, reason, category, status, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())',
+            [$reporter, $type, $target, $reason, $category, 'pending']
+        );
+    } else {
+        exec_sql(
+            'INSERT INTO reports (reporter_id, target_type, target_id, reason, status, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
+            [$reporter, $type, $target, $reason, 'pending']
+        );
+    }
     notify_stewards('A report is waiting.', '/steward/reports');
     log_activity($reporter, 'Sent a report');
     flash(site_text('msg_report'));
@@ -604,17 +622,25 @@ function show_garden(int $id, bool $self): void
     $skillLinks = [];
     $skillNotes = [];
     if ($self) {
+        $introStatuses = function_exists('life_ready') && life_ready()
+            ? ['awaiting', 'suggested', 'open', 'approved', 'closed', 'declined', 'archived']
+            : ['suggested', 'approved'];
+        $introMarks = implode(', ', array_fill(0, count($introStatuses), '?'));
         foreach (q(
-            "SELECT id, note, user_a_id, user_b_id FROM same_matches WHERE status IN ('suggested', 'approved') AND (user_a_id = ? OR user_b_id = ?) ORDER BY id DESC",
-            [$id, $id]
+            "SELECT * FROM same_matches WHERE status IN ($introMarks) AND (user_a_id = ? OR user_b_id = ?) ORDER BY id DESC",
+            array_merge($introStatuses, [$id, $id])
         ) as $row) {
             $other = (int) $row['user_a_id'] === $id ? (int) $row['user_b_id'] : (int) $row['user_a_id'];
-            $matches[] = [
-                'id' => (int) $row['id'],
-                'note' => $row['note'],
-                'other_id' => $other,
-                'other_name' => display_name_of($other),
-            ];
+            if (function_exists('life_ready') && life_ready()) {
+                $matches[] = life_match_card($row, $id);
+            } else {
+                $matches[] = [
+                    'id' => (int) $row['id'],
+                    'note' => $row['note'],
+                    'other_id' => $other,
+                    'other_name' => display_name_of($other),
+                ];
+            }
             $sameNotes[(int) $row['id']] = note_rows('same', (int) $row['id']);
             $matches[count($matches) - 1]['conversation_id'] = conversations_ready() ? talk_find('introduction', '', (int) $row['id'], $id, $other) : 0;
         }
@@ -643,18 +669,18 @@ function show_garden(int $id, bool $self): void
         'isSelf' => $self,
         'showLocation' => $self || is_steward() || (int) $person['show_location'] === 1,
         'supports' => user_supports($id),
-        'growing' => user_titles('growing_seeds', $id),
+        'growing' => life_visible_seeds(user_titles('growing_seeds', $id), $id, $self),
         'planted' => q(
             'SELECT s.id, s.slug, s.title FROM planted_seeds ps JOIN seeds s ON s.id = ps.seed_id WHERE ps.user_id = ? ORDER BY ps.created_at DESC',
             [$id]
         ),
         'helpRequests' => q('SELECT id, title FROM help_requests WHERE user_id = ? ORDER BY id', [$id]),
         'helpOffers' => user_titles('help_offers', $id),
-        'waypoints' => q(
-            'SELECT w.slug, w.title FROM waypoint_members wm JOIN waypoints w ON w.id = wm.waypoint_id WHERE wm.user_id = ? AND w.archived = 0 ORDER BY w.title',
+        'waypoints' => life_visible_waypoints(q(
+            'SELECT w.id, w.slug, w.title FROM waypoint_members wm JOIN waypoints w ON w.id = wm.waypoint_id WHERE wm.user_id = ? AND w.archived = 0 ORDER BY w.title',
             [$id]
-        ),
-        'stories' => q($storySql, [$id]),
+        ), $id, $self),
+        'stories' => life_visible_stories(q($storySql, [$id]), $id, $self),
         'matches' => $matches,
         'sameNotes' => $sameNotes,
         'skillLinks' => $skillLinks,
@@ -664,6 +690,13 @@ function show_garden(int $id, bool $self): void
         'talkRequests' => $self ? talk_incoming($id) : [],
         'talkWaiting' => $self ? talk_outgoing($id) : [],
         'talkBlocks' => $self ? talk_block_list($id) : [],
+        'lifeTalk' => $self && function_exists('life_talk_lists') ? life_talk_lists($id) : ['archived' => [], 'closed' => []],
+        'lifeProfile' => $self && function_exists('life_profile') ? life_profile($id) : [],
+        'lifeSeasons' => $self && function_exists('life_seasons') ? life_seasons() : [],
+        'lifeJourney' => $self && function_exists('life_journey') ? life_journey($id) : [],
+        'lifeTrust' => function_exists('life_trust_lines') ? life_trust_lines($id) : [],
+        'lifeOutcomes' => function_exists('life_public_outcomes') ? life_public_outcomes($id) : [],
+        'lifeSeason' => function_exists('life_season_label') ? life_season_label($id, !$self) : '',
     ]);
 }
 
@@ -749,6 +782,10 @@ function save_garden(int $userId, bool $withVisibility): void
 
 function page_growing(array $params): void
 {
+    if (function_exists('life_ready') && life_ready()) {
+        life_growing_post();
+        return;
+    }
     $user = require_user();
     $id = (int) $user['id'];
     $action = (string) ($_POST['action'] ?? '');
@@ -797,9 +834,10 @@ function page_notes(array $params): void
 function note_partner(string $type, int $contextId, int $userId): ?int
 {
     if ($type === 'same') {
+        $partnerMarks = implode(', ', array_fill(0, count(life_partner_statuses()), '?'));
         $row = one(
-            "SELECT user_a_id, user_b_id FROM same_matches WHERE id = ? AND status IN ('suggested', 'approved')",
-            [$contextId]
+            "SELECT user_a_id, user_b_id FROM same_matches WHERE id = ? AND status IN ($partnerMarks)",
+            array_merge([$contextId], life_partner_statuses())
         );
         if (!$row) {
             return null;

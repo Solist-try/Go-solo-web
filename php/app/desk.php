@@ -257,8 +257,9 @@ function desk_seed_save(array $params): void
 function desk_same(array $params): void
 {
     require_steward();
+    $profileCols = (function_exists('life_ready') && life_ready()) ? ', p.conversations_pref, p.pause_introductions' : '';
     $requests = q(
-        "SELECT r.*, p.display_name, p.contact_frequency, p.check_in_style, s.title AS seed_title
+        "SELECT r.*, p.display_name, p.contact_frequency, p.check_in_style, s.title AS seed_title{$profileCols}
          FROM same_requests r
          JOIN users u ON u.id = r.user_id AND u.status = 'active'
          LEFT JOIN profiles p ON p.user_id = r.user_id
@@ -269,19 +270,65 @@ function desk_same(array $params): void
     foreach ($requests as $i => $request) {
         $requests[$i]['supports'] = user_supports((int) $request['user_id']);
     }
+    $pausedRequests = [];
+    if (function_exists('life_ready') && life_ready()) {
+        $openRequests = [];
+        foreach ($requests as $request) {
+            if ((int) ($request['pause_introductions'] ?? 0) === 1 || (string) ($request['conversations_pref'] ?? '') === 'none') {
+                $pausedRequests[] = $request;
+            } else {
+                $openRequests[] = $request;
+            }
+        }
+        $requests = $openRequests;
+    }
+    $filters = function_exists('life_filters') ? life_filters(['awaiting', 'suggested', 'open', 'approved', 'closed', 'declined', 'archived']) : ['status' => '', 'q' => '', 'from' => '', 'to' => '', 'page' => 1];
+    $where = [];
+    $args = [];
+    if ($filters['status'] !== '') {
+        $where[] = 'm.status = ?';
+        $args[] = $filters['status'];
+    }
+    if ($filters['q'] !== '') {
+        $where[] = '(pa.display_name LIKE ? OR pb.display_name LIKE ? OR m.note LIKE ?)';
+        $like = like_contains($filters['q']);
+        $args[] = $like;
+        $args[] = $like;
+        $args[] = $like;
+    }
+    if ($filters['from'] !== '') {
+        $where[] = 'm.created_at >= ?';
+        $args[] = $filters['from'] . ' 00:00:00';
+    }
+    if ($filters['to'] !== '') {
+        $where[] = 'm.created_at < ?';
+        $args[] = life_next_day($filters['to']) . ' 00:00:00';
+    }
+    $sqlWhere = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+    $total = count_of("SELECT COUNT(*) AS n FROM same_matches m LEFT JOIN profiles pa ON pa.user_id = m.user_a_id LEFT JOIN profiles pb ON pb.user_id = m.user_b_id {$sqlWhere}", $args);
+    $pages = max(1, (int) ceil($total / 25));
+    $page = min($filters['page'], $pages);
+    $matches = q(
+        "SELECT m.*, pa.display_name AS name_a, pb.display_name AS name_b
+         FROM same_matches m
+         LEFT JOIN profiles pa ON pa.user_id = m.user_a_id
+         LEFT JOIN profiles pb ON pb.user_id = m.user_b_id
+         {$sqlWhere}
+         ORDER BY m.id DESC
+         LIMIT 25 OFFSET " . (($page - 1) * 25),
+        $args
+    );
     view('steward/same', [
         'requests' => $requests,
+        'pausedRequests' => $pausedRequests,
         'members' => q(
             "SELECT u.id, u.email, p.display_name FROM users u LEFT JOIN profiles p ON p.user_id = u.id WHERE u.status = 'active' ORDER BY p.display_name"
         ),
-        'matches' => q(
-            'SELECT m.*, pa.display_name AS name_a, pb.display_name AS name_b
-             FROM same_matches m
-             LEFT JOIN profiles pa ON pa.user_id = m.user_a_id
-             LEFT JOIN profiles pb ON pb.user_id = m.user_b_id
-             ORDER BY m.id DESC
-             LIMIT 100'
-        ),
+        'matches' => $matches,
+        'filters' => $filters,
+        'page' => $page,
+        'pages' => $pages,
+        'lifeReady' => function_exists('life_ready') && life_ready(),
     ]);
 }
 
@@ -297,19 +344,34 @@ function desk_same_suggest(array $params): void
     }
     $a = (int) $request['user_id'];
     $b = (int) $partner['id'];
+    if (function_exists('life_can_suggest')) {
+        $problem = life_can_suggest($a, $b);
+        if ($problem !== '') {
+            flash($problem);
+            redirect('/steward/same');
+        }
+    }
+    $openStatuses = function_exists('life_ready') && life_ready()
+        ? ['suggested', 'awaiting', 'approved', 'open']
+        : ['suggested', 'approved'];
+    $openMarks = implode(', ', array_fill(0, count($openStatuses), '?'));
     $existing = one(
-        "SELECT id FROM same_matches WHERE status IN ('suggested', 'approved') AND ((user_a_id = ? AND user_b_id = ?) OR (user_a_id = ? AND user_b_id = ?))",
-        [$a, $b, $b, $a]
+        "SELECT id FROM same_matches WHERE status IN ($openMarks) AND ((user_a_id = ? AND user_b_id = ?) OR (user_a_id = ? AND user_b_id = ?))",
+        array_merge($openStatuses, [$a, $b, $b, $a])
     );
     if ($existing) {
         flash('Those two already have an introduction waiting.');
         redirect('/steward/same');
     }
     $note = clip(post_text('note', 1000), 1000);
+    $introStatus = function_exists('life_ready') && life_ready() ? 'awaiting' : 'suggested';
     exec_sql(
         'INSERT INTO same_matches (user_a_id, user_b_id, seed_id, note, status, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
-        [$a, $b, $request['seed_id'], $note, 'suggested']
+        [$a, $b, $request['seed_id'], $note, $introStatus]
     );
+    if (function_exists('life_event')) {
+        life_event('introduction', (int) db()->lastInsertId(), '', $introStatus, (int) (current_user()['id'] ?? 0), 'suggest');
+    }
     exec_sql('UPDATE same_requests SET status = ? WHERE id = ?', ['archived', (int) $request['id']]);
     exec_sql(
         'UPDATE same_requests SET status = ? WHERE user_id = ? AND status = ? AND seed_id <=> ?',
@@ -327,16 +389,25 @@ function desk_same_suggest(array $params): void
 
 function desk_same_status(array $params): void
 {
-    require_steward();
+    $actor = require_steward();
     $match = one('SELECT * FROM same_matches WHERE id = ?', [(int) $params['id']]);
     if (!$match) {
         not_found();
         return;
     }
     $action = (string) ($_POST['action'] ?? '');
-    if ($action === 'approve' && $match['status'] === 'suggested') {
+    if ($action === 'approve' && $match['status'] === 'suggested' && !(function_exists('life_ready') && life_ready())) {
         exec_sql('UPDATE same_matches SET status = ? WHERE id = ?', ['approved', (int) $match['id']]);
         flash('The introduction is approved.');
+    } elseif ($action === 'close' && function_exists('life_ready') && life_ready() && in_array((string) $match['status'], ['awaiting', 'suggested', 'open', 'approved'], true)) {
+        exec_sql(
+            'UPDATE same_matches SET status = ?, closed_by = ?, status_at = NOW() WHERE id = ? AND status = ?',
+            ['closed', (int) $actor['id'], (int) $match['id'], $match['status']]
+        );
+        life_event('introduction', (int) $match['id'], (string) $match['status'], 'closed', (int) $actor['id'], 'steward');
+        notify((int) $match['user_a_id'], site_text('life_intro_closed_line'), '/profile');
+        notify((int) $match['user_b_id'], site_text('life_intro_closed_line'), '/profile');
+        flash(site_text('life_msg_status'));
     } elseif ($action === 'archive' && $match['status'] !== 'archived') {
         exec_sql('UPDATE same_matches SET status = ? WHERE id = ?', ['archived', (int) $match['id']]);
         notify((int) $match['user_a_id'], 'The introduction was set aside. You can ask again whenever you want.', '/seeds/same');
@@ -400,9 +471,18 @@ function desk_skill_connect(array $params): void
 
 function desk_skill_archive(array $params): void
 {
-    require_steward();
+    $actor = require_steward();
     $table = ($_POST['kind'] ?? '') === 'request' ? 'skill_requests' : 'skill_offers';
-    exec_sql("UPDATE {$table} SET archived = 1 WHERE id = ?", [(int) ($_POST['id'] ?? 0)]);
+    $listingId = (int) ($_POST['id'] ?? 0);
+    if (table_has_column($table, 'listing_status')) {
+        $before = one("SELECT listing_status FROM {$table} WHERE id = ?", [$listingId]);
+        exec_sql("UPDATE {$table} SET archived = 1, listing_status = 'archived', status_at = NOW(), status_by = ? WHERE id = ?", [(int) $actor['id'], $listingId]);
+        if ($before && function_exists('life_event')) {
+            life_event('skill-' . (($_POST['kind'] ?? '') === 'request' ? 'request' : 'offer'), $listingId, (string) $before['listing_status'], 'archived', (int) $actor['id'], 'steward');
+        }
+    } else {
+        exec_sql("UPDATE {$table} SET archived = 1 WHERE id = ?", [$listingId]);
+    }
     flash('It is archived.');
     redirect('/steward/skills');
 }
@@ -752,19 +832,116 @@ function desk_message_save(array $params): void
 function desk_reports(array $params): void
 {
     require_steward();
+    $filters = function_exists('life_filters')
+        ? life_filters(['pending', 'reviewed', 'dismissed'])
+        : ['status' => '', 'q' => '', 'from' => '', 'to' => '', 'page' => 1];
+    $type = (string) ($_GET['type'] ?? '');
+    $types = ['story', 'campfire', 'comment', 'profile', 'waypoint', 'conversation'];
+    if (!in_array($type, $types, true)) {
+        $type = '';
+    }
+    $where = [];
+    $args = [];
+    if ($filters['status'] !== '') {
+        $where[] = 'r.status = ?';
+        $args[] = $filters['status'];
+    }
+    if ($type !== '') {
+        $where[] = 'r.target_type = ?';
+        $args[] = $type;
+    }
+    if ($filters['q'] !== '') {
+        $where[] = '(r.reason LIKE ? OR p.display_name LIKE ?)';
+        $like = like_contains($filters['q']);
+        $args[] = $like;
+        $args[] = $like;
+    }
+    if ($filters['from'] !== '') {
+        $where[] = 'r.created_at >= ?';
+        $args[] = $filters['from'] . ' 00:00:00';
+    }
+    if ($filters['to'] !== '') {
+        $where[] = 'r.created_at < ?';
+        $args[] = life_next_day($filters['to']) . ' 00:00:00';
+    }
+    $sqlWhere = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+    $total = count_of(
+        "SELECT COUNT(*) AS n FROM reports r LEFT JOIN profiles p ON p.user_id = r.reporter_id {$sqlWhere}",
+        $args
+    );
+    $pages = max(1, (int) ceil($total / 25));
+    $page = min($filters['page'], $pages);
     $reports = q(
         "SELECT r.*, p.display_name AS reporter_name
          FROM reports r
          LEFT JOIN profiles p ON p.user_id = r.reporter_id
+         {$sqlWhere}
          ORDER BY FIELD(r.status, 'pending', 'reviewed', 'dismissed'), r.id DESC
-         LIMIT 100"
+         LIMIT 25 OFFSET " . (($page - 1) * 25),
+        $args
     );
+    $names = life_report_names($reports);
+    $history = [];
+    if ($reports && function_exists('life_ready') && life_ready()) {
+        $ids = array_map(static fn (array $report): int => (int) $report['id'], $reports);
+        $marks = implode(', ', array_fill(0, count($ids), '?'));
+        foreach (q(
+            "SELECT subject_id, from_status, to_status, note, created_at FROM lifecycle_events WHERE subject_type = 'report' AND subject_id IN ($marks) ORDER BY id",
+            $ids
+        ) as $event) {
+            $history[(int) $event['subject_id']][] = $event;
+        }
+    }
     foreach ($reports as $i => $report) {
         $reports[$i]['href'] = report_href($report);
         $reports[$i]['can_hide'] = in_array($report['target_type'], ['story', 'campfire', 'comment'], true);
         $reports[$i]['can_delete'] = $reports[$i]['can_hide'];
+        $reports[$i]['target_name'] = $names[$report['target_type'] . ':' . $report['target_id']] ?? '';
+        $reports[$i]['history'] = $history[(int) $report['id']] ?? [];
     }
-    view('steward/reports', ['reports' => $reports]);
+    $pending = count_of("SELECT COUNT(*) AS n FROM reports WHERE status = 'pending'");
+    view('steward/reports', [
+        'reports' => $reports,
+        'filters' => $filters,
+        'type' => $type,
+        'page' => $page,
+        'pages' => $pages,
+        'pending' => $pending,
+    ]);
+}
+
+function life_report_names(array $reports): array
+{
+    $ids = [];
+    foreach ($reports as $report) {
+        $ids[(string) $report['target_type']][] = (int) $report['target_id'];
+    }
+    $names = [];
+    $tables = ['story' => 'stories', 'campfire' => 'campfire_posts', 'comment' => 'comments'];
+    foreach ($tables as $type => $table) {
+        if (empty($ids[$type])) {
+            continue;
+        }
+        $marks = implode(', ', array_fill(0, count($ids[$type]), '?'));
+        foreach (q(
+            "SELECT t.id, p.display_name FROM {$table} t LEFT JOIN profiles p ON p.user_id = t.user_id WHERE t.id IN ($marks)",
+            $ids[$type]
+        ) as $row) {
+            $names[$type . ':' . $row['id']] = (string) ($row['display_name'] ?? '');
+        }
+    }
+    if (!empty($ids['profile'])) {
+        $marks = implode(', ', array_fill(0, count($ids['profile']), '?'));
+        foreach (q("SELECT user_id, display_name FROM profiles WHERE user_id IN ($marks)", $ids['profile']) as $row) {
+            $names['profile:' . $row['user_id']] = (string) $row['display_name'];
+        }
+    }
+    if (!empty($ids['conversation'])) {
+        foreach ($ids['conversation'] as $id) {
+            $names['conversation:' . $id] = 'Private conversation';
+        }
+    }
+    return $names;
 }
 
 function report_href(array $report): string
@@ -832,6 +1009,10 @@ function desk_report_action(array $params): void
         }
     } elseif (in_array($action, ['warn', 'note'], true) && $note === '') {
         flash('That action needs a few words.');
+        redirect('/steward/reports');
+    }
+    if (function_exists('life_report_touch') && in_array($action, ['dismiss', 'reviewed', 'hide', 'delete', 'warn', 'note', 'suspend'], true)) {
+        life_report_touch((int) $report['id'], (string) $report['status'], $note, (int) $actor['id'], $action);
     }
     redirect('/steward/reports');
 }

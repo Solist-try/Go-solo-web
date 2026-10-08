@@ -22,11 +22,15 @@ Change the password after the first login. The hash in `install.sql` is bcrypt.
 
 SAME requests: `open`, `archived`.
 
-SAME matches: `suggested`, `approved`, `archived`. A steward suggests the match. Nothing pairs people automatically.
+SAME matches: `awaiting`, `open`, `closed`, `declined`, `archived`. Older rows may still say `suggested` or `approved` until `update-life.sql` is imported. A steward may suggest an introduction. Both people agree before it is open. Nothing pairs people automatically.
 
-Skill offers, requests, and links use `archived` as 0 or 1.
+Skill offers and requests: `open`, `paused`, `completed`, `archived`. `archived` as 0 or 1 stays in step with the archived status. Links still use `archived` as 0 or 1.
 
-Growing seeds: `active`, `resting`.
+Growing seeds: `active` (shown as Growing), `resting` (On hold), `grown`, `archived`.
+
+Outcomes: `none`, `offered`, `review`, `permission`, `approved`, `published`, `withdrawn`, `declined`. Offering a reflection does not publish it.
+
+Conversations keep `requested`, `open`, and `declined`. `member_closed` is a member's close. `closed` is still the steward rest. Archive, mute, and “served its purpose” belong to one participant.
 
 Stories, campfire posts, and comments use `hidden` as 0 or 1. Hidden writing stays visible to its author and to a steward.
 
@@ -34,7 +38,15 @@ Reading articles: `draft`, `published`.
 
 Contact messages: `unread`, `replied`, `archived`.
 
-Reports: `pending`, `reviewed`, `dismissed`.
+Reports: `pending`, `reviewed`, `dismissed`. A report may also keep a category, a resolution note, and who acted.
+
+## Account deletion
+
+There is no account-export page. Deleting an account runs `DELETE FROM users`. Rows that belong to that person cascade away: seeds, skill listings, outcomes, journey hides, notices, and participant rows.
+
+Shared rows try not to keep a deleted person's name. `lifecycle_events.user_id`, seed `status_by`, skill `status_by`, introduction `closed_by`, conversation `closed_by`, and report `acted_by` use `ON DELETE SET NULL`. An introduction itself is removed if either person deletes their account, because both people are foreign keys on that row. A conversation is removed if the person who opened it deletes their account. The other person's messages go with that conversation. A public story deletion removes the story; an outcome that pointed at it stays with its author and is no longer tied to a public page.
+
+Suspending a member keeps their records and their pause choices. It does not publish private reflections.
 
 ## Relationships
 

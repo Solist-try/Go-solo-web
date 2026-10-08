@@ -41,6 +41,8 @@ If the site is already installed and you want each waypoint to keep its own sitt
 
 If the site is already installed and you want private conversations, import `sql/update-talk.sql` once as well. It adds the conversation tables, member blocks, and the three communication choices. Members who have not chosen yet stay on shared context. It does not delete stories, members, or the reading room. The script records `talk-2026-10-08` and `talk-choice-2026-10-08` in `schema_updates`. Importing it again is safe.
 
+If the site is already installed and you want seed, skill swap, and introduction lifecycles, import `sql/update-life.sql` after `update-talk.sql`. It adds statuses, pause choices, life seasons, outcomes, and a history of status changes. Existing growing seeds stay active or resting. An introduction a steward had already approved becomes open, with both people treated as having agreed. It does not delete stories, members, or conversations. The script records `life-2026-10-08` in `schema_updates`. Importing it again is safe. Until it is imported, the new buttons stay hidden and the current pages keep working.
+
 ## 3. Upload the site
 
 Upload the **contents** of the `php` folder into `public_html`, so `index.php` sits next to `public_html` itself, not inside another folder.
