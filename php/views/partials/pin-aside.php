@@ -5,7 +5,7 @@
   $pinId = (int) ($pinAsideId ?? 0);
   if ($pinId <= 0) return;
 ?>
-<p class="pin-aside">
+<div class="pin-aside">
   <?= e(site_text('pin_aside')) ?>
   <form method="post" action="<?= e(url('/pins/hide')) ?>" class="inline">
     <?= csrf_field() ?>
@@ -15,4 +15,4 @@
     <input type="hidden" name="back" value="<?= e($pinBack) ?>">
     <button class="quiet small" type="submit"><?= e(site_text('pin_show')) ?></button>
   </form>
-</p>
+</div>
