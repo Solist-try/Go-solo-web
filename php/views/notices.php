@@ -1,0 +1,17 @@
+<?php $pageTitle = 'Notes · ' . site_text('site_title'); ?>
+<section class="frame section narrow">
+  <h1>Notes</h1>
+  <p class="soft">Quiet things the house wanted you to see. There is no rush.</p>
+  <?php if (!$notices): ?>
+    <p>No notes have been left yet.</p>
+  <?php else: ?>
+    <ul class="list">
+      <?php foreach ($notices as $notice): ?>
+        <li>
+          <?php if ($notice['href']): ?><a href="<?= e(url($notice['href'])) ?>"><?= e($notice['body']) ?></a><?php else: ?><?= e($notice['body']) ?><?php endif; ?>
+          <span class="soft"> · <?= e(nice_date($notice['created_at'])) ?></span>
+        </li>
+      <?php endforeach; ?>
+    </ul>
+  <?php endif; ?>
+</section>
