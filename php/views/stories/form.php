@@ -1,18 +1,18 @@
-<?php $pageTitle = 'Tell the story · ' . site_text('site_title'); ?>
+<?php $pageTitle = site_text('out_there_form_title') . ' · ' . site_text('site_title'); ?>
 <section class="frame section narrow">
-  <h1>Tell the story</h1>
+  <h1><?= e(site_text('out_there_form_title')) ?></h1>
   <?php if (!empty($legacy)): ?>
-    <p>The walk, the class, the conversation, the first solo trip. Write what you did, what you expected, what happened, and whether you would do it again.</p>
+    <p><?= e(site_text('out_there_legacy_help')) ?></p>
     <form method="post" action="<?= e(url('/out-there')) ?>" enctype="multipart/form-data">
       <?= csrf_field() ?>
-      <label><span>Title</span><input type="text" name="title" maxlength="160" required value="<?= e($title ?? '') ?>"></label>
-      <label><span>What I did</span><textarea name="what_i_did" maxlength="5000" required><?= e($what_i_did ?? '') ?></textarea></label>
-      <label><span>What I expected</span><textarea name="expectations" maxlength="5000"><?= e($expectations ?? '') ?></textarea></label>
-      <label><span>What happened</span><textarea name="what_happened" maxlength="5000" required><?= e($what_happened ?? '') ?></textarea></label>
-      <label><span>Would I do it again</span><textarea name="would_do_again" maxlength="5000"><?= e($would_do_again ?? '') ?></textarea></label>
-      <label><span>A photograph, if you have one</span><input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif"></label>
+      <label><span><?= e(site_text('label_title')) ?></span><input type="text" name="title" maxlength="160" required value="<?= e($title ?? '') ?>"></label>
+      <label><span><?= e(site_text('out_there_did')) ?></span><textarea name="what_i_did" maxlength="5000" required><?= e($what_i_did ?? '') ?></textarea></label>
+      <label><span><?= e(site_text('out_there_expected')) ?></span><textarea name="expectations" maxlength="5000"><?= e($expectations ?? '') ?></textarea></label>
+      <label><span><?= e(site_text('out_there_happened')) ?></span><textarea name="what_happened" maxlength="5000" required><?= e($what_happened ?? '') ?></textarea></label>
+      <label><span><?= e(site_text('out_there_again')) ?></span><textarea name="would_do_again" maxlength="5000"><?= e($would_do_again ?? '') ?></textarea></label>
+      <label><span><?= e(site_text('label_photo')) ?></span><input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif"></label>
       <?php if (!empty($error)): ?><p class="error"><?= e($error) ?></p><?php endif; ?>
-      <button type="submit">Tell the story</button>
+      <button type="submit"><?= e(site_text('cta_tell_story')) ?></button>
     </form>
   <?php else: ?>
     <?php include __DIR__ . '/../partials/editor.php'; ?>

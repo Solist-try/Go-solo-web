@@ -47,7 +47,7 @@ function require_user(): array
 {
     $user = current_user();
     if (!$user) {
-        flash('Come in first, whenever you are ready.');
+        flash(site_text('msg_come_in'));
         redirect('/login?next=' . rawurlencode(request_path()));
     }
     return $user;

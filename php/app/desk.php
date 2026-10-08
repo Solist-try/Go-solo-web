@@ -519,6 +519,16 @@ function desk_waypoint_save(array $params): void
     $slug = unique_slug('waypoints', slugify($slugInput !== '' ? $slugInput : $title), $id);
     $description = clip(post_text('description', 5000), 5000);
     $archived = isset($_POST['archived']) ? 1 : 0;
+    $copy = [];
+    if (waypoint_copy_ready()) {
+        $copy = [
+            'intro_line' => clip(post_text('intro_line', 255), 255),
+            'food_intro' => clip(post_text('food_intro', 5000), 5000),
+            'discussion_prompt' => clip(post_text('discussion_prompt', 2000), 2000),
+            'discussion_cta' => clip(post_text('discussion_cta', 80), 80),
+            'discussion_empty' => clip(post_text('discussion_empty', 500), 500),
+        ];
+    }
     $problem = upload_problem('cover');
     if ($problem) {
         flash($problem);
@@ -526,21 +536,30 @@ function desk_waypoint_save(array $params): void
     }
     $cover = store_upload('cover', 'covers');
     if ($id && one('SELECT id FROM waypoints WHERE id = ?', [$id])) {
+        $sets = ['slug = ?', 'title = ?', 'description = ?', 'archived = ?'];
+        $args = [$slug, $title, $description, $archived];
         if ($cover) {
-            exec_sql(
-                'UPDATE waypoints SET slug = ?, title = ?, description = ?, cover_path = ?, archived = ? WHERE id = ?',
-                [$slug, $title, $description, $cover, $archived, $id]
-            );
-        } else {
-            exec_sql(
-                'UPDATE waypoints SET slug = ?, title = ?, description = ?, archived = ? WHERE id = ?',
-                [$slug, $title, $description, $archived, $id]
-            );
+            $sets[] = 'cover_path = ?';
+            $args[] = $cover;
         }
+        foreach ($copy as $column => $value) {
+            $sets[] = $column . ' = ?';
+            $args[] = $value;
+        }
+        $args[] = $id;
+        exec_sql('UPDATE waypoints SET ' . implode(', ', $sets) . ' WHERE id = ?', $args);
     } else {
+        $columns = ['slug', 'title', 'description', 'cover_path', 'archived', 'created_at'];
+        $holders = ['?', '?', '?', '?', '?', 'NOW()'];
+        $args = [$slug, $title, $description, $cover ?? '', $archived];
+        foreach ($copy as $column => $value) {
+            $columns[] = $column;
+            $holders[] = '?';
+            $args[] = $value;
+        }
         exec_sql(
-            'INSERT INTO waypoints (slug, title, description, cover_path, archived, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
-            [$slug, $title, $description, $cover ?? '', $archived]
+            'INSERT INTO waypoints (' . implode(', ', $columns) . ') VALUES (' . implode(', ', $holders) . ')',
+            $args
         );
     }
     flash('The waypoint is saved.');
@@ -874,7 +893,7 @@ function desk_content_save(array $params): void
         $steps[] = ['name' => $name, 'body' => $body, 'href' => $href];
     }
     setting_put('how_steps', $steps ? (string) json_encode($steps, JSON_UNESCAPED_UNICODE) : '');
-    flash('The words are saved.');
+    flash(site_text('msg_words_saved'));
     redirect('/steward/content');
 }
 

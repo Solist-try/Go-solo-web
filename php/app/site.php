@@ -5,7 +5,7 @@ declare(strict_types=1);
 function not_found(): void
 {
     http_response_code(404);
-    view('errors/404', ['pageTitle' => 'Not found · ' . site_text('site_title')]);
+    view('errors/404', ['pageTitle' => site_text('missing_title') . ' · ' . site_text('site_title')]);
 }
 
 function page_home(array $params): void
@@ -42,7 +42,7 @@ function page_contact_post(array $params): void
             'name' => $name,
             'email' => $email,
             'body' => $body,
-            'error' => 'A name, an email, and a note are enough.',
+            'error' => site_text('msg_contact_needs'),
         ]);
         return;
     }
@@ -52,6 +52,30 @@ function page_contact_post(array $params): void
     );
     notify_stewards('A contact note is waiting.', '/steward/messages');
     redirect('/contact?sent=1');
+}
+
+function page_privacy(array $params): void
+{
+    show_policy('policy_privacy_label', 'policy_privacy_body');
+}
+
+function page_terms(array $params): void
+{
+    show_policy('policy_terms_label', 'policy_terms_body');
+}
+
+function show_policy(string $labelKey, string $bodyKey): void
+{
+    $title = site_text($labelKey);
+    $body = site_text($bodyKey);
+    if ($title === '' && $body === '') {
+        not_found();
+        return;
+    }
+    if ($title === '') {
+        $title = site_text('site_title');
+    }
+    view('policy', ['policyTitle' => $title, 'policyBody' => $body]);
 }
 
 function page_seeds(array $params): void
@@ -143,7 +167,7 @@ function page_seed_begin(array $params): void
         [(int) $user['id'], (int) $seed['id']]
     );
     log_activity((int) $user['id'], 'Began ' . $seed['title']);
-    flash('You are with this seed. Missing a day is allowed.');
+    flash(site_text('msg_seed_planted'));
     redirect('/seeds/' . $seed['slug']);
 }
 
@@ -166,7 +190,7 @@ function page_seed_open(array $params): void
         );
         log_activity((int) $user['id'], 'Asked for an introduction for ' . $seed['title']);
     }
-    flash('You have asked for an introduction. A steward will be in touch when someone is on a similar path. There is no rush.');
+    flash(site_text('msg_introduction'));
     redirect('/seeds/' . $seed['slug']);
 }
 
@@ -177,7 +201,7 @@ function page_skill_post(array $params): void
     $title = clip(post_text('title', 120), 120);
     $detail = clip(post_text('detail', 1000), 1000);
     if ($title === '') {
-        flash('A title is enough to begin.');
+        flash(site_text('msg_title_enough'));
         redirect('/seeds/skill-swap');
     }
     $table = $kind === 'request' ? 'skill_requests' : 'skill_offers';
@@ -186,7 +210,7 @@ function page_skill_post(array $params): void
         [(int) $user['id'], $title, $detail]
     );
     log_activity((int) $user['id'], ($kind === 'request' ? 'Asked to learn ' : 'Offered to teach ') . $title);
-    flash('It is on the board.');
+    flash(site_text('msg_on_board'));
     redirect('/seeds/skill-swap');
 }
 
@@ -300,7 +324,7 @@ function make_report(int $reporter, string $type, int $target, string $back): vo
 {
     $reason = clip(post_text('reason', 1000), 1000);
     if ($reason === '' || !in_array($type, ['story', 'campfire', 'comment', 'profile', 'waypoint'], true) || $target <= 0) {
-        flash('A report needs a few words.');
+        flash(site_text('msg_report_needs'));
         redirect($back);
     }
     exec_sql(
@@ -309,14 +333,14 @@ function make_report(int $reporter, string $type, int $target, string $back): vo
     );
     notify_stewards('A report is waiting.', '/steward/reports');
     log_activity($reporter, 'Sent a report');
-    flash('The steward has it. Thank you for saying something.');
+    flash(site_text('msg_report'));
     redirect($back);
 }
 
 function page_waypoints(array $params): void
 {
     view('waypoints/index', [
-        'waypoints' => q('SELECT slug, title, description, cover_path FROM waypoints WHERE archived = 0 ORDER BY title'),
+        'waypoints' => q('SELECT * FROM waypoints WHERE archived = 0 ORDER BY title'),
     ]);
 }
 
@@ -432,7 +456,7 @@ function page_join(array $params): void
     session_regenerate_id(true);
     $_SESSION['user_id'] = $id;
     log_activity($id, 'Joined Go Solo');
-    flash('You are in. The garden can wait until you want it.');
+    flash(site_text('msg_joined'));
     redirect('/profile');
 }
 
@@ -485,7 +509,7 @@ function page_forgot(array $params): void
     if (valid_email($email)) {
         send_reset($email);
     }
-    flash('If that email has an account, a reset note is on its way. It can take a few minutes, and it lasts for two hours.');
+    flash(site_text('msg_reset'));
     redirect('/forgot');
 }
 
@@ -513,7 +537,7 @@ function page_reset(array $params): void
     session_regenerate_id(true);
     $_SESSION['user_id'] = $userId;
     unset($_SESSION['login_fails']);
-    flash('The new password is in place.');
+    flash(site_text('msg_password'));
     redirect('/profile');
 }
 
@@ -670,7 +694,7 @@ function page_profile_save(array $params): void
         exec_sql('UPDATE profiles SET avatar_path = ? WHERE user_id = ?', [$avatar, $id]);
     }
     log_activity($id, 'Tended their garden');
-    flash('The garden is saved.');
+    flash(site_text('msg_garden'));
     redirect('/profile');
 }
 
@@ -806,7 +830,7 @@ function page_account_save(array $params): void
             flash('That email already has a chair here.');
         } else {
             exec_sql('UPDATE users SET email = ? WHERE id = ?', [$email, (int) $user['id']]);
-            flash('The email is saved.');
+            flash(site_text('msg_email'));
         }
     }
     if ($action === 'password') {
@@ -819,7 +843,7 @@ function page_account_save(array $params): void
             flash('Use at least 8 characters.');
         } else {
             exec_sql('UPDATE users SET password_hash = ? WHERE id = ?', [password_hash($next, PASSWORD_DEFAULT), (int) $user['id']]);
-            flash('The password is changed.');
+            flash(site_text('msg_password_changed'));
         }
     }
     redirect('/account');

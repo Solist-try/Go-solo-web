@@ -4,12 +4,12 @@
   <div class="support"><?= paragraphs(site_text('about_intro')) ?></div>
   <div class="split two" style="margin-top:2rem">
     <figure>
-      <img class="photo" src="<?= e(media('/assets/images/founder-chair.svg')) ?>" alt="A quiet drawing of someone sitting with a cup">
+      <img class="photo" src="<?= e(media('/assets/images/founder-chair.svg')) ?>" alt="<?= e(site_text('about_image_alt')) ?>">
     </figure>
     <div>
       <h2><?= e(site_text('about_founder_heading')) ?></h2>
       <?= paragraphs(site_text('about_founder_body')) ?>
-      <p class="founder">Founder<br><?= e(site_text('founder_name')) ?></p>
+      <p class="founder"><?= e(site_text('label_founder')) ?><br><?= e(site_text('founder_name')) ?></p>
     </div>
   </div>
   <h2><?= e(site_text('about_belief_heading')) ?></h2>

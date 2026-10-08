@@ -1,10 +1,10 @@
-<?php $pageTitle = 'Waypoints · ' . site_text('site_title'); ?>
+<?php $pageTitle = site_text('waypoints_title') . ' · ' . site_text('site_title'); ?>
 <section class="band mist">
   <div class="frame section">
-  <h1>Waypoints</h1>
-  <p>A chair with people in a similar part of life. You can sit down when you want.</p>
+  <h1><?= e(site_text('waypoints_title')) ?></h1>
+  <p><?= e(site_text('waypoints_intro')) ?></p>
   <?php if (!$waypoints): ?>
-    <p>The chairs will be here when they are ready.</p>
+    <p><?= e(site_text('empty_waypoints')) ?></p>
   <?php else: ?>
     <div class="cards">
       <?php foreach ($waypoints as $waypoint): ?>
@@ -13,8 +13,8 @@
             <img class="photo" src="<?= e(media($waypoint['cover_path'])) ?>" alt="">
           <?php endif; ?>
           <h2><?= e($waypoint['title']) ?></h2>
-          <?php $sitting = waypoint_sitting((string) $waypoint['slug']); ?>
-          <?php if ($sitting !== ''): ?><p class="kicker">People sit with</p><p><?= e($sitting) ?></p><?php endif; ?>
+          <?php $sitting = waypoint_sitting((string) $waypoint['slug'], $waypoint); ?>
+          <?php if ($sitting !== ''): ?><p class="kicker"><?= e(site_text('waypoints_sit_label')) ?></p><p><?= e($sitting) ?></p><?php endif; ?>
           <p><?= e(clip((string) $waypoint['description'], 220)) ?></p>
         </a>
       <?php endforeach; ?>

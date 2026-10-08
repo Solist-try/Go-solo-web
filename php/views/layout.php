@@ -44,7 +44,7 @@ $logoImage = site_text('logo_image');
   </style>
 </head>
 <body>
-  <a class="skip" href="#content">Skip to content</a>
+  <a class="skip" href="#content"><?= e(site_text('skip_content')) ?></a>
   <header class="site-header">
     <a class="logo" href="<?= e(url('/')) ?>"><?php if ($logoImage !== ''): ?><img src="<?= e(media($logoImage)) ?>" alt=""><?php endif; ?><?= e(site_text('logo_text')) ?></a>
     <nav class="nav" aria-label="Primary">
@@ -52,13 +52,13 @@ $logoImage = site_text('logo_image');
         <a href="<?= e(url($href)) ?>"<?= $path === $href ? ' aria-current="page"' : '' ?>><?= e($label) ?></a>
       <?php endforeach; ?>
       <?php if ($currentUser): ?>
-        <a href="<?= e(url('/profile')) ?>">Profile</a>
+        <a href="<?= e(url('/profile')) ?>"><?= e(site_text('nav_profile')) ?></a>
         <?php if (in_array($currentUser['role'], ['admin', 'moderator'], true)): ?>
-          <a href="<?= e(url('/steward')) ?>">Steward</a>
+          <a href="<?= e(url('/steward')) ?>"><?= e(site_text('nav_steward')) ?></a>
         <?php endif; ?>
         <form method="post" action="<?= e(url('/logout')) ?>" style="display:inline">
           <?= csrf_field() ?>
-          <button class="quiet small" type="submit">Log out</button>
+          <button class="quiet small" type="submit"><?= e(site_text('cta_logout')) ?></button>
         </form>
       <?php else: ?>
         <a href="<?= e(url('/join')) ?>"><?= e(site_text('nav_join')) ?></a>
@@ -72,6 +72,14 @@ $logoImage = site_text('logo_image');
   </main>
   <footer class="site-footer">
     <p><?= e(site_text('footer_line')) ?></p>
+    <?php if (site_text('footer_note') !== ''): ?><p><?= e(site_text('footer_note')) ?></p><?php endif; ?>
+    <?php if (site_text('policy_privacy_label') !== '' || site_text('policy_terms_label') !== ''): ?>
+      <p>
+        <?php if (site_text('policy_privacy_label') !== ''): ?><a href="<?= e(url('/privacy')) ?>"><?= e(site_text('policy_privacy_label')) ?></a><?php endif; ?>
+        <?php if (site_text('policy_privacy_label') !== '' && site_text('policy_terms_label') !== ''): ?> · <?php endif; ?>
+        <?php if (site_text('policy_terms_label') !== ''): ?><a href="<?= e(url('/terms')) ?>"><?= e(site_text('policy_terms_label')) ?></a><?php endif; ?>
+      </p>
+    <?php endif; ?>
   </footer>
 </body>
 </html>

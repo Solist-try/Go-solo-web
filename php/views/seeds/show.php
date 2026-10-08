@@ -1,31 +1,31 @@
 <section class="frame section">
   <?php
-    $kindLabel = ['same' => 'SAME', 'skill-swap' => 'Skill Swap', 'practice' => 'A seed'][$seed['kind']] ?? 'A seed';
+    $kindLabel = ['same' => site_text('seeds_same_title'), 'skill-swap' => site_text('seeds_skill_title'), 'practice' => site_text('seeds_kind_practice')][$seed['kind']] ?? site_text('seeds_kind_practice');
   ?>
   <p class="kicker"><?= e($kindLabel) ?></p>
   <h1><?= e($seed['title']) ?></h1>
   <p><?= e($seed['description']) ?></p>
   <div class="card sage">
-    <p class="kicker">What you are growing</p>
+    <p class="kicker"><?= e(site_text('seeds_growing_label')) ?></p>
     <p class="lede" style="font-size:1.8rem"><?= e($seed['prompt']) ?></p>
   </div>
   <?php if (!$currentUser): ?>
-    <p>Take a look around. <a href="<?= e(url('/join')) ?>">Join Go Solo</a> if you want to plant this seed.</p>
+    <p><?= e(site_text('seeds_look')) ?> <a href="<?= e(url('/join')) ?>"><?= e(site_text('cta_join')) ?></a> <?= e(site_text('seeds_join_rest')) ?></p>
   <?php elseif ($seed['kind'] === 'same'): ?>
     <div class="card">
-      <h2>A similar path</h2>
-      <p>Say what you are moving through. A steward can introduce you to someone on a similar stretch. Nothing happens until you ask, and there is no rush.</p>
+      <h2><?= e(site_text('seeds_similar_title')) ?></h2>
+      <p><?= e(site_text('seeds_similar_body')) ?></p>
       <?php if (!empty($partnered)): ?>
-        <p>A steward has an introduction for you. It is on your profile, whenever you want to look.</p>
-        <p><a href="<?= e(url('/profile')) ?>">Go to your profile</a></p>
+        <p><?= e(site_text('seeds_match_ready')) ?></p>
+        <p><a href="<?= e(url('/profile')) ?>"><?= e(site_text('seeds_go_profile')) ?></a></p>
       <?php elseif ($open): ?>
-        <p>You have asked. A steward will introduce you when someone is on a similar path.</p>
+        <p><?= e(site_text('seeds_asked')) ?></p>
         <p><?= e($open['note']) ?></p>
       <?php else: ?>
         <form method="post" action="<?= e(url('/seeds/' . $seed['slug'] . '/open')) ?>">
           <?= csrf_field() ?>
-          <label><span>What would you like company for?</span><textarea name="note" maxlength="1000"></textarea></label>
-          <button type="submit">Ask for an introduction</button>
+          <label><span><?= e(site_text('seeds_company_label')) ?></span><textarea name="note" maxlength="1000"></textarea></label>
+          <button type="submit"><?= e(site_text('cta_ask_intro')) ?></button>
         </form>
       <?php endif; ?>
     </div>
@@ -34,15 +34,15 @@
   <?php else: ?>
     <div class="card">
       <?php if ($planted): ?>
-        <p>You are with this seed. Missing a day is allowed.</p>
+        <p><?= e(site_text('seeds_with')) ?></p>
       <?php else: ?>
         <form method="post" action="<?= e(url('/seeds/' . $seed['slug'] . '/begin')) ?>">
           <?= csrf_field() ?>
-          <button type="submit">Plant this seed</button>
+          <button type="submit"><?= e(site_text('cta_plant_seed')) ?></button>
         </form>
       <?php endif; ?>
       <?php if ($seed['kind'] === 'skill-swap'): ?>
-        <p><a href="<?= e(url('/seeds/skill-swap')) ?>">Offer or request a skill</a></p>
+        <p><a href="<?= e(url('/seeds/skill-swap')) ?>"><?= e(site_text('cta_offer_skill')) ?></a></p>
       <?php endif; ?>
     </div>
   <?php endif; ?>

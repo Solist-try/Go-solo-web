@@ -1,16 +1,16 @@
-<?php $pageTitle = 'Reset password · ' . site_text('site_title'); ?>
+<?php $pageTitle = site_text('reset_title') . ' · ' . site_text('site_title'); ?>
 <section class="frame section narrow">
-  <h1>Choose a new password</h1>
+  <h1><?= e(site_text('reset_title')) ?></h1>
   <?php if (empty($valid)): ?>
-    <p>This link has finished or was already used.</p>
-    <p><a href="<?= e(url('/forgot')) ?>">Ask for another</a></p>
+    <p><?= e(site_text('reset_invalid')) ?></p>
+    <p><a href="<?= e(url('/forgot')) ?>"><?= e(site_text('reset_again')) ?></a></p>
   <?php else: ?>
     <form method="post" action="<?= e(url('/reset')) ?>">
       <?= csrf_field() ?>
       <input type="hidden" name="token" value="<?= e($token ?? '') ?>">
-      <label><span>New password</span><input type="password" name="password" minlength="8" required autocomplete="new-password"></label>
+      <label><span><?= e(site_text('account_new')) ?></span><input type="password" name="password" minlength="8" required autocomplete="new-password"></label>
       <?php if (!empty($error)): ?><p class="error"><?= e($error) ?></p><?php endif; ?>
-      <button type="submit">Save the password</button>
+      <button type="submit"><?= e(site_text('cta_save_password')) ?></button>
     </form>
   <?php endif; ?>
 </section>

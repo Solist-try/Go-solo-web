@@ -80,6 +80,7 @@ CREATE TABLE password_resets (
 CREATE TABLE settings (
   setting_key VARCHAR(80) NOT NULL,
   setting_value MEDIUMTEXT NOT NULL,
+  updated_at DATETIME NULL,
   PRIMARY KEY (setting_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -88,6 +89,11 @@ CREATE TABLE waypoints (
   slug VARCHAR(80) NOT NULL,
   title VARCHAR(160) NOT NULL,
   description TEXT NOT NULL,
+  intro_line VARCHAR(255) NOT NULL DEFAULT '',
+  food_intro TEXT NULL,
+  discussion_prompt TEXT NULL,
+  discussion_cta VARCHAR(80) NOT NULL DEFAULT '',
+  discussion_empty VARCHAR(500) NOT NULL DEFAULT '',
   cover_path VARCHAR(255) NOT NULL DEFAULT '',
   archived TINYINT(1) NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL,

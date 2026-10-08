@@ -80,8 +80,8 @@ erDiagram
 | users | Login, role, status, last seen |
 | profiles | Garden: name, bio, location, photograph, contact rhythm |
 | password_resets | Hashed reset token, two-hour expiry |
-| settings | Site words, colours, image paths, mail template |
-| waypoints | Independence Lab, Solo Among Others, Emotional Clarity, and later ones |
+| settings | Site words, colours, image paths, mail template. `updated_at` records the last save when that column is present |
+| waypoints | Independence Lab, Solo Among Others, Emotional Clarity, and later ones. Optional copy columns: `intro_line`, `food_intro`, `discussion_prompt`, `discussion_cta`, `discussion_empty` |
 | waypoint_members | Who has chosen to sit with a waypoint |
 | seeds | The shelf: SAME, Skill Swap, and smaller futures |
 | planted_seeds | A member beginning a shelf seed |
