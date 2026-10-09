@@ -663,23 +663,29 @@ function show_garden(int $id, bool $self): void
             $sameNotes[(int) $row['id']] = note_rows('same', (int) $row['id']);
             $matches[count($matches) - 1]['conversation_id'] = conversations_ready() ? talk_find('introduction', '', (int) $row['id'], $id, $other) : 0;
         }
+        $skillConsent = function_exists('path_skill_consent') && path_skill_consent()
+            ? ', l.consent_from, l.consent_to'
+            : '';
         foreach (q(
-            'SELECT l.id, l.note, l.from_user_id, l.to_user_id, o.title AS offer_title, r.title AS request_title
+            "SELECT l.id, l.note, l.from_user_id, l.to_user_id{$skillConsent}, o.title AS offer_title, r.title AS request_title
              FROM skill_links l
              LEFT JOIN skill_offers o ON o.id = l.offer_id
              LEFT JOIN skill_requests r ON r.id = l.request_id
              WHERE l.archived = 0 AND (l.from_user_id = ? OR l.to_user_id = ?)
-             ORDER BY l.id DESC',
+             ORDER BY l.id DESC",
             [$id, $id]
         ) as $row) {
             $other = (int) $row['from_user_id'] === $id ? (int) $row['to_user_id'] : (int) $row['from_user_id'];
-            $skillLinks[] = [
-                'id' => (int) $row['id'],
-                'note' => $row['note'],
-                'other_id' => $other,
-                'other_name' => display_name_of($other),
-                'title' => $row['offer_title'] ?: $row['request_title'] ?: '',
-            ];
+            $skillLinks[] = function_exists('path_skill_card')
+                ? path_skill_card($row, $id)
+                : [
+                    'id' => (int) $row['id'],
+                    'note' => $row['note'],
+                    'other_id' => $other,
+                    'other_name' => display_name_of($other),
+                    'title' => $row['offer_title'] ?: $row['request_title'] ?: '',
+                    'can_talk' => true,
+                ];
             $skillNotes[(int) $row['id']] = note_rows('skill', (int) $row['id']);
         }
     }

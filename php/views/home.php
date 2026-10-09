@@ -64,7 +64,7 @@
   <h2><?= e(site_text('home_seeds_title')) ?></h2>
   <p class="soft"><?= e(site_text('home_seeds_line')) ?></p>
   <div class="cards two">
-    <a class="card sage stretch" href="<?= e(url('/seeds/same')) ?>"><h3><?= e(site_text('home_same_title')) ?></h3><p><?= e(site_text('home_same_body')) ?></p></a>
+    <a class="card sage stretch" href="<?= e(url('/seeds/same')) ?>"><h3><?= e(site_text('home_same_title')) ?></h3><p><?= e(site_text('home_same_body')) ?></p><p class="soft"><?= e(site_text('path_question')) ?></p></a>
     <a class="card sage stretch" href="<?= e(url('/seeds/skill-swap')) ?>"><h3><?= e(site_text('home_skill_title')) ?></h3><p><?= e(site_text('home_skill_body')) ?></p></a>
   </div>
   <p><a href="<?= e(url('/seeds')) ?>"><?= e(site_text('cta_explore_seeds')) ?></a></p>

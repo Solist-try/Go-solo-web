@@ -14,6 +14,10 @@
   </div>
   <h2><?= e(site_text('about_belief_heading')) ?></h2>
   <?= paragraphs(site_text('about_belief_body')) ?>
+  <h2><?= e(site_text('path_question')) ?></h2>
+  <p><?= e(site_text('path_picture')) ?></p>
+  <p><?= e(site_text('path_awkward')) ?></p>
+  <p><?= e(site_text('path_culture')) ?></p>
   <div class="card clay">
     <h2><?= e(site_text('about_hello_heading')) ?></h2>
     <?= paragraphs(site_text('about_hello_body')) ?>

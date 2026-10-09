@@ -21,9 +21,7 @@
     <h3><?= e($request['display_name'] ?: 'A member') ?></h3>
     <p class="soft"><?= e($request['seed_title'] ?: 'SAME') ?> · <?= e(nice_date($request['created_at'])) ?></p>
     <?php if ($request['note']): ?><p><?= e($request['note']) ?></p><?php endif; ?>
-    <p class="kicker">Support preferences</p>
-    <ul class="chips"><?php foreach ($request['supports'] as $choice): ?><li><?= e($choice) ?></li><?php endforeach; ?></ul>
-    <p class="soft"><?= e($request['contact_frequency'] ?: 'Frequency not set') ?> · <?= e($request['check_in_style'] ?: 'Style not set') ?></p>
+    <?php if (function_exists('path_portrait')) { $portrait = path_portrait((int) $request['user_id'], false); include __DIR__ . '/../partials/path-portrait.php'; } ?>
     <form method="post" action="<?= e(url('/steward/same/suggest')) ?>">
       <?= csrf_field() ?>
       <input type="hidden" name="request_id" value="<?= e((string) $request['id']) ?>">

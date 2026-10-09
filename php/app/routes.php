@@ -8,6 +8,7 @@ require __DIR__ . '/rooms.php';
 require __DIR__ . '/talk.php';
 require __DIR__ . '/life.php';
 require __DIR__ . '/pin.php';
+require __DIR__ . '/path.php';
 
 dispatch();
 
@@ -106,6 +107,7 @@ function route_table(): array
         $post('/profile/trust', 'life_trust_post'),
         $post('/profile/blocks', 'page_talk_unblock'),
         $post('/introductions/{id}', 'life_intro_post'),
+        $post('/skill-links/{id}', 'path_skill_post'),
         $post('/outcomes', 'life_outcome_post'),
         ['GET', '/outcomes/{id}', 'life_outcome_page'],
         $post('/journey/hide', 'life_journey_hide'),

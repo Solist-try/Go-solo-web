@@ -45,6 +45,8 @@ If the site is already installed and you want seed, skill swap, and introduction
 
 If the site is already installed and you want a steward to pin a welcome in Campfire, a Waypoint, or Out There, and to feature Reading Room articles, import `sql/update-pins.sql` after the earlier updates. It adds one pin for each of those spaces, an order for featured reading, and a private note when a member has set a welcome aside. It does not delete posts, stories, or articles. The script records `pins-2026-10-08` in `schema_updates`. Importing it again is safe. Until it is imported, the new pin controls stay hidden and the current lists keep working.
 
+If the site is already installed and you want a temporary chair after two people accept a SAME or skill introduction, import `sql/update-path.sql` after the earlier updates. Paste it in phpMyAdmin with the site database selected. It adds an end date on a conversation, a note that each person wants to keep the chair, and agreement on a skill introduction. Existing skill introductions stay agreed. It does not delete members, stories, or conversations. The script records `path-2026-10-09` in `schema_updates`. Importing it again is safe. Until it is imported, introductions stay as they are and the new chair buttons stay hidden.
+
 ## 3. Upload the site
 
 Upload the **contents** of the `php` folder into `public_html`, so `index.php` sits next to `public_html` itself, not inside another folder.

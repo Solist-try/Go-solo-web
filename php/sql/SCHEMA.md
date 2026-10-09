@@ -30,7 +30,7 @@ Growing seeds: `active` (shown as Growing), `resting` (On hold), `grown`, `archi
 
 Outcomes: `none`, `offered`, `review`, `permission`, `approved`, `published`, `withdrawn`, `declined`. Offering a reflection does not publish it.
 
-Conversations keep `requested`, `open`, and `declined`. `member_closed` is a member's close. `closed` is still the steward rest. Archive, mute, and “served its purpose” belong to one participant.
+Conversations keep `requested`, `open`, and `declined`. `member_closed` is a member's close. `closed` is still the steward rest. Archive, mute, and “served its purpose” belong to one participant. A chair opened after both people accept a SAME or skill introduction has `expires_at`. Each person can set `conversation_participants.keep_chair`. When both have, `expires_at` is cleared and the chair stays. Older conversations have no end date. Skill introductions made before this update already count as agreed (`consent_from` and `consent_to` are 1). A new skill introduction waits until both people agree.
 
 Stories, campfire posts, and comments use `hidden` as 0 or 1. Hidden writing stays visible to its author and to a steward.
 
@@ -157,3 +157,5 @@ A first note is a request (`conversations.status` `requested`) until the other p
 A conversation belongs to a seed, a skill offer or request, a skill link, an introduction, a waypoint discussion, a campfire note, an Out There story, or a direct hello when the other person allows anyone. Sitting in the same waypoint is not enough. `context_id` is not a foreign key, because it can point at more than one table. The label and the introduction lines are stored on the conversation so they remain if the original post changes.
 
 Only the two participants can read the notes. A steward sees participants and context after a report, and opens the notes only with a recorded look. `reports.target_type` includes `conversation`. A photograph on a note uses `content_images.parent_type` `conversation`.
+
+An existing database picks up temporary chairs by importing `update-path.sql` once. It records `path-2026-10-09` in `schema_updates`. The application checks for `conversations.expires_at` before opening a chair. It does not apply the update during a normal page request.
