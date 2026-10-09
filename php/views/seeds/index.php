@@ -23,7 +23,8 @@
       <h2><?= e(site_text('seeds_skill_title')) ?></h2>
       <p><?= e(site_text('seeds_skill_body')) ?></p>
       <div class="examples">
-        <p class="kicker"><?= e(site_text('seeds_examples_label')) ?></p>
+        <p class="kicker"><?= e(site_text('seeds_skill_heading')) ?></p>
+        <p class="examples-label"><?= e(site_text('seeds_examples_label')) ?></p>
         <ul class="chips">
           <?php foreach (site_lines('seeds_skill_examples') as $example): ?>
             <li><?= e($example) ?></li>

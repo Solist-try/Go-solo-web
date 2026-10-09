@@ -63,7 +63,10 @@ function site_text(string $key): string
         'garden_skill_match' => ['A steward connected you with {name} for a skill swap. You can take your time.'],
         'life_intro_fit' => ['It was not quite the right fit.'],
         'home_same_body' => ['Someone on a similar path. A steward can introduce you. There is no rush.'],
-        'seeds_same_body' => ['Looking for someone on a similar path? A steward can introduce you. There is no rush.'],
+        'seeds_same_body' => [
+            'Looking for someone on a similar stretch? A steward can introduce you. There is no score, and there is no rush.',
+            'You can be open to someone on a similar stretch. A steward suggests a match. You can take your time.',
+        ],
         'talk_because' => ['You were introduced because'],
     ];
     if (isset($earlier[$key]) && in_array($value, $earlier[$key], true)) {
@@ -138,6 +141,7 @@ function content_groups(): array
             'seeds_examples_label' => 'Examples label',
             'seeds_skill_title' => 'Skill Swap title',
             'seeds_skill_body' => 'Skill Swap text',
+            'seeds_skill_heading' => 'Skill Swap examples heading',
             'seeds_skill_examples' => 'Skill examples, one per line',
             'seeds_growing_title' => 'Growing heading',
             'seeds_growing_label' => 'What you are growing',
