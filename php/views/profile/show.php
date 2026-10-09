@@ -19,6 +19,9 @@ $name = $person['display_name'] ?: site_text('garden_member');
     </p>
   <?php endif; ?>
 
+  <p class="path-culture"><?= e(site_text('path_culture')) ?></p>
+  <?php if (function_exists('path_portrait')) { $portrait = path_portrait((int) $person['id'], $isSelf); include __DIR__ . '/../partials/path-portrait.php'; } ?>
+
   <?php if ($isSelf && conversations_ready()): ?>
     <h2 id="communication"><?= e(site_text('talk_communication')) ?></h2>
     <p><?= e(site_text('talk_pref_intro')) ?></p>
@@ -186,13 +189,6 @@ $name = $person['display_name'] ?: site_text('garden_member');
     <?php $talkOffer = talk_profile_offer($currentUser, (int) $person['id']); include __DIR__ . '/../partials/talk-offer.php'; ?>
   <?php endif; ?>
 
-  <h2><?= e(site_text('garden_bio')) ?></h2>
-  <?php if (trim((string) $person['bio']) === ''): ?>
-    <p class="soft"><?= e(site_text('empty_bio')) ?></p>
-  <?php else: ?>
-    <?= paragraphs((string) $person['bio']) ?>
-  <?php endif; ?>
-
   <?php if (life_ready() && $lifeSeason !== ''): ?>
     <h2><?= e(site_text('life_season_heading')) ?></h2>
     <p><?= e($lifeSeason) ?></p>
@@ -216,6 +212,7 @@ $name = $person['display_name'] ?: site_text('garden_member');
       <article class="card sage">
         <p><?= e(site_line('garden_match', ['name' => $match['other_name']])) ?></p>
         <p><a href="<?= e(url('/members/' . $match['other_id'])) ?>"><?= e($match['other_name']) ?></a></p>
+        <?php if (function_exists('path_portrait')) { $portrait = path_portrait((int) $match['other_id'], false); include __DIR__ . '/../partials/path-portrait.php'; } ?>
         <?php if ($match['note']): ?><p><?= e($match['note']) ?></p><?php endif; ?>
         <?php if (!empty($match['life'])): ?>
           <p><?= e((string) $match['status_label']) ?></p>
@@ -289,12 +286,29 @@ $name = $person['display_name'] ?: site_text('garden_member');
         <p><?= e(site_line('garden_skill_match', ['name' => $link['other_name']])) ?></p>
         <?php if ($link['title']): ?><p><?= e($link['title']) ?></p><?php endif; ?>
         <p><a href="<?= e(url('/members/' . $link['other_id'])) ?>"><?= e($link['other_name']) ?></a></p>
+        <?php if (!empty($link['portrait'])) { $portrait = $link['portrait']; include __DIR__ . '/../partials/path-portrait.php'; } ?>
+        <?php if (!empty($link['status_label'])): ?><p><?= e((string) $link['status_label']) ?></p><?php endif; ?>
+        <?php if (!empty($link['awaiting'])): ?><p class="soft"><?= e(site_text('path_skill_note')) ?></p><?php endif; ?>
+        <?php if (!empty($link['can_respond'])): ?>
+          <form method="post" action="<?= e(url('/skill-links/' . $link['id'])) ?>">
+            <?= csrf_field() ?>
+            <input type="hidden" name="action" value="accept">
+            <button type="submit"><?= e(site_text('life_intro_accept')) ?></button>
+          </form>
+        <?php endif; ?>
+        <?php if (!empty($link['can_decline'])): ?>
+          <form method="post" action="<?= e(url('/skill-links/' . $link['id'])) ?>">
+            <?= csrf_field() ?>
+            <input type="hidden" name="action" value="decline">
+            <button class="quiet" type="submit"><?= e(site_text('life_intro_decline')) ?></button>
+          </form>
+        <?php endif; ?>
         <?php foreach ($skillNotes[$link['id']] ?? [] as $note): ?>
           <p><strong><?= e($note['display_name'] ?: site_text('garden_member')) ?></strong> <span class="soft"><?= e(nice_date($note['created_at'])) ?></span><br><?= e($note['body']) ?></p>
         <?php endforeach; ?>
-        <?php if (conversations_ready()): ?>
-          <?php $talkOffer = talk_offer($currentUser, (int) $link['other_id'], true, '/profile', ['type' => 'skill', 'kind' => 'link', 'id' => (int) $link['id'], 'person' => 0], site_text('talk_hello')); include __DIR__ . '/../partials/talk-offer.php'; ?>
-        <?php else: ?>
+        <?php if (conversations_ready() && !empty($link['can_talk'])): ?>
+          <?php $talkOffer = talk_offer($currentUser, (int) $link['other_id'], true, '/profile', ['type' => 'skill', 'kind' => 'link', 'id' => (int) $link['id'], 'person' => 0], site_text('path_room_name')); include __DIR__ . '/../partials/talk-offer.php'; ?>
+        <?php elseif (empty($link['awaiting'])): ?>
         <form method="post" action="<?= e(url('/notes')) ?>">
           <?= csrf_field() ?>
           <input type="hidden" name="context_type" value="skill">
@@ -361,6 +375,14 @@ $name = $person['display_name'] ?: site_text('garden_member');
 
   <h2><?= e(site_text('garden_style')) ?></h2>
   <p><?= e($person['check_in_style'] ?: site_text('garden_style_any')) ?></p>
+
+  <h2><?= e(site_text('garden_bio')) ?></h2>
+  <p class="soft"><?= e(site_text('path_bio_note')) ?></p>
+  <?php if (trim((string) $person['bio']) === ''): ?>
+    <p class="soft"><?= e(site_text('empty_bio')) ?></p>
+  <?php else: ?>
+    <?= paragraphs((string) $person['bio']) ?>
+  <?php endif; ?>
 
   <h2><?= e(site_text('garden_stories')) ?></h2>
   <?php if (!$stories): ?><p class="soft"><?= e(site_text('empty_stories')) ?></p><?php else: ?>

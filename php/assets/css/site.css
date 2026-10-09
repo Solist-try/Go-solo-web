@@ -301,6 +301,16 @@ th, td { text-align: left; padding: 0.75rem 0.5rem; border-bottom: 1px solid var
   clip: rect(0, 0, 0, 0);
   border: 0;
 }
+.path-culture { max-width: 40rem; }
+.path-portrait {
+  background: #f3f6f4;
+  border: 1px solid #e3ebe4;
+  border-radius: 24px;
+  padding: 1.15rem 1.3rem;
+  margin: 1.2rem 0 1.6rem;
+}
+.path-portrait h2 { font-size: 1.05rem; margin: 0.9rem 0 0.2rem; }
+.path-portrait .kicker { margin-top: 0; }
 .writing blockquote { margin: 0.8rem 0; padding-left: 0.9rem; border-left: 3px solid var(--sage); }
 .writing ul, .writing ol { margin: 0.4rem 0 0.9rem 1.2rem; }
 .writing li + li { margin-top: 0.25rem; }

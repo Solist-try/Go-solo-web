@@ -538,8 +538,25 @@ function life_intro_post(array $params): void
         }
         $opened = one('SELECT status FROM same_matches WHERE id = ?', [(int) $match['id']]);
         if ($opened && (string) $opened['status'] === 'open') {
-            notify($mine, site_text('life_intro_opened'), '/profile');
-            notify($other, site_text('life_intro_opened'), '/profile');
+            $chair = ['id' => 0, 'created' => false];
+            if (function_exists('path_open_chair')) {
+                $chair = path_open_chair(
+                    'introduction',
+                    '',
+                    (int) $match['id'],
+                    $mine,
+                    $other,
+                    site_text('path_room_name'),
+                    (string) ($match['note'] ?? '')
+                );
+            }
+            if (!empty($chair['created'])) {
+                notify($mine, site_text('path_room_opened'), '/conversations/' . $chair['id']);
+                notify($other, site_text('path_room_opened'), '/conversations/' . $chair['id']);
+            } else {
+                notify($mine, site_text('life_intro_opened'), '/profile');
+                notify($other, site_text('life_intro_opened'), '/profile');
+            }
         }
         flash(site_text('life_msg_status'));
         redirect('/profile');

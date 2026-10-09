@@ -277,6 +277,8 @@ CREATE TABLE skill_links (
   request_id INT UNSIGNED NULL,
   note TEXT NOT NULL,
   archived TINYINT(1) NOT NULL DEFAULT 0,
+  consent_from TINYINT(1) NOT NULL DEFAULT 1,
+  consent_to TINYINT(1) NOT NULL DEFAULT 1,
   created_at DATETIME NOT NULL,
   PRIMARY KEY (id),
   KEY skill_links_from (from_user_id),
@@ -531,6 +533,7 @@ CREATE TABLE conversations (
   closed TINYINT(1) NOT NULL DEFAULT 0,
   member_closed TINYINT(1) NOT NULL DEFAULT 0,
   closed_by INT UNSIGNED NULL,
+  expires_at DATETIME NULL,
   created_at DATETIME NOT NULL,
   PRIMARY KEY (id),
   KEY conversations_context (context_type, context_id),
@@ -546,6 +549,7 @@ CREATE TABLE conversation_participants (
   archived TINYINT(1) NOT NULL DEFAULT 0,
   muted TINYINT(1) NOT NULL DEFAULT 0,
   served TINYINT(1) NOT NULL DEFAULT 0,
+  keep_chair TINYINT(1) NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL,
   PRIMARY KEY (conversation_id, user_id),
   KEY conversation_participants_user (user_id),
@@ -983,4 +987,5 @@ Excitement is one kind of growth. Capability is another. The person who finally 
 Ask of this month: what would make my actual days feel more intentional, more connected, more capable? The answer might be Poland. It might be Tuesday. Both count.', '', 'published', NOW(), NOW());
 
 INSERT INTO schema_updates (update_key, applied_at) VALUES ('rooms-2026-10-08', NOW());
+INSERT INTO schema_updates (update_key, applied_at) VALUES ('path-2026-10-09', NOW());
 

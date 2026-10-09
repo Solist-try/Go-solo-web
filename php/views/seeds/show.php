@@ -15,6 +15,7 @@
     <div class="card">
       <h2><?= e(site_text('seeds_similar_title')) ?></h2>
       <p><?= e(site_text('seeds_similar_body')) ?></p>
+      <p class="soft"><?= e(site_text('path_picture')) ?></p>
       <?php if (!empty($partnered)): ?>
         <p><?= e(site_text('seeds_match_ready')) ?></p>
         <p><a href="<?= e(url('/profile')) ?>"><?= e(site_text('seeds_go_profile')) ?></a></p>

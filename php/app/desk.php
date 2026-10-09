@@ -379,8 +379,8 @@ function desk_same_suggest(array $params): void
     );
     $nameA = display_name_of($a);
     $nameB = display_name_of($b);
-    notify($a, 'A steward suggested ' . $nameB . ' for this stretch. You can take your time.', '/profile');
-    notify($b, 'A steward suggested ' . $nameA . ' for this stretch. You can take your time.', '/profile');
+    notify($a, site_line('garden_match', ['name' => $nameB]), '/profile');
+    notify($b, site_line('garden_match', ['name' => $nameA]), '/profile');
     log_activity($a, 'An introduction was suggested');
     log_activity($b, 'An introduction was suggested');
     flash('The suggestion is with both of them.');
@@ -457,15 +457,28 @@ function desk_skill_connect(array $params): void
         redirect('/steward/skills');
     }
     $note = clip(post_text('note', 500), 500);
-    exec_sql(
-        'INSERT INTO skill_links (from_user_id, to_user_id, offer_id, request_id, note, archived, created_at) VALUES (?, ?, ?, ?, ?, 0, NOW())',
-        [(int) $offer['user_id'], (int) $request['user_id'], (int) $offer['id'], (int) $request['id'], $note]
-    );
-    notify((int) $offer['user_id'], 'A steward connected you with ' . display_name_of((int) $request['user_id']) . ' for a skill swap. You can take your time.', '/profile');
-    notify((int) $request['user_id'], 'A steward connected you with ' . display_name_of((int) $offer['user_id']) . ' for a skill swap. You can take your time.', '/profile');
-    log_activity((int) $offer['user_id'], 'Connected for a skill swap');
-    log_activity((int) $request['user_id'], 'Connected for a skill swap');
-    flash('They are connected.');
+    $fromId = (int) $offer['user_id'];
+    $toId = (int) $request['user_id'];
+    $awaiting = function_exists('path_ready') && path_ready() && function_exists('path_skill_consent') && path_skill_consent();
+    if ($awaiting) {
+        exec_sql(
+            'INSERT INTO skill_links (from_user_id, to_user_id, offer_id, request_id, note, archived, consent_from, consent_to, created_at) VALUES (?, ?, ?, ?, ?, 0, 0, 0, NOW())',
+            [$fromId, $toId, (int) $offer['id'], (int) $request['id'], $note]
+        );
+        notify($fromId, site_line('path_skill_invited', ['name' => display_name_of($toId)]), '/profile');
+        notify($toId, site_line('path_skill_invited', ['name' => display_name_of($fromId)]), '/profile');
+        flash('The introduction is with both of them.');
+    } else {
+        exec_sql(
+            'INSERT INTO skill_links (from_user_id, to_user_id, offer_id, request_id, note, archived, created_at) VALUES (?, ?, ?, ?, ?, 0, NOW())',
+            [$fromId, $toId, (int) $offer['id'], (int) $request['id'], $note]
+        );
+        notify($fromId, site_line('garden_skill_match', ['name' => display_name_of($toId)]), '/profile');
+        notify($toId, site_line('garden_skill_match', ['name' => display_name_of($fromId)]), '/profile');
+        flash('They are connected.');
+    }
+    log_activity($fromId, 'Introduced for a skill');
+    log_activity($toId, 'Introduced for a skill');
     redirect('/steward/skills');
 }
 

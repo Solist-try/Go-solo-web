@@ -230,6 +230,9 @@ function talk_can_reply(array $conversation, int $senderId): bool
     if (table_has_column('conversations', 'member_closed') && (int) ($conversation['member_closed'] ?? 0) === 1) {
         return false;
     }
+    if (function_exists('path_expired') && path_expired($conversation)) {
+        return false;
+    }
     if (!talk_participant((int) $conversation['id'], $senderId) || talk_held($senderId) || talk_pref($senderId) === 'none') {
         return false;
     }
@@ -642,10 +645,14 @@ function talk_offer(?array $me, int $otherId, bool $verified, string $back, arra
         $row = talk_load($existing);
         if ($row && talk_status($row) !== 'declined' && talk_participant($existing, (int) $me['id'])) {
             $open = talk_status($row) === 'open';
+            $label = site_text($open ? 'talk_heading' : 'talk_request_heading');
+            if ($open && function_exists('path_is_room') && path_is_room($row)) {
+                $label = site_text('path_room_name');
+            }
             return [
                 'mode' => 'link',
                 'href' => '/conversations/' . $existing,
-                'label' => site_text($open ? 'talk_heading' : 'talk_request_heading'),
+                'label' => $label,
             ];
         }
         if ($row && talk_status($row) === 'declined') {
@@ -860,6 +867,7 @@ function page_talk(array $params): void
         ];
     }
     $clear = $other > 0 && !talk_blocked($mine, $other) && !talk_held($mine) && !talk_held($other) && talk_pref($mine) !== 'none' && talk_pref($other) !== 'none';
+    $chair = function_exists('path_chair') ? path_chair($conversation, $mine) : ['ready' => false];
     view('talk/show', [
         'conversation' => $conversation,
         'people' => talk_people($id),
@@ -869,6 +877,7 @@ function page_talk(array $params): void
         'canDecline' => $recipient,
         'canBlock' => talk_blocks_ready() && $other > 0 && !one('SELECT user_id FROM member_blocks WHERE user_id = ? AND blocked_id = ?', [$mine, $other]),
         'pauseLine' => $canReply ? '' : talk_pause_line($conversation, $mine),
+        'chair' => $chair,
         'life' => $life,
         'editor' => editor_fields([
             'mode' => 'compact',
@@ -893,6 +902,10 @@ function page_talk_send(array $params): void
     $mine = (int) $me['id'];
     $action = (string) ($_POST['action'] ?? '');
     $other = talk_other($id, $mine);
+    if ($action === 'keep' && function_exists('path_keep_chair')) {
+        path_keep_chair($conversation, $mine);
+        redirect($back);
+    }
     if (function_exists('life_talk_actions') && in_array($action, life_talk_actions(), true)) {
         life_talk_action($conversation, $mine, $action);
         redirect($back);
