@@ -179,6 +179,7 @@ function content_groups(): array
             'waypoints_food_title' => 'Food for Thought heading',
             'waypoints_food_intro' => 'Food for Thought introduction',
             'waypoints_food_note' => 'Food for Thought note',
+            'waypoints_food_read' => 'Read in Reading Room',
             'waypoints_discussions_title' => 'Discussions heading',
             'waypoints_start_title' => 'Start heading',
             'waypoints_discussion_label' => 'Discussion writing label',

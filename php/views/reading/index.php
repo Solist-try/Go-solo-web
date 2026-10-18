@@ -4,8 +4,8 @@
   <h1><?= e(site_text('reading_title')) ?></h1>
   <p><?= e(site_text('reading_intro')) ?></p>
   <?php if (!empty($featured)): ?>
-    <article class="reading-shelf">
-      <p class="shelf-label"><?= e(site_text('pin_featured')) ?></p>
+    <article class="reading-note">
+      <p class="kicker"><?= e(site_text('pin_featured')) ?></p>
       <div class="previews">
         <?php foreach ($featured as $article): ?>
           <a href="<?= e(url('/reading/' . $article['slug'])) ?>">

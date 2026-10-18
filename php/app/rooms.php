@@ -425,7 +425,17 @@ function room_waypoint(array $params): void
         [(int) $waypoint['id']]
     );
     $readings = [];
+    $feature = null;
     $discussions = [];
+    if (waypoint_feature_ready()) {
+        $featureId = (int) ($waypoint['featured_reading_id'] ?? 0);
+        if ($featureId > 0) {
+            $feature = one(
+                'SELECT slug, title, standfirst FROM readings WHERE id = ? AND status = ?',
+                [$featureId, 'published']
+            ) ?: null;
+        }
+    }
     if (rooms_ready()) {
         $readings = q(
             'SELECT r.slug, r.title, r.standfirst
@@ -435,6 +445,13 @@ function room_waypoint(array $params): void
              ORDER BY wr.sort_order, r.title',
             ['published', (int) $waypoint['id']]
         );
+        if ($feature) {
+            $featureSlug = (string) $feature['slug'];
+            $readings = array_values(array_filter(
+                $readings,
+                static fn (array $article): bool => (string) $article['slug'] !== $featureSlug
+            ));
+        }
         $userId = (int) ($user['id'] ?? 0);
         $steward = is_steward() ? 1 : 0;
         $discussions = q(
@@ -455,6 +472,7 @@ function room_waypoint(array $params): void
         'joined' => $joined,
         'people' => $people,
         'readings' => $readings,
+        'feature' => $feature,
         'discussions' => $arranged['rows'],
         'welcome' => $arranged['welcome'],
         'pinAside' => $arranged['aside'],

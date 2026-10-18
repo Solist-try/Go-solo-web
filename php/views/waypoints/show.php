@@ -23,10 +23,18 @@
   <?php endif; ?>
 
   <?php $foodIntro = waypoint_line($waypoint, 'food_intro', 'waypoints_food_intro'); ?>
-  <?php if ($foodIntro !== '' || !empty($readings)): ?>
+  <?php $feature = $feature ?? null; ?>
+  <?php if ($foodIntro !== '' || !empty($readings) || !empty($feature)): ?>
     <div class="food-shelf">
       <h2><?= e(site_text('waypoints_food_title')) ?></h2>
       <?php if ($foodIntro !== ''): ?><p><?= e($foodIntro) ?></p><?php endif; ?>
+      <?php if (!empty($feature)): ?>
+        <article class="food-feature">
+          <h3><a href="<?= e(url('/reading/' . $feature['slug'])) ?>"><?= e($feature['title']) ?></a></h3>
+          <?php if (trim((string) $feature['standfirst']) !== ''): ?><p><?= e($feature['standfirst']) ?></p><?php endif; ?>
+          <p><a class="button quiet" href="<?= e(url('/reading/' . $feature['slug'])) ?>"><?= e(site_text('waypoints_food_read')) ?></a></p>
+        </article>
+      <?php endif; ?>
       <?php if (!empty($readings)): ?>
         <p class="food-note"><?= e(site_text('waypoints_food_note')) ?></p>
         <div class="previews">
