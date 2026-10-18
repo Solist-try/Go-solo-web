@@ -114,6 +114,8 @@ p { margin: 0 0 0.9rem; }
 .card.clay, .card.gold { background: var(--clay); }
 .card.mist { background: var(--mist); }
 .card.waypoint { border-top: 3px solid var(--sage); }
+.card.waypoint .waypoint-idea { font-size: 1.2rem; margin: 0 0 0.7rem; }
+.card.waypoint .photo { width: min(100%, 24rem); height: 8rem; margin-top: 1.15rem; border-radius: 16px; object-fit: cover; }
 .card.welcome {
   background: #f3f6f4;
   border: 1px solid #e3ebe4;
@@ -159,6 +161,67 @@ a.card.sage:hover { background: var(--sage-hover); }
   font-weight: 500;
   font-size: 1.35rem;
   letter-spacing: -0.02em;
+}
+.reading-shelf { margin-top: 3.5rem; }
+.reading-shelf .shelf-label {
+  margin: 0 0 0.4rem;
+  color: var(--soft);
+  font-family: var(--sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.reading-shelf .shelf-line { margin: 0; max-width: 36rem; color: var(--soft); }
+.reading-shelf .shelf-photo {
+  width: min(100%, 16rem);
+  height: 6.5rem;
+  margin-top: 0.9rem;
+  border-radius: 16px;
+  object-fit: cover;
+  box-shadow: none;
+}
+.reading-shelf .previews { margin-top: 1.35rem; }
+.reading-shelf .previews a strong {
+  font-size: clamp(1.55rem, 2.5vw, 1.95rem);
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.03em;
+}
+.waypoint-page { max-width: 46rem; }
+.waypoint-page h1 { margin-bottom: 0.35rem; }
+.waypoint-idea {
+  font-family: var(--serif);
+  font-size: 1.45rem;
+  line-height: 1.35;
+  margin: 0.15rem 0 1rem;
+}
+.waypoint-copy { max-width: 40rem; }
+.waypoint-page > h2 { margin-top: 2.6rem; }
+.waypoint-page .stack h3 { font-size: 1.45rem; margin-bottom: 0.35rem; }
+.food-shelf { margin: 2.4rem 0 0.4rem; max-width: 40rem; }
+.food-shelf h2 { margin: 0 0 0.45rem; }
+.food-note { color: var(--soft); margin-bottom: 0.2rem; }
+.food-shelf .previews a strong {
+  font-size: clamp(1.35rem, 2vw, 1.6rem);
+  font-weight: 600;
+  color: var(--ink);
+}
+.waypoint-photo {
+  width: min(100%, 26rem);
+  height: 11rem;
+  object-fit: cover;
+  margin: 3.2rem 0 0;
+  border-radius: 20px;
+  box-shadow: none;
+}
+.support-photo {
+  width: min(100%, 28rem);
+  max-height: 13rem;
+  object-fit: cover;
+  margin: 0.4rem 0 1.4rem;
+  border-radius: 20px;
+  box-shadow: none;
 }
 .previews a span { display: block; color: var(--soft); margin-top: 0.25rem; }
 .previews a:hover { background: var(--sage); }

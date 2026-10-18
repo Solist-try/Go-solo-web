@@ -24,7 +24,7 @@
 </form>
 <?php if (!empty($waypoint['id']) && !empty($readings)): ?>
   <h2>Food for Thought</h2>
-  <p class="soft">Connect pieces from the reading room. A number sets the order. Uncheck a piece to take it off this chair.</p>
+  <p class="soft">Connect pieces from the reading room when they can feed the conversation. Members see the shelf only when something is here. A number sets the order. Uncheck a piece to take it off this chair.</p>
   <form method="post" action="<?= e(url('/steward/waypoints/readings')) ?>">
     <?= csrf_field() ?>
     <input type="hidden" name="waypoint_id" value="<?= e((string) $waypoint['id']) ?>">
