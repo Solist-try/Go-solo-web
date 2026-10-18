@@ -17,6 +17,17 @@
   <?php else: ?>
     <p class="soft">Import sql/update-content.sql to edit this chair’s sitting line, Food for Thought introduction, discussion prompt, button, and empty line.</p>
   <?php endif; ?>
+  <?php if (waypoint_feature_ready()): ?>
+    <label><span>Featured reading</span>
+      <select name="featured_reading_id">
+        <option value="0">None</option>
+        <?php foreach ($published as $article): ?>
+          <option value="<?= e((string) $article['id']) ?>"<?= (int) ($waypoint['featured_reading_id'] ?? 0) === (int) $article['id'] ? ' selected' : '' ?>><?= e($article['title']) ?></option>
+        <?php endforeach; ?>
+      </select>
+    </label>
+    <p class="soft">Optional. One Reading Room piece near the top of this chair. Choose None to take it off.</p>
+  <?php endif; ?>
   <label><span>Cover image</span><input type="file" name="cover" accept="image/jpeg,image/png,image/webp,image/gif"></label>
   <?php if (!empty($waypoint['cover_path'])): ?><p class="soft"><?= e($waypoint['cover_path']) ?></p><?php endif; ?>
   <label><input type="checkbox" name="archived" value="1"<?= !empty($waypoint['archived']) ? ' checked' : '' ?>> Archive</label>

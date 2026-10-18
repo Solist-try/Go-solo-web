@@ -626,7 +626,15 @@ function desk_waypoint_form(array $params): void
             $linked[(int) $link['reading_id']] = (int) $link['sort_order'];
         }
     }
-    view('steward/waypoint-form', ['waypoint' => $waypoint, 'readings' => $readings, 'linked' => $linked]);
+    $published = waypoint_feature_ready()
+        ? q("SELECT id, title FROM readings WHERE status = 'published' ORDER BY title")
+        : [];
+    view('steward/waypoint-form', [
+        'waypoint' => $waypoint,
+        'readings' => $readings,
+        'linked' => $linked,
+        'published' => $published,
+    ]);
 }
 
 function desk_waypoint_save(array $params): void
@@ -669,6 +677,10 @@ function desk_waypoint_save(array $params): void
             $sets[] = $column . ' = ?';
             $args[] = $value;
         }
+        if (waypoint_feature_ready()) {
+            $sets[] = 'featured_reading_id = ?';
+            $args[] = waypoint_feature_choice();
+        }
         $args[] = $id;
         exec_sql('UPDATE waypoints SET ' . implode(', ', $sets) . ' WHERE id = ?', $args);
     } else {
@@ -679,6 +691,11 @@ function desk_waypoint_save(array $params): void
             $columns[] = $column;
             $holders[] = '?';
             $args[] = $value;
+        }
+        if (waypoint_feature_ready()) {
+            $columns[] = 'featured_reading_id';
+            $holders[] = '?';
+            $args[] = waypoint_feature_choice();
         }
         exec_sql(
             'INSERT INTO waypoints (' . implode(', ', $columns) . ') VALUES (' . implode(', ', $holders) . ')',

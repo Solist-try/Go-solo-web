@@ -115,6 +115,7 @@ CREATE TABLE waypoints (
   discussion_cta VARCHAR(80) NOT NULL DEFAULT '',
   discussion_empty VARCHAR(500) NOT NULL DEFAULT '',
   cover_path VARCHAR(255) NOT NULL DEFAULT '',
+  featured_reading_id INT UNSIGNED NULL,
   archived TINYINT(1) NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL,
   PRIMARY KEY (id),
@@ -988,4 +989,5 @@ Ask of this month: what would make my actual days feel more intentional, more co
 
 INSERT INTO schema_updates (update_key, applied_at) VALUES ('rooms-2026-10-08', NOW());
 INSERT INTO schema_updates (update_key, applied_at) VALUES ('path-2026-10-09', NOW());
+INSERT INTO schema_updates (update_key, applied_at) VALUES ('feature-2026-10-18', NOW());
 

@@ -351,6 +351,25 @@ function waypoint_copy_ready(): bool
     return table_has_column('waypoints', 'intro_line');
 }
 
+function waypoint_feature_ready(): bool
+{
+    try {
+        return table_has_column('waypoints', 'featured_reading_id');
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
+function waypoint_feature_choice(): ?int
+{
+    $picked = (int) ($_POST['featured_reading_id'] ?? 0);
+    if ($picked <= 0) {
+        return null;
+    }
+    $row = one("SELECT id FROM readings WHERE id = ? AND status = 'published'", [$picked]);
+    return $row ? $picked : null;
+}
+
 function slugify(string $value): string
 {
     $value = strtolower(trim($value));
