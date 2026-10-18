@@ -4,30 +4,30 @@
   <h1><?= e(site_text('reading_title')) ?></h1>
   <p><?= e(site_text('reading_intro')) ?></p>
   <?php if (!empty($featured)): ?>
-    <h2><?= e(site_text('pin_featured')) ?></h2>
-    <div class="previews">
-      <?php foreach ($featured as $article): ?>
-        <a href="<?= e(url('/reading/' . $article['slug'])) ?>">
-          <strong><?= e($article['title']) ?></strong>
-          <?php if (trim((string) $article['standfirst']) !== ''): ?><span><?= e($article['standfirst']) ?></span><?php endif; ?>
-        </a>
-      <?php endforeach; ?>
-    </div>
+    <article class="reading-shelf">
+      <p class="shelf-label"><?= e(site_text('pin_featured')) ?></p>
+      <div class="previews">
+        <?php foreach ($featured as $article): ?>
+          <a href="<?= e(url('/reading/' . $article['slug'])) ?>">
+            <strong><?= e($article['title']) ?></strong>
+            <?php if (trim((string) $article['standfirst']) !== ''): ?><span><?= e($article['standfirst']) ?></span><?php endif; ?>
+          </a>
+        <?php endforeach; ?>
+      </div>
+    </article>
   <?php endif; ?>
   <?php if (!$categories): ?>
     <p><?= e(site_text('empty_shelves')) ?></p>
   <?php endif; ?>
   <?php foreach ($categories as $category): ?>
-    <article style="margin-top:2.4rem">
-      <div class="split two">
-        <div>
-          <h2><?= e($category['title']) ?></h2>
-          <p><?= e($category['line']) ?></p>
-        </div>
+    <article class="reading-shelf">
+      <header class="shelf-head">
+        <p class="shelf-label"><?= e($category['title']) ?></p>
+        <?php if (trim((string) $category['line']) !== ''): ?><p class="shelf-line"><?= e($category['line']) ?></p><?php endif; ?>
         <?php if ($category['image_path']): ?>
-          <img class="photo" src="<?= e(media($category['image_path'])) ?>" alt="<?= e($category['image_alt']) ?>">
+          <img class="photo shelf-photo" src="<?= e(media($category['image_path'])) ?>" alt="<?= e($category['image_alt']) ?>">
         <?php endif; ?>
-      </div>
+      </header>
       <?php if (!$category['articles']): ?>
         <p class="soft"><?= e(site_text('empty_shelf')) ?></p>
       <?php else: ?>
