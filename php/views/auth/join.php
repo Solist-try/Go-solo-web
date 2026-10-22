@@ -4,7 +4,7 @@
   <p><?= e(site_text('join_intro')) ?></p>
   <form method="post" action="<?= e(url('/join')) ?>">
     <?= csrf_field() ?>
-    <label><span><?= e(site_text('join_call_you')) ?></span><input type="text" name="name" maxlength="80" required value="<?= e($name ?? '') ?>"></label>
+    <label><span><?= e(site_text('join_call_you')) ?></span><input type="text" name="name" maxlength="80" required autocomplete="off" value="<?= e($name ?? '') ?>"></label>
     <label><span><?= e(site_text('label_email')) ?></span><input type="email" name="email" maxlength="190" required value="<?= e($email ?? '') ?>"></label>
     <label><span><?= e(site_text('label_password')) ?></span><input type="password" name="password" minlength="8" required autocomplete="new-password"></label>
     <p class="soft"><?= e(site_text('join_password_hint')) ?></p>
