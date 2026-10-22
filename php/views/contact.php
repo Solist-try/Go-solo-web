@@ -10,7 +10,7 @@
     <?php else: ?>
       <form method="post" action="<?= e(url('/contact')) ?>">
         <?= csrf_field() ?>
-        <label><span><?= e(site_text('contact_name')) ?></span><input type="text" name="name" maxlength="80" required value="<?= e($name ?? '') ?>"></label>
+        <label><span><?= e(site_text('contact_name')) ?></span><input type="text" name="name" maxlength="80" required autocomplete="off" value="<?= e($name ?? '') ?>"></label>
         <label><span><?= e(site_text('contact_email')) ?></span><input type="email" name="email" maxlength="190" required value="<?= e($email ?? '') ?>"></label>
         <label><span><?= e(site_text('contact_note')) ?></span><textarea name="body" maxlength="4000" required><?= e($body ?? '') ?></textarea></label>
         <?php if (!empty($error)): ?><p class="error"><?= e($error) ?></p><?php endif; ?>

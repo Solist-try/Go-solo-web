@@ -197,22 +197,22 @@ function paragraphs(string $text): string
     return $html;
 }
 
-function view(string $name, array $data = [], string $layout = 'layout'): void
+function view(string $template, array $data = [], string $layout = 'layout'): void
 {
     $data['currentUser'] = current_user();
     $data['flashMessage'] = take_flash();
     extract($data, EXTR_SKIP);
     ob_start();
-    include __DIR__ . '/../views/' . $name . '.php';
+    include __DIR__ . '/../views/' . $template . '.php';
     $content = ob_get_clean();
     include __DIR__ . '/../views/' . $layout . '.php';
 }
 
-function render(string $name, array $data = []): string
+function render(string $template, array $data = []): string
 {
     extract($data, EXTR_SKIP);
     ob_start();
-    include __DIR__ . '/../views/' . $name . '.php';
+    include __DIR__ . '/../views/' . $template . '.php';
     return (string) ob_get_clean();
 }
 
