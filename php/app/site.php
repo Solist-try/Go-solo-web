@@ -159,7 +159,7 @@ function skill_rows(string $table): array
 
 function page_seed_begin(array $params): void
 {
-    $user = require_user();
+    $user = require_verified();
     $seed = one('SELECT * FROM seeds WHERE slug = ? AND archived = 0', [$params['slug']]);
     if (!$seed || $seed['kind'] === 'same' || $seed['slug'] === 'skill-swap') {
         not_found();
@@ -176,7 +176,7 @@ function page_seed_begin(array $params): void
 
 function page_seed_open(array $params): void
 {
-    $user = require_user();
+    $user = require_verified();
     $seed = one('SELECT * FROM seeds WHERE slug = ? AND archived = 0 AND kind = ?', [$params['slug'], 'same']);
     if (!$seed) {
         not_found();
@@ -203,7 +203,7 @@ function page_skill_post(array $params): void
         life_skill_post();
         return;
     }
-    $user = require_user();
+    $user = require_verified();
     $kind = ($_POST['kind'] ?? '') === 'request' ? 'request' : 'offer';
     $title = clip(post_text('title', 120), 120);
     $detail = clip(post_text('detail', 1000), 1000);
@@ -451,7 +451,7 @@ function page_join_form(array $params): void
     if (current_user()) {
         redirect('/profile');
     }
-    view('auth/join', ['name' => '', 'email' => '', 'error' => '', 'askTalk' => conversations_ready(), 'talkSelected' => '']);
+    view('auth/join', ['name' => '', 'email' => '', 'error' => '', 'askTalk' => conversations_ready(), 'talkSelected' => '', 'verifyReady' => email_verify_ready()]);
 }
 
 function page_join(array $params): void
@@ -475,16 +475,24 @@ function page_join(array $params): void
         $error = 'That email already has a chair here. Try logging in.';
     }
     if ($error !== '') {
-        view('auth/join', ['name' => $name, 'email' => $email, 'error' => $error, 'askTalk' => $askTalk, 'talkSelected' => $pref]);
+        view('auth/join', ['name' => $name, 'email' => $email, 'error' => $error, 'askTalk' => $askTalk, 'talkSelected' => $pref, 'verifyReady' => email_verify_ready()]);
         return;
     }
+    $verify = email_verify_ready();
     $db = db();
     try {
         $db->beginTransaction();
-        exec_sql(
-            'INSERT INTO users (email, password_hash, role, status, created_at) VALUES (?, ?, ?, ?, NOW())',
-            [$email, password_hash($password, PASSWORD_DEFAULT), 'member', 'active']
-        );
+        if ($verify) {
+            exec_sql(
+                'INSERT INTO users (email, password_hash, role, status, email_verified_at, created_at) VALUES (?, ?, ?, ?, NULL, NOW())',
+                [$email, password_hash($password, PASSWORD_DEFAULT), 'member', 'active']
+            );
+        } else {
+            exec_sql(
+                'INSERT INTO users (email, password_hash, role, status, created_at) VALUES (?, ?, ?, ?, NOW())',
+                [$email, password_hash($password, PASSWORD_DEFAULT), 'member', 'active']
+            );
+        }
         $id = (int) $db->lastInsertId();
         if ($askTalk) {
             exec_sql(
@@ -502,12 +510,16 @@ function page_join(array $params): void
         if ($db->inTransaction()) {
             $db->rollBack();
         }
-        view('auth/join', ['name' => $name, 'email' => $email, 'error' => 'That did not save. Try again in a moment.', 'askTalk' => $askTalk, 'talkSelected' => $pref]);
+        view('auth/join', ['name' => $name, 'email' => $email, 'error' => 'That did not save. Try again in a moment.', 'askTalk' => $askTalk, 'talkSelected' => $pref, 'verifyReady' => $verify]);
         return;
     }
     session_regenerate_id(true);
     $_SESSION['user_id'] = $id;
     log_activity($id, 'Joined Go Solo');
+    if ($verify) {
+        email_flash_result(email_issue($id, 'verify', 'email_welcome_subject', 'email_welcome_body'), 'msg_verify_sent');
+        redirect('/account');
+    }
     flash(site_text('msg_joined'));
     redirect('/profile');
 }
@@ -759,6 +771,11 @@ function page_profile_save(array $params): void
     $user = require_user();
     $id = (int) $user['id'];
     save_garden($id, true);
+    $sendingPhoto = !empty($_FILES['avatar']['name']);
+    if ($sendingPhoto && !user_is_verified($user)) {
+        flash(site_text('msg_verify_first'));
+        redirect('/profile/edit');
+    }
     $problem = upload_problem('avatar');
     if ($problem) {
         flash($problem);
@@ -811,7 +828,7 @@ function page_growing(array $params): void
         life_growing_post();
         return;
     }
-    $user = require_user();
+    $user = require_verified();
     $id = (int) $user['id'];
     $action = (string) ($_POST['action'] ?? '');
     if ($action === 'add') {
@@ -841,7 +858,7 @@ function page_planted_remove(array $params): void
 
 function page_notes(array $params): void
 {
-    $user = require_user();
+    $user = require_verified();
     $type = (string) ($_POST['context_type'] ?? '');
     $contextId = (int) ($_POST['context_id'] ?? 0);
     $body = clip(post_text('body', 2000), 2000);
@@ -898,7 +915,11 @@ function page_profile_report(array $params): void
 function page_account(array $params): void
 {
     $user = require_user();
-    view('account', ['email' => $user['email']]);
+    view('account', [
+        'email' => $user['email'],
+        'verified' => user_is_verified($user),
+        'verifyReady' => email_verify_ready(),
+    ]);
 }
 
 function page_account_save(array $params): void
@@ -911,6 +932,11 @@ function page_account_save(array $params): void
             flash('That email does not look usable.');
         } elseif (one('SELECT id FROM users WHERE email = ? AND id <> ?', [$email, (int) $user['id']])) {
             flash('That email already has a chair here.');
+        } elseif (strtolower((string) $user['email']) === $email) {
+            flash(site_text('msg_email'));
+        } elseif (email_verify_ready()) {
+            exec_sql('UPDATE users SET email = ?, email_verified_at = NULL WHERE id = ?', [$email, (int) $user['id']]);
+            email_flash_result(email_issue((int) $user['id'], 'verify', 'email_verify_subject', 'email_verify_body'), 'msg_verify_sent');
         } else {
             exec_sql('UPDATE users SET email = ? WHERE id = ?', [$email, (int) $user['id']]);
             flash(site_text('msg_email'));
@@ -932,22 +958,98 @@ function page_account_save(array $params): void
     redirect('/account');
 }
 
+function account_can_leave(array $user): bool
+{
+    if ($user['role'] !== 'admin') {
+        return true;
+    }
+    $others = count_of("SELECT COUNT(*) AS n FROM users WHERE role = 'admin' AND id <> ?", [(int) $user['id']]);
+    return $others >= 1;
+}
+
 function page_account_delete(array $params): void
 {
     $user = require_user();
+    if (email_verify_ready()) {
+        if (!account_can_leave($user)) {
+            flash('The house still needs one steward.');
+            redirect('/account');
+        }
+        email_flash_result(email_issue((int) $user['id'], 'delete', 'email_delete_subject', 'email_delete_body'), 'msg_delete_sent');
+        redirect('/account');
+    }
     if ((string) ($_POST['confirm'] ?? '') !== 'DELETE') {
         flash('Type DELETE to close the account.');
         redirect('/account');
     }
-    if ($user['role'] === 'admin') {
-        $others = count_of("SELECT COUNT(*) AS n FROM users WHERE role = 'admin' AND id <> ?", [(int) $user['id']]);
-        if ($others < 1) {
-            flash('The house still needs one steward.');
-            redirect('/account');
-        }
+    if (!account_can_leave($user)) {
+        flash('The house still needs one steward.');
+        redirect('/account');
     }
     exec_sql('DELETE FROM users WHERE id = ?', [(int) $user['id']]);
     page_logout([]);
+}
+
+function page_verify(array $params): void
+{
+    header('Cache-Control: no-store');
+    header('Referrer-Policy: no-referrer');
+    $userId = email_finish_verify((string) ($_GET['token'] ?? ''));
+    if ($userId === null) {
+        view('auth/verify');
+        return;
+    }
+    $me = current_user();
+    flash(site_text('msg_verified'));
+    if ($me && (int) $me['id'] === $userId) {
+        redirect('/profile');
+    }
+    redirect('/login');
+}
+
+function page_verify_resend(array $params): void
+{
+    $user = require_user();
+    if (!email_verify_ready() || user_is_verified($user)) {
+        redirect('/account');
+    }
+    email_flash_result(email_issue((int) $user['id'], 'verify', 'email_verify_subject', 'email_verify_body'), 'msg_verify_sent');
+    redirect('/account');
+}
+
+function page_delete_confirm(array $params): void
+{
+    header('Cache-Control: no-store');
+    header('Referrer-Policy: no-referrer');
+    $token = (string) ($_GET['token'] ?? '');
+    if (!email_find_open($token, 'delete')) {
+        flash(site_text('msg_delete_link'));
+        redirect(current_user() ? '/account' : '/login');
+    }
+    view('account-delete', ['token' => $token]);
+}
+
+function page_delete_confirm_post(array $params): void
+{
+    $result = email_finish_delete((string) ($_POST['token'] ?? ''));
+    if (!$result['ok']) {
+        if ($result['reason'] === 'steward') {
+            flash('The house still needs one steward.');
+            redirect('/account');
+        }
+        if ($result['reason'] === 'held') {
+            flash(site_text('msg_delete_held'));
+            redirect(current_user() ? '/account' : '/login');
+        }
+        flash(site_text('msg_delete_link'));
+        redirect(current_user() ? '/account' : '/login');
+    }
+    email_send_deleted($result['email']);
+    if ((int) ($_SESSION['user_id'] ?? 0) === (int) $result['user_id']) {
+        unset($_SESSION['user_id']);
+    }
+    flash(site_text('msg_deleted'));
+    redirect('/');
 }
 
 function page_notices(array $params): void

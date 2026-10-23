@@ -1,6 +1,13 @@
 <?php $pageTitle = site_text('account_title') . ' · ' . site_text('site_title'); ?>
 <section class="frame section narrow">
   <h1><?= e(site_text('account_title')) ?></h1>
+  <?php if (!empty($verifyReady) && empty($verified)): ?>
+    <p class="soft"><?= e(site_text('verify_notice')) ?></p>
+    <form method="post" action="<?= e(url('/account/verify')) ?>">
+      <?= csrf_field() ?>
+      <button type="submit"><?= e(site_text('cta_resend_verify')) ?></button>
+    </form>
+  <?php endif; ?>
   <form method="post" action="<?= e(url('/account')) ?>">
     <?= csrf_field() ?>
     <input type="hidden" name="action" value="email">
@@ -15,11 +22,20 @@
     <label><span><?= e(site_text('account_new')) ?></span><input type="password" name="new_password" minlength="8" required autocomplete="new-password"></label>
     <button type="submit"><?= e(site_text('cta_change_password')) ?></button>
   </form>
-  <form method="post" action="<?= e(url('/account/delete')) ?>">
-    <?= csrf_field() ?>
-    <h2><?= e(site_text('account_close')) ?></h2>
-    <p><?= e(site_text('account_close_body')) ?></p>
-    <label><span><?= e(site_text('account_confirm')) ?></span><input type="text" name="confirm" autocomplete="off"></label>
-    <button class="quiet" type="submit"><?= e(site_text('cta_delete_account')) ?></button>
-  </form>
+  <?php if (!empty($verifyReady)): ?>
+    <form method="post" action="<?= e(url('/account/delete')) ?>">
+      <?= csrf_field() ?>
+      <h2><?= e(site_text('account_close')) ?></h2>
+      <p><?= e(site_text('account_close_body')) ?></p>
+      <button class="quiet" type="submit"><?= e(site_text('cta_delete_account')) ?></button>
+    </form>
+  <?php else: ?>
+    <form method="post" action="<?= e(url('/account/delete')) ?>">
+      <?= csrf_field() ?>
+      <h2><?= e(site_text('account_close')) ?></h2>
+      <p><?= e(site_text('account_close_now')) ?></p>
+      <label><span><?= e(site_text('account_confirm')) ?></span><input type="text" name="confirm" autocomplete="off"></label>
+      <button class="quiet" type="submit"><?= e(site_text('cta_delete_account')) ?></button>
+    </form>
+  <?php endif; ?>
 </section>

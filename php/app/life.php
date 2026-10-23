@@ -221,7 +221,7 @@ function life_hidden(int $userId, string $type, int $id): bool
 
 function life_growing_post(): void
 {
-    $user = require_user();
+    $user = require_verified();
     $id = (int) $user['id'];
     $action = (string) ($_POST['action'] ?? '');
     if ($action === 'add') {
@@ -375,7 +375,7 @@ function life_skill_accepts_interest(array $row): bool
 
 function life_skill_post(): void
 {
-    $user = require_user();
+    $user = require_verified();
     $kind = (string) ($_POST['kind'] ?? '') === 'request' ? 'request' : 'offer';
     $listingId = (int) ($_POST['id'] ?? 0);
     $table = life_skill_table($kind);
@@ -489,7 +489,7 @@ function life_intro_feedback(string $value): string
 
 function life_intro_post(array $params): void
 {
-    $user = require_user();
+    $user = require_verified();
     if (!life_ready()) {
         flash(site_text('life_msg_unavailable'));
         redirect('/profile');
@@ -1023,7 +1023,7 @@ function life_outcome_permit(int $userId, string $type, int $id): bool
 
 function life_outcome_post(): void
 {
-    $user = require_user();
+    $user = require_verified();
     $back = safe_next((string) ($_POST['back'] ?? '/profile'));
     if (!life_ready()) {
         flash(site_text('life_msg_unavailable'));

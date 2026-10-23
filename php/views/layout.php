@@ -68,6 +68,7 @@ $logoImage = site_text('logo_image');
   </header>
   <main id="content">
     <?php if ($flashMessage): ?><div class="frame"><p class="flash" role="status"><?= e($flashMessage) ?></p></div><?php endif; ?>
+    <?php if ($currentUser && !user_is_verified($currentUser)): ?><div class="frame"><p class="verify-note"><?= e(site_text('verify_notice')) ?> <a href="<?= e(url('/account')) ?>"><?= e(site_text('cta_account')) ?></a></p></div><?php endif; ?>
     <?= $content ?>
   </main>
   <footer class="site-footer">

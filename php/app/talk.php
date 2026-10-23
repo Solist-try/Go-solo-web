@@ -750,7 +750,7 @@ function talk_pause_line(array $conversation, int $me): string
 
 function page_talk_compose(array $params): void
 {
-    $me = require_user();
+    $me = require_verified();
     $fields = talk_fields();
     $back = $fields['back'];
     if (!conversations_ready()) {
@@ -780,7 +780,7 @@ function page_talk_compose(array $params): void
 
 function page_talk_start(array $params): void
 {
-    $me = require_user();
+    $me = require_verified();
     $fields = talk_fields();
     $back = $fields['back'];
     if (!conversations_ready()) {
@@ -891,7 +891,7 @@ function page_talk(array $params): void
 
 function page_talk_send(array $params): void
 {
-    $me = require_user();
+    $me = require_verified();
     $conversation = talk_load((int) $params['id']);
     $back = '/conversations/' . (int) $params['id'];
     if (!$conversation || !talk_participant((int) $conversation['id'], (int) $me['id'])) {

@@ -98,7 +98,7 @@ function comment_back(array $comment): string
 
 function room_story_form(array $params): void
 {
-    require_user();
+    require_verified();
     if (!rooms_ready()) {
         view('stories/form', [
             'legacy' => true,
@@ -116,7 +116,7 @@ function room_story_form(array $params): void
 
 function room_story_save(array $params): void
 {
-    $user = require_user();
+    $user = require_verified();
     if (!rooms_ready()) {
         room_story_save_legacy($user);
         return;
@@ -240,7 +240,7 @@ function visible_comments(string $type, int $id): array
 
 function room_story_reply(array $params): void
 {
-    $user = require_user();
+    $user = require_verified();
     $story = one('SELECT * FROM stories WHERE id = ? AND hidden = 0', [(int) $params['id']]);
     if (!$story || !author_visible((int) $story['user_id'])) {
         not_found();
@@ -251,13 +251,13 @@ function room_story_reply(array $params): void
 
 function room_campfire_form(array $params): void
 {
-    require_user();
+    require_verified();
     show_editor('campfire/form', campfire_editor());
 }
 
 function room_campfire_save(array $params): void
 {
-    $user = require_user();
+    $user = require_verified();
     $title = clip(post_text('title', 160), 160);
     $body = writing_from_post();
     $alt = clip(post_text('image_alt', 255), 255);
@@ -320,7 +320,7 @@ function room_campfire_show(array $params): void
 
 function room_campfire_comment(array $params): void
 {
-    $user = require_user();
+    $user = require_verified();
     $post = one('SELECT * FROM campfire_posts WHERE id = ? AND hidden = 0 AND locked = 0', [(int) $params['id']]);
     if (!$post || !author_visible((int) $post['user_id'])) {
         not_found();
@@ -490,7 +490,7 @@ function room_waypoint(array $params): void
 
 function room_discussion_save(array $params): void
 {
-    $user = require_user();
+    $user = require_verified();
     if (!rooms_ready()) {
         flash('This chair is not ready for discussions yet.');
         redirect('/waypoints/' . $params['slug']);
@@ -577,7 +577,7 @@ function find_discussion(string $slug, int $id): ?array
 
 function room_discussion_reply(array $params): void
 {
-    $user = require_user();
+    $user = require_verified();
     $found = find_discussion($params['slug'], (int) $params['id']);
     if (!$found) {
         not_found();

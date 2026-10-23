@@ -14,13 +14,14 @@ function current_user(): ?array
     if ($id <= 0) {
         return null;
     }
+    $verified = table_has_column('users', 'email_verified_at') ? 'u.email_verified_at,' : '';
     $user = one(
-        'SELECT u.id, u.email, u.role, u.status, u.created_at, u.last_seen_at,
+        "SELECT u.id, u.email, u.role, u.status, u.created_at, u.last_seen_at, {$verified}
                 p.display_name, p.bio, p.location, p.avatar_path, p.contact_frequency,
                 p.check_in_style, p.show_location
          FROM users u
          LEFT JOIN profiles p ON p.user_id = u.id
-         WHERE u.id = ?',
+         WHERE u.id = ?",
         [$id]
     );
     if (!$user || $user['status'] !== 'active') {
@@ -49,6 +50,37 @@ function require_user(): array
     if (!$user) {
         flash(site_text('msg_come_in'));
         redirect('/login?next=' . rawurlencode(request_path()));
+    }
+    return $user;
+}
+
+function email_verify_ready(): bool
+{
+    static $ready = null;
+    if ($ready === null) {
+        $ready = table_has_column('users', 'email_verified_at') && table_has_column('email_tokens', 'purpose');
+    }
+    return $ready;
+}
+
+function user_is_verified(?array $user = null): bool
+{
+    if (!email_verify_ready()) {
+        return true;
+    }
+    $user = $user ?? current_user();
+    if (!$user) {
+        return false;
+    }
+    return trim((string) ($user['email_verified_at'] ?? '')) !== '';
+}
+
+function require_verified(): array
+{
+    $user = require_user();
+    if (!user_is_verified($user)) {
+        flash(site_text('msg_verify_first'));
+        redirect('/account');
     }
     return $user;
 }
@@ -147,6 +179,233 @@ function absolute_url(string $path): string
     $scheme = $https ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
     return $scheme . '://' . $host . url($path);
+}
+
+function email_token_ok(string $token): bool
+{
+    return preg_match('/^[a-f0-9]{64}$/', $token) === 1;
+}
+
+function email_letter(string $subject, string $body, string $link): array
+{
+    $subject = str_replace(["\r", "\n"], '', $subject);
+    if ($link !== '' && !str_contains($body, $link)) {
+        $body = rtrim($body) . "\n\n" . $link;
+    }
+    return [$subject, $body];
+}
+
+function email_house_when(?DateTimeImmutable $moment = null): array
+{
+    $zone = new DateTimeZone('Europe/Tallinn');
+    $moment = ($moment ?? new DateTimeImmutable('now', $zone))->setTimezone($zone);
+    return [
+        'date' => $moment->format('j M Y'),
+        'time' => $moment->format('H:i') . ' Europe/Tallinn',
+    ];
+}
+
+function email_from(): string
+{
+    $from = str_replace(["\r", "\n"], '', trim(site_text('founder_email')));
+    if (!valid_email($from)) {
+        return 'marge@gosolo.co.network';
+    }
+    return $from;
+}
+
+function email_support_contact(): string
+{
+    $from = str_replace(["\r", "\n"], '', trim(site_text('founder_email')));
+    if (valid_email($from)) {
+        return $from;
+    }
+    return absolute_url('/contact');
+}
+
+function email_send(string $to, string $subject, string $body): bool
+{
+    $to = str_replace(["\r", "\n"], '', $to);
+    if (!valid_email($to)) {
+        return false;
+    }
+    $subject = str_replace(["\r", "\n"], '', $subject);
+    $from = email_from();
+    $headers = "From: Go Solo <{$from}>\r\nContent-Type: text/plain; charset=UTF-8";
+    return @mail($to, $subject, $body, $headers);
+}
+
+function email_flash_result(string $result, string $sentKey): void
+{
+    if ($result === 'sent') {
+        flash(site_text($sentKey));
+        return;
+    }
+    if ($result === 'wait') {
+        flash(site_text('msg_verify_wait'));
+        return;
+    }
+    flash(site_text('msg_verify_mail'));
+}
+
+function email_issue(int $userId, string $purpose, string $subjectKey, string $bodyKey): string
+{
+    if (!email_verify_ready() || !in_array($purpose, ['verify', 'delete'], true)) {
+        return 'unavailable';
+    }
+    $interval = $purpose === 'delete' ? '24 HOUR' : '7 DAY';
+    $path = $purpose === 'delete' ? '/account/delete/confirm?token=' : '/verify?token=';
+    try {
+        $user = one('SELECT id, email FROM users WHERE id = ? AND status = ?', [$userId, 'active']);
+        if (!$user || !valid_email((string) $user['email'])) {
+            return 'failed';
+        }
+        $recent = one(
+            'SELECT id FROM email_tokens WHERE user_id = ? AND purpose = ? AND created_at > DATE_SUB(NOW(), INTERVAL 2 MINUTE)',
+            [$userId, $purpose]
+        );
+        if ($recent) {
+            return 'wait';
+        }
+        $token = bin2hex(random_bytes(32));
+        $hash = hash('sha256', $token);
+        exec_sql('DELETE FROM email_tokens WHERE user_id = ? AND purpose = ? AND used_at IS NULL', [$userId, $purpose]);
+        exec_sql(
+            "INSERT INTO email_tokens (user_id, purpose, token_hash, expires_at, created_at) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL {$interval}), NOW())",
+            [$userId, $purpose, $hash]
+        );
+        $link = absolute_url($path . $token);
+        $body = site_line($bodyKey, ['link' => $link]);
+        [$subject, $letter] = email_letter(site_text($subjectKey), $body, $link);
+        if (!email_send((string) $user['email'], $subject, $letter)) {
+            exec_sql('DELETE FROM email_tokens WHERE user_id = ? AND purpose = ? AND token_hash = ? AND used_at IS NULL', [$userId, $purpose, $hash]);
+            return 'failed';
+        }
+        return 'sent';
+    } catch (Throwable $e) {
+        return 'failed';
+    }
+}
+
+function email_find_open(string $token, string $purpose): ?array
+{
+    if (!email_verify_ready() || !email_token_ok($token) || !in_array($purpose, ['verify', 'delete'], true)) {
+        return null;
+    }
+    return one(
+        'SELECT id, user_id FROM email_tokens WHERE token_hash = ? AND purpose = ? AND used_at IS NULL AND expires_at > NOW()',
+        [hash('sha256', $token), $purpose]
+    );
+}
+
+function email_lock_open(string $token, string $purpose): ?array
+{
+    if (!email_verify_ready() || !email_token_ok($token) || !in_array($purpose, ['verify', 'delete'], true)) {
+        return null;
+    }
+    $tokenRow = one(
+        'SELECT id, user_id FROM email_tokens WHERE token_hash = ? AND purpose = ? AND used_at IS NULL AND expires_at > NOW() FOR UPDATE',
+        [hash('sha256', $token), $purpose]
+    );
+    if (!$tokenRow) {
+        return null;
+    }
+    $user = one('SELECT id, email, role FROM users WHERE id = ? FOR UPDATE', [(int) $tokenRow['user_id']]);
+    if (!$user) {
+        return null;
+    }
+    return [
+        'id' => (int) $tokenRow['id'],
+        'user_id' => (int) $user['id'],
+        'email' => (string) $user['email'],
+        'role' => (string) $user['role'],
+    ];
+}
+
+function email_mark_used(int $id): bool
+{
+    $stmt = db()->prepare('UPDATE email_tokens SET used_at = NOW() WHERE id = ? AND used_at IS NULL');
+    $stmt->execute([$id]);
+    return $stmt->rowCount() === 1;
+}
+
+function email_finish_verify(string $token): ?int
+{
+    if (!email_verify_ready() || !email_token_ok($token)) {
+        return null;
+    }
+    $db = db();
+    try {
+        $db->beginTransaction();
+        $row = email_lock_open($token, 'verify');
+        if (!$row || !email_mark_used((int) $row['id'])) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            return null;
+        }
+        exec_sql(
+            'UPDATE users SET email_verified_at = COALESCE(email_verified_at, NOW()) WHERE id = ?',
+            [(int) $row['user_id']]
+        );
+        $db->commit();
+        return (int) $row['user_id'];
+    } catch (Throwable $e) {
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
+        return null;
+    }
+}
+
+function email_finish_delete(string $token): array
+{
+    $fail = ['ok' => false, 'reason' => 'invalid', 'email' => '', 'user_id' => 0];
+    if (!email_verify_ready() || !email_token_ok($token)) {
+        return $fail;
+    }
+    $db = db();
+    try {
+        $db->beginTransaction();
+        $row = email_lock_open($token, 'delete');
+        if (!$row) {
+            $db->rollBack();
+            return $fail;
+        }
+        if ($row['role'] === 'admin') {
+            $others = count_of("SELECT COUNT(*) AS n FROM users WHERE role = 'admin' AND id <> ?", [(int) $row['user_id']]);
+            if ($others < 1) {
+                $db->rollBack();
+                return ['ok' => false, 'reason' => 'steward', 'email' => '', 'user_id' => (int) $row['user_id']];
+            }
+        }
+        if (!email_mark_used((int) $row['id'])) {
+            $db->rollBack();
+            return $fail;
+        }
+        $email = $row['email'];
+        $userId = (int) $row['user_id'];
+        exec_sql('DELETE FROM users WHERE id = ?', [$userId]);
+        $db->commit();
+        return ['ok' => true, 'reason' => '', 'email' => $email, 'user_id' => $userId];
+    } catch (Throwable $e) {
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
+        return ['ok' => false, 'reason' => 'held', 'email' => '', 'user_id' => 0];
+    }
+}
+
+function email_send_deleted(string $email): void
+{
+    $when = email_house_when();
+    $body = site_line('email_deleted_body', [
+        'date' => $when['date'],
+        'time' => $when['time'],
+        'contact' => email_support_contact(),
+    ]);
+    [$subject, $letter] = email_letter(site_text('email_deleted_subject'), $body, '');
+    email_send($email, $subject, $letter);
 }
 
 function support_choices(): array

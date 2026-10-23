@@ -42,6 +42,7 @@ DROP TABLE IF EXISTS waypoint_members;
 DROP TABLE IF EXISTS waypoints;
 DROP TABLE IF EXISTS settings;
 DROP TABLE IF EXISTS password_resets;
+DROP TABLE IF EXISTS email_tokens;
 DROP TABLE IF EXISTS profiles;
 DROP TABLE IF EXISTS users;
 
@@ -55,6 +56,7 @@ CREATE TABLE users (
   status ENUM('active', 'suspended', 'banned') NOT NULL DEFAULT 'active',
   created_at DATETIME NOT NULL,
   last_seen_at DATETIME NULL,
+  email_verified_at DATETIME NULL,
   PRIMARY KEY (id),
   UNIQUE KEY users_email (email),
   KEY users_status (status),
@@ -95,6 +97,20 @@ CREATE TABLE password_resets (
   KEY resets_user (user_id),
   KEY resets_token (token_hash),
   CONSTRAINT resets_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE email_tokens (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id INT UNSIGNED NOT NULL,
+  purpose ENUM('verify', 'delete') NOT NULL,
+  token_hash CHAR(64) NOT NULL,
+  expires_at DATETIME NOT NULL,
+  used_at DATETIME NULL,
+  created_at DATETIME NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY email_tokens_hash (token_hash),
+  KEY email_tokens_user (user_id, purpose, created_at),
+  CONSTRAINT email_tokens_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE settings (
@@ -657,13 +673,14 @@ INSERT INTO life_seasons (label, sort_order) VALUES
   ('Prefer not to say', 80);
 
 -- Starting steward. Password is documented in INSTALL.md. Change it after the first login.
-INSERT INTO users (id, email, password_hash, role, status, created_at)
+INSERT INTO users (id, email, password_hash, role, status, created_at, email_verified_at)
 VALUES (
   1,
   'marge@gosolo.co.network',
   '$2b$12$NGEzlCCO9lUab3EfMjj9o.I.wTn428gLIQfNiHHW1okVtBsB0dPjq',
   'admin',
   'active',
+  NOW(),
   NOW()
 );
 
@@ -990,4 +1007,5 @@ Ask of this month: what would make my actual days feel more intentional, more co
 INSERT INTO schema_updates (update_key, applied_at) VALUES ('rooms-2026-10-08', NOW());
 INSERT INTO schema_updates (update_key, applied_at) VALUES ('path-2026-10-09', NOW());
 INSERT INTO schema_updates (update_key, applied_at) VALUES ('feature-2026-10-18', NOW());
+INSERT INTO schema_updates (update_key, applied_at) VALUES ('email-verify-2026-10-23', NOW());
 
