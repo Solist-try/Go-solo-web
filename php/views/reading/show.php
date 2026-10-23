@@ -7,6 +7,6 @@
   <?php if (!empty($article['image_path'])): ?>
     <img class="photo support-photo" src="<?= e(media($article['image_path'])) ?>" alt="">
   <?php endif; ?>
-  <?= render_writing((string) $article['body']) ?>
+  <?= reading_render_body((string) $article['body'], (int) $article['id']) ?>
   </div>
 </section>
