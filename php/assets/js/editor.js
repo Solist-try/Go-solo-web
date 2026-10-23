@@ -45,9 +45,39 @@
     if (placeholder) {
       surface.setAttribute('data-placeholder', placeholder);
     }
+    var articleWorkspace = root.classList.contains('editor-article');
     function markEmpty() {
       var empty = surface.textContent.replace(/\u00a0/g, '').trim() === '';
       surface.classList.toggle('is-empty', empty && placeholder !== '');
+    }
+    function fitWorkspace() {
+      if (!articleWorkspace) {
+        return;
+      }
+      if (surface.scrollHeight > surface.clientHeight + 2) {
+        surface.style.height = (surface.offsetHeight + surface.scrollHeight - surface.clientHeight) + 'px';
+      }
+    }
+    function revealCaret() {
+      if (!articleWorkspace || !window.visualViewport) {
+        return;
+      }
+      var selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0 || !surface.contains(selection.anchorNode)) {
+        return;
+      }
+      var rect = selection.getRangeAt(0).getBoundingClientRect();
+      if (!rect) {
+        return;
+      }
+      var viewport = window.visualViewport;
+      var topLimit = viewport.offsetTop + 68;
+      var bottomLimit = viewport.offsetTop + viewport.height - 24;
+      if (rect.bottom > bottomLimit) {
+        window.scrollBy(0, rect.bottom - bottomLimit);
+      } else if (rect.height > 0 && rect.top < topLimit) {
+        window.scrollBy(0, rect.top - topLimit);
+      }
     }
     if (looksWritten(source.value)) {
       surface.innerHTML = source.value;
@@ -55,7 +85,20 @@
       surface.innerHTML = plainToHtml(source.value);
     }
     markEmpty();
-    surface.addEventListener('input', markEmpty);
+    fitWorkspace();
+    surface.addEventListener('input', function () {
+      markEmpty();
+      fitWorkspace();
+      revealCaret();
+    });
+    surface.addEventListener('keyup', revealCaret);
+    if (articleWorkspace && window.visualViewport) {
+      window.visualViewport.addEventListener('resize', revealCaret);
+      window.addEventListener('resize', function () {
+        surface.style.height = '';
+        fitWorkspace();
+      });
+    }
     surface.addEventListener('keydown', function (event) {
       if (!(event.ctrlKey || event.metaKey) || event.altKey) {
         return;
@@ -90,25 +133,30 @@
             document.execCommand('createLink', false, address);
           }
           markEmpty();
+          fitWorkspace();
           return;
         }
         if (command === 'quote') {
           document.execCommand('formatBlock', false, 'blockquote');
           markEmpty();
+          fitWorkspace();
           return;
         }
         if (command === 'heading') {
           document.execCommand('formatBlock', false, 'h2');
           markEmpty();
+          fitWorkspace();
           return;
         }
         if (command === 'subheading') {
           document.execCommand('formatBlock', false, 'h3');
           markEmpty();
+          fitWorkspace();
           return;
         }
         document.execCommand(command, false, null);
         markEmpty();
+        fitWorkspace();
       });
     });
     var form = root.closest('form');

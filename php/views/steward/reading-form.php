@@ -30,6 +30,7 @@ $existingImage = trim((string) ($article['image_path'] ?? ''));
       $editor = [
           'embedded' => true,
           'headings' => true,
+          'workspace' => true,
           'body' => (string) ($article['body'] ?? ''),
           'body_label' => 'Article',
           'help' => site_text('editor_article_help'),

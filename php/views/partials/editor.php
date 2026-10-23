@@ -3,6 +3,9 @@ $editorMode = ($editor['mode'] ?? 'full') === 'compact' ? 'compact' : 'full';
 $editorAction = (string) ($editor['action'] ?? '');
 $editorEmbedded = !empty($editor['embedded']);
 $editorClass = 'editor' . ($editorMode === 'compact' ? ' editor-compact' : '');
+if (!empty($editor['workspace'])) {
+    $editorClass .= ' editor-article';
+}
 $editorListLabel = (string) ($editor['list_label'] ?? site_text('editor_list'));
 $editorNumberLabel = (string) ($editor['numbered_label'] ?? '1.');
 $editorPlaceholder = trim((string) ($editor['placeholder'] ?? ''));
