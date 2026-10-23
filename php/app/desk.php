@@ -811,7 +811,7 @@ function desk_reading_save(array $params): void
     $slugInput = post_text('slug', 120);
     $slug = unique_slug('readings', slugify($slugInput !== '' ? $slugInput : $title), $id);
     $standfirst = clip(post_text('standfirst', 255), 255);
-    $body = post_text('body', 20000);
+    $body = writing_from_post('body');
     $status = ($_POST['status'] ?? '') === 'published' ? 'published' : 'draft';
     $problem = upload_problem('image');
     if ($problem) {

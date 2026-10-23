@@ -229,6 +229,8 @@
     "editor_list": "List",
     "editor_quote": "Quote",
     "editor_link": "Link",
+    "editor_heading": "Medium heading",
+    "editor_subheading": "Small heading",
     "garden_kicker_mine": "My Garden",
     "garden_kicker_other": "A garden",
     "garden_member": "A member",
