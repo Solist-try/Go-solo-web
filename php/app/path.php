@@ -308,7 +308,7 @@ function path_skill_card(array $row, int $userId): array
 
 function path_skill_post(array $params): void
 {
-    $user = require_user();
+    $user = require_verified();
     if (!path_ready() || !path_skill_consent()) {
         flash(site_text('path_unavailable'));
         redirect('/profile');

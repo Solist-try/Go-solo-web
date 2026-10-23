@@ -19,6 +19,8 @@
       <p class="soft">Support preference names stay tied to gardens members have already saved, so those names are not rewritten from here. Skill examples below are display copy.</p>
     <?php elseif ($group === 'Policies'): ?>
       <p class="soft">A link appears in the footer when its label has words. Clear the label to hide that link.</p>
+    <?php elseif ($group === 'Letters'): ?>
+      <p class="soft">These letters go out by email. {link} is the secure link. The finished deletion letter can also use {date}, {time}, and {contact}.</p>
     <?php endif; ?>
     <?php foreach ($fields as $key => $label): ?>
       <?php $value = site_text($key); ?>

@@ -2,6 +2,7 @@
 <section class="frame section narrow">
   <h1><?= e(site_text('join_title')) ?></h1>
   <p><?= e(site_text('join_intro')) ?></p>
+  <?php if (!empty($verifyReady)): ?><p class="soft"><?= e(site_text('join_verify_note')) ?></p><?php endif; ?>
   <form method="post" action="<?= e(url('/join')) ?>">
     <?= csrf_field() ?>
     <label><span><?= e(site_text('join_call_you')) ?></span><input type="text" name="name" maxlength="80" required autocomplete="off" value="<?= e($name ?? '') ?>"></label>
