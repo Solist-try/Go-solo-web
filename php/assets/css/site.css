@@ -440,8 +440,11 @@ th, td { text-align: left; padding: 0.75rem 0.5rem; border-bottom: 1px solid var
 .article-details { margin: 0 0 1.6rem; }
 .article-details h2,
 .article-content h2 { font-size: 1.2rem; margin: 0.2rem 0 0.85rem; }
+.article-media { margin: 0.2rem 0 1.15rem; }
 .article-media .support-photo { width: min(100%, 16rem); max-height: 7rem; margin-top: 0.4rem; }
 .article-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+.article-actions button:disabled { opacity: 0.55; }
+.editor-saving { margin: 0; }
 .editor.editor-article { width: 100%; max-width: none; }
 .editor.editor-article .editor-tools {
   position: sticky;
@@ -451,6 +454,7 @@ th, td { text-align: left; padding: 0.75rem 0.5rem; border-bottom: 1px solid var
   margin: 0;
   padding: 0.45rem 0 0.6rem;
   background: var(--bg);
+  border-bottom: 1px solid var(--line);
 }
 .editor.editor-article .editor-tools button {
   min-height: 2.75rem;
@@ -469,6 +473,7 @@ th, td { text-align: left; padding: 0.75rem 0.5rem; border-bottom: 1px solid var
   width: 100%;
   max-width: none;
   box-sizing: border-box;
+  background: var(--bg);
   min-height: 55dvh;
   margin-bottom: 1.25rem;
   padding: 1.25rem 1.1rem 1.6rem;
@@ -478,8 +483,9 @@ th, td { text-align: left; padding: 0.75rem 0.5rem; border-bottom: 1px solid var
   font-size: 1.0625rem;
   line-height: 1.7;
   overflow-wrap: break-word;
-  scroll-margin-top: 4.5rem;
+  scroll-margin-top: 9rem;
 }
+.editor.editor-article .editor-surface :is(p, h2, h3, blockquote, li) { scroll-margin-top: 9rem; }
 .editor.editor-article .editor-surface p { margin: 0 0 0.95rem; }
 .editor.editor-article .editor-surface a { text-decoration: underline; text-underline-offset: 0.15em; }
 @media (min-width: 700px) {
@@ -487,7 +493,9 @@ th, td { text-align: left; padding: 0.75rem 0.5rem; border-bottom: 1px solid var
     min-height: clamp(55dvh, 60dvh, 65dvh);
     padding: 1.45rem 1.4rem 1.8rem;
     font-size: 1.125rem;
+    scroll-margin-top: 5.5rem;
   }
+  .editor.editor-article .editor-surface :is(p, h2, h3, blockquote, li) { scroll-margin-top: 5.5rem; }
 }
 @media (min-width: 1100px) {
   .desk.desk-wide { width: min(96rem, calc(100% - 2.8rem)); }

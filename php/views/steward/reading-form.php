@@ -41,19 +41,13 @@ $existingImage = trim((string) ($article['image_path'] ?? ''));
         </label>
         <p class="soft"><?= e(site_text('pin_feature_note')) ?></p>
       <?php endif; ?>
-      <div class="article-media">
-        <label><span>Image</span><input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif"></label>
-        <?php if ($existingImage !== ''): ?>
-          <img class="photo support-photo" src="<?= e(media($existingImage)) ?>" alt="">
-        <?php endif; ?>
-      </div>
     </section>
-    <div class="reading-modes" role="group" aria-label="<?= e(site_text('editor_preview')) ?>">
-      <button type="button" data-reading-mode="write" aria-pressed="true"><?= e(site_text('editor_write')) ?></button>
-      <button type="button" data-reading-mode="preview" aria-pressed="false"><?= e(site_text('editor_preview')) ?></button>
-    </div>
     <section class="article-content" aria-labelledby="article-content-title">
       <h2 id="article-content-title"><?= e(site_text('editor_content')) ?></h2>
+      <div class="reading-modes" role="group" aria-label="<?= e(site_text('editor_preview')) ?>">
+        <button type="button" data-reading-mode="write" aria-pressed="true"><?= e(site_text('editor_write')) ?></button>
+        <button type="button" data-reading-mode="preview" aria-pressed="false"><?= e(site_text('editor_preview')) ?></button>
+      </div>
       <?php
         $editor = [
             'embedded' => true,
@@ -64,18 +58,27 @@ $existingImage = trim((string) ($article['image_path'] ?? ''));
             'help' => site_text('editor_article_help'),
             'placeholder' => site_text('editor_article_start'),
             'list_label' => site_text('editor_bullets'),
+            'numbered_label' => site_text('editor_numbered'),
+            'quote_label' => site_text('editor_blockquote'),
             'describedby' => !empty($error) ? 'reading-error' : '',
         ];
         include __DIR__ . '/../partials/editor.php';
       ?>
+      <div class="article-media">
+        <label><span>Image</span><input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif"></label>
+        <?php if ($existingImage !== ''): ?>
+          <img class="photo support-photo" src="<?= e(media($existingImage)) ?>" alt="">
+        <?php endif; ?>
+      </div>
       <div class="article-actions">
         <button type="submit" name="commit" value="draft"><?= e(site_text('editor_article_draft')) ?></button>
         <button type="submit" name="commit" value="publish"><?= e($creating ? site_text('editor_article_publish') : site_text('editor_article_update')) ?></button>
         <a class="button quiet" href="<?= e(url('/steward/reading')) ?>"><?= e(site_text('editor_article_return')) ?></a>
+        <p class="editor-saving" data-saving-status="<?= e(site_text('editor_article_saving')) ?>" role="status" hidden></p>
       </div>
     </section>
   </form>
-  <div class="reading-preview band mist" role="region" aria-label="<?= e(site_text('editor_preview')) ?>" hidden>
+  <div class="reading-preview band mist" role="region" aria-label="<?= e(site_text('editor_preview')) ?>" aria-live="polite" hidden>
     <div class="narrow">
       <p class="kicker" data-preview="category"></p>
       <h1 class="article-title" data-preview="title"></h1>
