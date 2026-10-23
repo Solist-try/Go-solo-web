@@ -111,8 +111,8 @@ if ($readingImagesReady && function_exists('reading_article_library')) {
       <div data-preview="body"></div>
     </div>
   </div>
-<?php if (!$creating): ?>
-  <form class="reading-delete" method="post" action="<?= e(url('/steward/reading/delete')) ?>">
+<?php if (!$creating && is_admin()): ?>
+  <form class="reading-delete" id="delete-article" method="post" action="<?= e(url('/steward/reading/delete')) ?>">
     <?= csrf_field() ?>
     <input type="hidden" name="id" value="<?= e((string) $article['id']) ?>">
     <label><input type="checkbox" name="yes" value="1"> Yes, delete this article</label>

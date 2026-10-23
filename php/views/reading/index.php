@@ -7,38 +7,49 @@
     <article class="reading-note">
       <p class="kicker"><?= e(site_text('pin_featured')) ?></p>
       <div class="previews">
-        <?php foreach ($featured as $article): ?>
+    <?php foreach ($featured as $article): ?>
           <a href="<?= e(url('/reading/' . $article['slug'])) ?>">
             <strong><?= e($article['title']) ?></strong>
             <?php if (trim((string) $article['standfirst']) !== ''): ?><span><?= e($article['standfirst']) ?></span><?php endif; ?>
           </a>
-        <?php endforeach; ?>
+    <?php endforeach; ?>
       </div>
     </article>
   <?php endif; ?>
   <?php if (!$categories): ?>
     <p><?= e(site_text('empty_shelves')) ?></p>
   <?php endif; ?>
-  <?php foreach ($categories as $category): ?>
-    <article class="reading-shelf">
-      <header class="shelf-head">
-        <p class="shelf-label"><?= e($category['title']) ?></p>
+  <?php foreach ($categories as $index => $category): ?>
+    <?php
+      $image = trim((string) ($category['image_path'] ?? ''));
+      $alt = trim((string) ($category['image_alt'] ?? ''));
+      if ($alt === '') {
+          $alt = (string) $category['title'];
+      }
+      $shelfClass = 'reading-shelf' . ($image !== '' ? ' has-photo' : ' is-text');
+      if ($image !== '' && ((int) $index % 2) === 1) {
+          $shelfClass .= ' image-left';
+      }
+    ?>
+    <article class="<?= e($shelfClass) ?>">
+      <div class="shelf-copy">
+        <h2><?= e($category['title']) ?></h2>
         <?php if (trim((string) $category['line']) !== ''): ?><p class="shelf-line"><?= e($category['line']) ?></p><?php endif; ?>
-        <?php if ($category['image_path']): ?>
-          <img class="photo shelf-photo" src="<?= e(media($category['image_path'])) ?>" alt="<?= e($category['image_alt']) ?>">
+        <?php if (!$category['articles']): ?>
+          <p class="soft"><?= e(site_text('empty_shelf')) ?></p>
+        <?php else: ?>
+          <div class="previews">
+            <?php foreach ($category['articles'] as $article): ?>
+              <a href="<?= e(url('/reading/' . $article['slug'])) ?>">
+                <strong><?= e($article['title']) ?></strong>
+                <?php if (trim((string) $article['standfirst']) !== ''): ?><span><?= e($article['standfirst']) ?></span><?php endif; ?>
+              </a>
+            <?php endforeach; ?>
+          </div>
         <?php endif; ?>
-      </header>
-      <?php if (!$category['articles']): ?>
-        <p class="soft"><?= e(site_text('empty_shelf')) ?></p>
-      <?php else: ?>
-        <div class="previews">
-          <?php foreach ($category['articles'] as $article): ?>
-            <a href="<?= e(url('/reading/' . $article['slug'])) ?>">
-              <strong><?= e($article['title']) ?></strong>
-              <?php if (trim((string) $article['standfirst']) !== ''): ?><span><?= e($article['standfirst']) ?></span><?php endif; ?>
-            </a>
-          <?php endforeach; ?>
-        </div>
+      </div>
+      <?php if ($image !== ''): ?>
+        <img class="photo shelf-photo" src="<?= e(media($image)) ?>" alt="<?= e($alt) ?>">
       <?php endif; ?>
     </article>
   <?php endforeach; ?>
