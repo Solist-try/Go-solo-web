@@ -68,6 +68,8 @@ function site_text(string $key): string
             'You can be open to someone on a similar stretch. A steward suggests a match. You can take your time.',
         ],
         'talk_because' => ['You were introduced because'],
+        'editor_heading' => ['Medium heading'],
+        'editor_subheading' => ['Small heading'],
     ];
     if (isset($earlier[$key]) && in_array($value, $earlier[$key], true)) {
         return $default;
@@ -295,11 +297,22 @@ function content_groups(): array
             'cta_set_this' => 'Set this down',
             'cta_plant_it' => 'Plant it',
             'seeds_go_profile' => 'Go to your profile',
+            'editor_bold' => 'Bold',
+            'editor_italic' => 'Italic',
             'editor_list' => 'List',
+            'editor_bullets' => 'Bulleted list',
+            'editor_numbered' => 'Numbered list',
             'editor_quote' => 'Quote',
             'editor_link' => 'Link',
-            'editor_heading' => 'Medium heading',
-            'editor_subheading' => 'Small heading',
+            'editor_link_ask' => 'Link question',
+            'editor_heading' => 'Section heading',
+            'editor_subheading' => 'Subheading',
+            'editor_write' => 'Write',
+            'editor_preview' => 'Preview',
+            'editor_article_start' => 'Article placeholder',
+            'editor_article_help' => 'Article editor note',
+            'editor_article_create' => 'Create article',
+            'editor_article_save' => 'Save article',
         ],
         'Empty States' => [
             'out_there_empty' => 'Out There explanation',

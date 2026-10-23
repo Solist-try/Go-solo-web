@@ -208,11 +208,26 @@ function render_writing(string $value): string
 
 function writing_plain(string $value, int $max = 0): string
 {
-    $plain = trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($value), ENT_QUOTES, 'UTF-8')) ?? '');
+    $spaced = preg_replace('/<(\/)?(p|div|h1|h2|h3|h4|li|blockquote|ul|ol|br)\b[^>]*>/i', ' ', $value) ?? $value;
+    $plain = trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($spaced), ENT_QUOTES, 'UTF-8')) ?? '');
     if ($max > 0) {
         return clip($plain, $max);
     }
     return $plain;
+}
+
+function writing_keep_original(string $previous, string $sanitized): string
+{
+    if (preg_match('/<(strong|em|h2|h3|ul|ol|blockquote|a)\b/i', $sanitized)) {
+        return $sanitized;
+    }
+    if (preg_match('/<[^>]+>/', $previous)) {
+        return $sanitized;
+    }
+    if (writing_plain($previous) !== writing_plain($sanitized)) {
+        return $sanitized;
+    }
+    return $previous;
 }
 
 function story_excerpt(array $story, int $max = 220): string
