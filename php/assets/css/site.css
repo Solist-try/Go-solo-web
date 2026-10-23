@@ -433,7 +433,18 @@ th, td { text-align: left; padding: 0.75rem 0.5rem; border-bottom: 1px solid var
 .reading-modes { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0 0 1rem; }
 .reading-modes button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
 .reading-preview { margin-top: 0.4rem; padding: 1.4rem 1.2rem; border-radius: 24px; }
-.reading-editor.is-previewing .reading-write { display: none; }
+.reading-editor.is-previewing .article-details,
+.reading-editor.is-previewing .article-content,
+.reading-editor.is-previewing .reading-delete { display: none; }
+.article-sheet { width: min(100%, 68.75rem); margin-inline: auto; }
+.article-details { margin: 0 0 1.6rem; }
+.article-details h2,
+.article-content h2 { font-size: 1.2rem; margin: 0.2rem 0 0.85rem; }
+.article-media { margin: 0.2rem 0 1.15rem; }
+.article-media .support-photo { width: min(100%, 16rem); max-height: 7rem; margin-top: 0.4rem; }
+.article-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+.article-actions button:disabled { opacity: 0.55; }
+.editor-saving { margin: 0; }
 .editor.editor-article { width: 100%; max-width: none; }
 .editor.editor-article .editor-tools {
   position: sticky;
@@ -443,34 +454,56 @@ th, td { text-align: left; padding: 0.75rem 0.5rem; border-bottom: 1px solid var
   margin: 0;
   padding: 0.45rem 0 0.6rem;
   background: var(--bg);
+  border-bottom: 1px solid var(--line);
 }
 .editor.editor-article .editor-tools button {
-  min-height: 2.5rem;
-  padding: 0.4rem 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.45rem 0.8rem;
+}
+.editor.editor-article .editor-tools button.is-active {
+  border: 2px solid var(--ink);
+  font-weight: 700;
+  box-shadow: inset 0 -3px 0 var(--ink);
+}
+.editor.editor-article .editor-tools button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 .editor.editor-article .editor-surface {
   width: 100%;
   max-width: none;
   box-sizing: border-box;
+  background: var(--bg);
   min-height: 55dvh;
   margin-bottom: 1.25rem;
-  padding: 1.15rem 1rem 1.5rem;
+  padding: 1.25rem 1.1rem 1.6rem;
   overflow: auto;
   overflow-x: hidden;
   resize: vertical;
-  line-height: 1.75;
+  font-size: 1.0625rem;
+  line-height: 1.7;
   overflow-wrap: break-word;
+  scroll-margin-top: 9rem;
 }
+.editor.editor-article .editor-surface :is(p, h2, h3, blockquote, li) { scroll-margin-top: 9rem; }
+.editor.editor-article .editor-surface p { margin: 0 0 0.95rem; }
+.editor.editor-article .editor-surface a { text-decoration: underline; text-underline-offset: 0.15em; }
 @media (min-width: 700px) {
   .editor.editor-article .editor-surface {
-    min-height: 60dvh;
-    padding: 1.4rem 1.35rem 1.7rem;
+    min-height: clamp(55dvh, 60dvh, 65dvh);
+    padding: 1.45rem 1.4rem 1.8rem;
+    font-size: 1.125rem;
+    scroll-margin-top: 5.5rem;
   }
+  .editor.editor-article .editor-surface :is(p, h2, h3, blockquote, li) { scroll-margin-top: 5.5rem; }
 }
 @media (min-width: 1100px) {
+  .desk.desk-wide { width: min(96rem, calc(100% - 2.8rem)); }
   .editor.editor-article .editor-surface {
-    min-height: max(600px, 70dvh);
-    padding: 1.7rem max(1.7rem, calc(100% - 44rem)) 2rem 1.7rem;
+    min-height: clamp(600px, 70dvh, 75dvh);
+    padding: 1.8rem 1.9rem 2.1rem;
+    font-size: 1.125rem;
+    line-height: 1.7;
   }
 }
 

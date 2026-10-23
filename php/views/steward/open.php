@@ -20,7 +20,7 @@ if (is_admin()) {
     $links['settings'] = ['/steward/settings', 'Settings'];
 }
 ?>
-<section class="frame section desk">
+<section class="frame section desk<?= !empty($deskWide) ? ' desk-wide' : '' ?>">
   <nav class="desk-nav" aria-label="Steward Desk">
     <?php foreach ($links as $key => [$href, $label]): ?>
       <a href="<?= e(url($href)) ?>"<?= $desk === $key ? ' aria-current="page"' : '' ?>><?= e($label) ?></a>

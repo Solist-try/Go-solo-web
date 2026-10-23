@@ -164,6 +164,7 @@ function route_table(): array
         ['GET', '/steward/reading/new', 'desk_reading_form'],
         ['GET', '/steward/reading/{id}', 'desk_reading_form'],
         $post('/steward/reading/feature', 'desk_pin_feature'),
+        $post('/steward/reading/preview', 'desk_reading_preview'),
         $post('/steward/reading/save', 'desk_reading_save'),
         $post('/steward/reading/delete', 'desk_reading_delete'),
         $post('/steward/reading/category', 'desk_reading_category'),

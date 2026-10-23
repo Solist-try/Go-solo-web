@@ -68,8 +68,9 @@ function site_text(string $key): string
             'You can be open to someone on a similar stretch. A steward suggests a match. You can take your time.',
         ],
         'talk_because' => ['You were introduced because'],
-        'editor_heading' => ['Medium heading'],
-        'editor_subheading' => ['Small heading'],
+        'editor_heading' => ['Medium heading', 'Section Heading'],
+        'editor_subheading' => ['Small heading', 'Subheading'],
+        'editor_numbered' => ['Numbered list'],
     ];
     if (isset($earlier[$key]) && in_array($value, $earlier[$key], true)) {
         return $default;
@@ -303,6 +304,7 @@ function content_groups(): array
             'editor_bullets' => 'Bulleted list',
             'editor_numbered' => 'Numbered list',
             'editor_quote' => 'Quote',
+            'editor_blockquote' => 'Blockquote',
             'editor_link' => 'Link',
             'editor_link_ask' => 'Link question',
             'editor_heading' => 'Section heading',
@@ -313,6 +315,13 @@ function content_groups(): array
             'editor_article_help' => 'Article editor note',
             'editor_article_create' => 'Create article',
             'editor_article_save' => 'Save article',
+            'editor_article_draft' => 'Save draft',
+            'editor_article_publish' => 'Publish article',
+            'editor_article_update' => 'Update article',
+            'editor_article_return' => 'Return',
+            'editor_article_saving' => 'Saving the article',
+            'editor_details' => 'Article details',
+            'editor_content' => 'Article content',
         ],
         'Empty States' => [
             'out_there_empty' => 'Out There explanation',

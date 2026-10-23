@@ -8,6 +8,9 @@ if (!empty($editor['workspace'])) {
 }
 $editorListLabel = (string) ($editor['list_label'] ?? site_text('editor_list'));
 $editorNumberLabel = (string) ($editor['numbered_label'] ?? '1.');
+$editorNumberName = (string) ($editor['numbered_name'] ?? site_text('editor_numbered'));
+$editorQuoteLabel = (string) ($editor['quote_label'] ?? site_text('editor_quote'));
+$editorHeadings = !empty($editor['headings']);
 $editorPlaceholder = trim((string) ($editor['placeholder'] ?? ''));
 $editorAttrs = ' data-link-ask="' . e(site_text('editor_link_ask')) . '"';
 if ($editorPlaceholder !== '') {
@@ -28,18 +31,22 @@ if ($editorPlaceholder !== '') {
   <?php if (!empty($editor['help'])): ?><p class="soft"><?= e((string) $editor['help']) ?></p><?php endif; ?>
   <label><span><?= e((string) ($editor['body_label'] ?? 'Write here')) ?></span></label>
   <div class="editor-tools" role="toolbar" aria-label="Writing">
-    <button type="button" data-cmd="bold" aria-label="<?= e(site_text('editor_bold')) ?>" title="<?= e(site_text('editor_bold')) ?>"><strong>B</strong></button>
-    <button type="button" data-cmd="italic" aria-label="<?= e(site_text('editor_italic')) ?>" title="<?= e(site_text('editor_italic')) ?>"><em>I</em></button>
-    <?php if (!empty($editor['headings'])): ?>
-      <button type="button" data-cmd="heading" aria-label="<?= e(site_text('editor_heading')) ?>" title="<?= e(site_text('editor_heading')) ?>"><?= e(site_text('editor_heading')) ?></button>
-      <button type="button" data-cmd="subheading" aria-label="<?= e(site_text('editor_subheading')) ?>" title="<?= e(site_text('editor_subheading')) ?>"><?= e(site_text('editor_subheading')) ?></button>
+    <button type="button" data-cmd="bold" aria-label="<?= e(site_text('editor_bold')) ?>" title="<?= e(site_text('editor_bold')) ?>"<?= $editorHeadings ? ' aria-pressed="false"' : '' ?>><strong>B</strong></button>
+    <button type="button" data-cmd="italic" aria-label="<?= e(site_text('editor_italic')) ?>" title="<?= e(site_text('editor_italic')) ?>"<?= $editorHeadings ? ' aria-pressed="false"' : '' ?>><em>I</em></button>
+    <?php if ($editorHeadings): ?>
+      <button type="button" data-cmd="heading" aria-pressed="false" aria-label="<?= e(site_text('editor_heading')) ?>" title="<?= e(site_text('editor_heading')) ?>"><?= e(site_text('editor_heading')) ?></button>
+      <button type="button" data-cmd="subheading" aria-pressed="false" aria-label="<?= e(site_text('editor_subheading')) ?>" title="<?= e(site_text('editor_subheading')) ?>"><?= e(site_text('editor_subheading')) ?></button>
+      <button type="button" data-cmd="quote" aria-pressed="false" aria-label="<?= e($editorQuoteLabel) ?>" title="<?= e($editorQuoteLabel) ?>"><?= e($editorQuoteLabel) ?></button>
+      <button type="button" data-cmd="link" aria-pressed="false" aria-label="<?= e(site_text('editor_link')) ?>" title="<?= e(site_text('editor_link')) ?>"><?= e(site_text('editor_link')) ?></button>
     <?php endif; ?>
-    <button type="button" data-cmd="insertUnorderedList" aria-label="<?= e($editorListLabel) ?>" title="<?= e($editorListLabel) ?>"><?= e($editorListLabel) ?></button>
-    <button type="button" data-cmd="insertOrderedList" aria-label="<?= e(site_text('editor_numbered')) ?>" title="<?= e(site_text('editor_numbered')) ?>"><?= e($editorNumberLabel) ?></button>
-    <button type="button" data-cmd="quote" aria-label="<?= e(site_text('editor_quote')) ?>" title="<?= e(site_text('editor_quote')) ?>"><?= e(site_text('editor_quote')) ?></button>
-    <button type="button" data-cmd="link" aria-label="<?= e(site_text('editor_link')) ?>" title="<?= e(site_text('editor_link')) ?>"><?= e(site_text('editor_link')) ?></button>
+    <button type="button" data-cmd="insertUnorderedList" aria-label="<?= e($editorListLabel) ?>" title="<?= e($editorListLabel) ?>"<?= $editorHeadings ? ' aria-pressed="false"' : '' ?>><?= e($editorListLabel) ?></button>
+    <button type="button" data-cmd="insertOrderedList" aria-label="<?= e($editorNumberName) ?>" title="<?= e($editorNumberName) ?>"<?= $editorHeadings ? ' aria-pressed="false"' : '' ?>><?= e($editorNumberLabel) ?></button>
+    <?php if (!$editorHeadings): ?>
+      <button type="button" data-cmd="quote" aria-label="<?= e($editorQuoteLabel) ?>" title="<?= e($editorQuoteLabel) ?>"><?= e($editorQuoteLabel) ?></button>
+      <button type="button" data-cmd="link" aria-label="<?= e(site_text('editor_link')) ?>" title="<?= e(site_text('editor_link')) ?>"><?= e(site_text('editor_link')) ?></button>
+    <?php endif; ?>
   </div>
-  <div class="editor-surface" contenteditable="true" role="textbox" aria-multiline="true" aria-label="<?= e((string) ($editor['body_label'] ?? 'Write here')) ?>"></div>
+  <div class="editor-surface" contenteditable="true" role="textbox" aria-multiline="true" aria-label="<?= e((string) ($editor['body_label'] ?? 'Write here')) ?>"<?php if (!empty($editor['describedby'])): ?> aria-describedby="<?= e((string) $editor['describedby']) ?>"<?php endif; ?>></div>
   <textarea class="editor-source" name="<?= e((string) ($editor['body_name'] ?? 'body')) ?>" maxlength="20000"><?= e((string) ($editor['body'] ?? '')) ?></textarea>
 <?php if (!$editorEmbedded): ?>
   <?php if (!empty($editor['show_image'])): ?>
