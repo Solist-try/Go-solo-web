@@ -775,15 +775,7 @@ function desk_reading_category_delete(array $params): void
 function desk_reading_form(array $params): void
 {
     require_steward();
-    $article = [
-        'id' => 0,
-        'title' => '',
-        'slug' => '',
-        'category_id' => 0,
-        'standfirst' => '',
-        'body' => '',
-        'status' => 'draft',
-    ];
+    $article = reading_blank_article();
     if (!empty($params['id'])) {
         $row = one('SELECT * FROM readings WHERE id = ?', [(int) $params['id']]);
         if (!$row) {
@@ -792,66 +784,120 @@ function desk_reading_form(array $params): void
         }
         $article = $row;
     }
+    reading_form_show($article);
+}
+
+function reading_blank_article(): array
+{
+    return [
+        'id' => 0,
+        'title' => '',
+        'slug' => '',
+        'category_id' => 0,
+        'standfirst' => '',
+        'body' => '',
+        'image_path' => '',
+        'status' => 'draft',
+        'featured' => 0,
+        'featured_order' => 0,
+    ];
+}
+
+function reading_form_show(array $article, string $error = ''): void
+{
     view('steward/reading-form', [
         'article' => $article,
         'categories' => q('SELECT id, title FROM reading_categories ORDER BY sort_order, title'),
+        'error' => $error,
     ]);
+}
+
+function reading_article_from_post(?array $existing, string $intent): array
+{
+    $article = $existing ?: reading_blank_article();
+    $article['id'] = $intent === 'update' ? (int) ($existing['id'] ?? 0) : 0;
+    $article['title'] = clip(post_text('title', 180), 180);
+    $article['slug'] = post_text('slug', 120);
+    $article['category_id'] = (int) ($_POST['category_id'] ?? 0);
+    $article['standfirst'] = clip(post_text('standfirst', 255), 255);
+    $article['body'] = writing_from_post('body');
+    $article['status'] = ($_POST['status'] ?? '') === 'published' ? 'published' : 'draft';
+    $article['featured'] = isset($_POST['featured']) ? 1 : 0;
+    $article['featured_order'] = (int) ($_POST['featured_order'] ?? 0);
+    $article['image_path'] = (string) ($existing['image_path'] ?? '');
+    return $article;
 }
 
 function desk_reading_save(array $params): void
 {
     require_steward();
+    $intent = ($_POST['intent'] ?? '') === 'update' ? 'update' : 'create';
     $id = (int) ($_POST['id'] ?? 0);
-    $title = clip(post_text('title', 180), 180);
-    $categoryId = (int) ($_POST['category_id'] ?? 0);
-    if ($title === '' || !one('SELECT id FROM reading_categories WHERE id = ?', [$categoryId])) {
-        flash('An article needs a title and a category.');
+    $existing = $id > 0 ? one('SELECT * FROM readings WHERE id = ?', [$id]) : null;
+    if ($intent === 'update' && !$existing) {
+        flash('That article could not be found.');
         redirect('/steward/reading');
     }
-    $slugInput = post_text('slug', 120);
-    $slug = unique_slug('readings', slugify($slugInput !== '' ? $slugInput : $title), $id);
-    $standfirst = clip(post_text('standfirst', 255), 255);
-    $body = writing_from_post('body');
-    $status = ($_POST['status'] ?? '') === 'published' ? 'published' : 'draft';
+    if ($intent === 'create' && $existing) {
+        flash('That article could not be saved.');
+        redirect('/steward/reading');
+    }
+    $article = reading_article_from_post($existing, $intent);
+    if ($article['title'] === '' || !one('SELECT id FROM reading_categories WHERE id = ?', [(int) $article['category_id']])) {
+        reading_form_show($article, 'An article needs a title and a category.');
+        return;
+    }
     $problem = upload_problem('image');
     if ($problem) {
-        flash($problem);
-        redirect($id ? '/steward/reading/' . $id : '/steward/reading/new');
+        reading_form_show($article, $problem);
+        return;
+    }
+    $slugInput = (string) $article['slug'];
+    if ($intent === 'update') {
+        $slugSource = $slugInput !== '' ? $slugInput : (string) $existing['slug'];
+    } else {
+        $slugSource = $slugInput !== '' ? $slugInput : (string) $article['title'];
+    }
+    $slug = unique_slug('readings', slugify($slugSource), $intent === 'update' ? (int) $existing['id'] : 0);
+    $body = (string) $article['body'];
+    if ($intent === 'update') {
+        $body = writing_keep_original((string) $existing['body'], $body);
     }
     $image = store_upload('image', 'reading');
-    if ($id && one('SELECT id FROM readings WHERE id = ?', [$id])) {
+    $status = (string) $article['status'];
+    if ($intent === 'update') {
+        $savedId = (int) $existing['id'];
         if ($image) {
             exec_sql(
                 'UPDATE readings SET category_id = ?, slug = ?, title = ?, standfirst = ?, body = ?, image_path = ?, status = ?, updated_at = NOW() WHERE id = ?',
-                [$categoryId, $slug, $title, $standfirst, $body, $image, $status, $id]
+                [(int) $article['category_id'], $slug, $article['title'], $article['standfirst'], $body, $image, $status, $savedId]
             );
         } else {
             exec_sql(
                 'UPDATE readings SET category_id = ?, slug = ?, title = ?, standfirst = ?, body = ?, status = ?, updated_at = NOW() WHERE id = ?',
-                [$categoryId, $slug, $title, $standfirst, $body, $status, $id]
+                [(int) $article['category_id'], $slug, $article['title'], $article['standfirst'], $body, $status, $savedId]
             );
         }
-        $savedId = $id;
     } else {
         exec_sql(
             'INSERT INTO readings (category_id, slug, title, standfirst, body, image_path, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())',
-            [$categoryId, $slug, $title, $standfirst, $body, $image ?? '', $status]
+            [(int) $article['category_id'], $slug, $article['title'], $article['standfirst'], $body, $image ?? '', $status]
         );
         $savedId = (int) db()->lastInsertId();
     }
     if (pin_ready() && $savedId > 0) {
-        $wantFeature = isset($_POST['featured']) && $status === 'published';
+        $wantFeature = !empty($article['featured']) && $status === 'published';
         if ($wantFeature) {
             if (!pin_featured_save($savedId, 'feature')) {
                 flash(site_text('pin_unavailable'));
-                redirect('/steward/reading');
+                redirect('/steward/reading/' . $savedId);
             }
         } else {
             pin_featured_save($savedId, 'clear');
         }
     }
     flash('The article is saved.');
-    redirect('/steward/reading');
+    redirect('/steward/reading/' . $savedId);
 }
 
 function desk_reading_delete(array $params): void

@@ -392,31 +392,48 @@ th, td { text-align: left; padding: 0.75rem 0.5rem; border-bottom: 1px solid var
 .path-portrait h2 { font-size: 1.05rem; margin: 0.9rem 0 0.2rem; }
 .path-portrait .kicker { margin-top: 0; }
 .article-title { font-size: clamp(2.2rem, 5vw, 3.05rem); line-height: 1.12; margin: 0 0 0.7rem; }
-.writing h2 {
+.article-standfirst { font-size: 1.6rem; line-height: 1.35; margin: 0.35rem 0 1rem; }
+.writing h2,
+.editor-surface h2 {
   font-family: var(--serif);
-  font-size: 1.6rem;
+  font-size: 1.42rem;
   font-weight: 600;
   letter-spacing: -0.02em;
-  line-height: 1.25;
+  line-height: 1.28;
   color: var(--ink);
-  margin: 2.1rem 0 0.7rem;
+  margin: 2.15rem 0 0.7rem;
 }
-.writing h3 {
+.writing h3,
+.editor-surface h3 {
   font-family: var(--serif);
-  font-size: 1.22rem;
-  font-weight: 600;
+  font-size: 1.16rem;
+  font-weight: 500;
   letter-spacing: -0.01em;
-  line-height: 1.3;
+  line-height: 1.35;
   color: var(--ink);
-  margin: 1.5rem 0 0.45rem;
+  margin: 1.35rem 0 0.4rem;
 }
 .writing p { margin: 0 0 0.95rem; }
 .writing a { text-decoration: underline; text-underline-offset: 0.15em; }
-.writing blockquote { margin: 0.8rem 0; padding-left: 0.9rem; border-left: 3px solid var(--sage); }
-.writing ul, .writing ol { margin: 0.4rem 0 0.9rem 1.2rem; }
+.writing blockquote,
+.editor-surface blockquote {
+  margin: 1.15rem 0;
+  padding: 0.2rem 0 0.2rem 0.95rem;
+  border-left: 3px solid var(--sage);
+  color: var(--ink);
+}
+.writing blockquote p:last-child { margin-bottom: 0; }
+.writing ul, .writing ol,
+.editor-surface ul, .editor-surface ol { margin: 0.4rem 0 0.9rem 1.2rem; }
 .writing li + li { margin-top: 0.25rem; }
-.editor-surface h2 { font-size: 1.45rem; margin: 1rem 0 0.4rem; }
-.editor-surface h3 { font-size: 1.15rem; margin: 0.85rem 0 0.3rem; }
+.editor-surface.is-empty::before {
+  content: attr(data-placeholder);
+  color: var(--soft);
+}
+.reading-modes { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0 0 1rem; }
+.reading-modes button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.reading-preview { margin-top: 0.4rem; padding: 1.4rem 1.2rem; border-radius: 24px; }
+.reading-editor.is-previewing .reading-write { display: none; }
 
 @media (min-width: 860px) {
   .hero, .split.two { grid-template-columns: 1.1fr 0.9fr; }

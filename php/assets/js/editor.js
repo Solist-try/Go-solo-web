@@ -41,46 +41,191 @@
     if (!source || !surface) {
       return;
     }
+    var placeholder = root.getAttribute('data-placeholder') || '';
+    if (placeholder) {
+      surface.setAttribute('data-placeholder', placeholder);
+    }
+    function markEmpty() {
+      var empty = surface.textContent.replace(/\u00a0/g, '').trim() === '';
+      surface.classList.toggle('is-empty', empty && placeholder !== '');
+    }
     if (looksWritten(source.value)) {
       surface.innerHTML = source.value;
     } else if (source.value.trim() !== '') {
       surface.innerHTML = plainToHtml(source.value);
     }
+    markEmpty();
+    surface.addEventListener('input', markEmpty);
+    surface.addEventListener('keydown', function (event) {
+      if (!(event.ctrlKey || event.metaKey) || event.altKey) {
+        return;
+      }
+      var key = event.key.toLowerCase();
+      if (key === 'b') {
+        event.preventDefault();
+        document.execCommand('bold', false, null);
+      } else if (key === 'i') {
+        event.preventDefault();
+        document.execCommand('italic', false, null);
+      }
+    });
     root.classList.add('is-ready');
     root.querySelectorAll('[data-cmd]').forEach(function (button) {
+      button.addEventListener('mousedown', function (event) {
+        event.preventDefault();
+      });
       button.addEventListener('click', function (event) {
         event.preventDefault();
         surface.focus();
         var command = button.getAttribute('data-cmd');
         if (command === 'link') {
-          var address = window.prompt('Where should this link go?');
-          if (!address) {
+          var ask = root.getAttribute('data-link-ask') || 'Where should this link go? Leave this empty to remove the link.';
+          var address = window.prompt(ask);
+          if (address === null) {
             return;
           }
-          document.execCommand('createLink', false, address);
+          if (address.trim() === '') {
+            document.execCommand('unlink', false, null);
+          } else {
+            document.execCommand('createLink', false, address);
+          }
+          markEmpty();
           return;
         }
         if (command === 'quote') {
           document.execCommand('formatBlock', false, 'blockquote');
+          markEmpty();
           return;
         }
         if (command === 'heading') {
           document.execCommand('formatBlock', false, 'h2');
+          markEmpty();
           return;
         }
         if (command === 'subheading') {
           document.execCommand('formatBlock', false, 'h3');
+          markEmpty();
           return;
         }
         document.execCommand(command, false, null);
+        markEmpty();
       });
     });
     var form = root.closest('form');
-    if (!form) {
+    if (form) {
+      form.addEventListener('submit', function () {
+        source.value = surface.innerHTML;
+      });
+    }
+  });
+
+  document.querySelectorAll('[data-reading-preview]').forEach(function (wrap) {
+    var form = wrap.querySelector('form');
+    var surface = wrap.querySelector('.editor-surface');
+    var preview = wrap.querySelector('.reading-preview');
+    var writeButton = wrap.querySelector('[data-reading-mode="write"]');
+    var previewButton = wrap.querySelector('[data-reading-mode="preview"]');
+    if (!form || !surface || !preview || !writeButton || !previewButton) {
       return;
     }
-    form.addEventListener('submit', function () {
-      source.value = surface.innerHTML;
+    var imageInput = form.querySelector('input[name="image"]');
+    var blobUrl = '';
+    function revokeBlob() {
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+        blobUrl = '';
+      }
+    }
+    function chosenImage() {
+      var file = imageInput && imageInput.files && imageInput.files[0];
+      if (!file || !/^image\/(jpeg|png|webp|gif)$/.test(file.type)) {
+        return wrap.getAttribute('data-existing-image') || '';
+      }
+      if (!blobUrl) {
+        blobUrl = URL.createObjectURL(file);
+      }
+      return blobUrl;
+    }
+    function stripRisky(element) {
+      Array.prototype.slice.call(element.attributes || []).forEach(function (attr) {
+        if (attr.name.indexOf('on') === 0 || attr.name === 'style') {
+          element.removeAttribute(attr.name);
+        }
+      });
+    }
+    function cleanCopy(node) {
+      var copy = node.cloneNode(true);
+      if (!copy.querySelectorAll) {
+        return copy;
+      }
+      if (/^(script|style|iframe|object|embed|form)$/i.test(copy.nodeName)) {
+        return document.createTextNode('');
+      }
+      stripRisky(copy);
+      copy.querySelectorAll('script, style, iframe, object, embed, form').forEach(function (element) {
+        element.remove();
+      });
+      copy.querySelectorAll('*').forEach(stripRisky);
+      return copy;
+    }
+    function showPreview() {
+      var title = form.querySelector('input[name="title"]');
+      var standfirst = form.querySelector('input[name="standfirst"]');
+      var category = form.querySelector('select[name="category_id"]');
+      var titleNode = preview.querySelector('[data-preview="title"]');
+      var standNode = preview.querySelector('[data-preview="standfirst"]');
+      var categoryNode = preview.querySelector('[data-preview="category"]');
+      var imageNode = preview.querySelector('[data-preview="image"]');
+      var bodyNode = preview.querySelector('[data-preview="body"]');
+      titleNode.textContent = title ? title.value.trim() : '';
+      var lede = standfirst ? standfirst.value.trim() : '';
+      standNode.textContent = lede;
+      standNode.hidden = lede === '';
+      var categoryText = '';
+      if (category && category.selectedIndex >= 0) {
+        categoryText = category.options[category.selectedIndex].text;
+      }
+      categoryNode.textContent = categoryText;
+      var src = chosenImage();
+      if (src) {
+        imageNode.src = src;
+        imageNode.hidden = false;
+      } else {
+        imageNode.removeAttribute('src');
+        imageNode.hidden = true;
+      }
+      bodyNode.replaceChildren();
+      Array.prototype.forEach.call(surface.childNodes, function (node) {
+        if (node.nodeType === 1 && /^(script|style|iframe|object|embed|form)$/i.test(node.nodeName)) {
+          return;
+        }
+        bodyNode.appendChild(cleanCopy(node));
+      });
+    }
+    function setMode(mode) {
+      var previewing = mode === 'preview';
+      wrap.classList.toggle('is-previewing', previewing);
+      preview.hidden = !previewing;
+      writeButton.setAttribute('aria-pressed', previewing ? 'false' : 'true');
+      previewButton.setAttribute('aria-pressed', previewing ? 'true' : 'false');
+      if (previewing) {
+        showPreview();
+      }
+    }
+    writeButton.addEventListener('click', function () {
+      setMode('write');
     });
+    previewButton.addEventListener('click', function () {
+      setMode('preview');
+    });
+    if (imageInput) {
+      imageInput.addEventListener('change', function () {
+        revokeBlob();
+        if (wrap.classList.contains('is-previewing')) {
+          showPreview();
+        }
+      });
+    }
+    window.addEventListener('pagehide', revokeBlob);
   });
 }());
