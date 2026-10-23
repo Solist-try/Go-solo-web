@@ -298,6 +298,8 @@ function content_groups(): array
             'editor_list' => 'List',
             'editor_quote' => 'Quote',
             'editor_link' => 'Link',
+            'editor_heading' => 'Medium heading',
+            'editor_subheading' => 'Small heading',
         ],
         'Empty States' => [
             'out_there_empty' => 'Out There explanation',

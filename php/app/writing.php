@@ -77,6 +77,8 @@ function copy_writing_children(DOMNode $source, DOMDocument $document, DOMNode $
         'li' => true,
         'blockquote' => true,
         'a' => true,
+        'h2' => true,
+        'h3' => true,
     ];
     foreach ($source->childNodes as $child) {
         if ($child instanceof DOMText) {
@@ -91,8 +93,26 @@ function copy_writing_children(DOMNode $source, DOMDocument $document, DOMNode $
             $tag = 'strong';
         } elseif ($tag === 'i') {
             $tag = 'em';
+        } elseif ($tag === 'h1') {
+            $tag = 'h2';
+        } elseif (in_array($tag, ['h4', 'h5', 'h6'], true)) {
+            $tag = 'h3';
+        }
+        if (in_array($tag, ['script', 'style', 'iframe', 'object', 'embed'], true)) {
+            continue;
         }
         if ($tag === 'div') {
+            $hasBlock = false;
+            foreach ($child->childNodes as $grand) {
+                if ($grand instanceof DOMElement && in_array(strtolower($grand->nodeName), ['p', 'div', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'blockquote'], true)) {
+                    $hasBlock = true;
+                    break;
+                }
+            }
+            if ($hasBlock) {
+                copy_writing_children($child, $document, $target);
+                continue;
+            }
             $paragraph = $document->createElement('p');
             copy_writing_children($child, $document, $paragraph);
             $target->appendChild($paragraph);
@@ -180,7 +200,7 @@ function render_writing(string $value): string
     if ($value === '') {
         return '';
     }
-    if (!preg_match('/<(p|br|strong|em|ul|ol|li|blockquote|a)\b/i', $value)) {
+    if (!preg_match('/<(p|br|strong|em|ul|ol|li|blockquote|a|h2|h3)\b/i', $value)) {
         return paragraphs($value);
     }
     return '<div class="writing">' . sanitize_writing($value) . '</div>';

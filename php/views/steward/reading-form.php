@@ -13,8 +13,16 @@
     </select>
   </label>
   <label><span>Standfirst</span><input type="text" name="standfirst" maxlength="255" value="<?= e($article['standfirst'] ?? '') ?>"></label>
-  <label><span>Article</span><textarea name="body" maxlength="20000"><?= e($article['body'] ?? '') ?></textarea></label>
-  <p class="soft">Leave a blank line between paragraphs.</p>
+  <?php
+    $editor = [
+        'embedded' => true,
+        'headings' => true,
+        'body' => (string) ($article['body'] ?? ''),
+        'body_label' => 'Article',
+        'help' => 'The title above stays the main heading. Medium and small headings are sections inside the piece.',
+    ];
+    include __DIR__ . '/../partials/editor.php';
+  ?>
   <label><span>Image</span><input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif"></label>
   <?php if (function_exists('pin_ready') && pin_ready()): ?>
     <label>
