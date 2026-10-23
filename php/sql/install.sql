@@ -104,6 +104,7 @@ CREATE TABLE email_tokens (
   user_id INT UNSIGNED NOT NULL,
   purpose ENUM('verify', 'delete') NOT NULL,
   token_hash CHAR(64) NOT NULL,
+  email_hash CHAR(64) NULL,
   expires_at DATETIME NOT NULL,
   used_at DATETIME NULL,
   created_at DATETIME NOT NULL,

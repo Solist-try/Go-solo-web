@@ -248,7 +248,7 @@ function email_flash_result(string $result, string $sentKey): void
     flash(site_text('msg_verify_mail'));
 }
 
-function email_issue(int $userId, string $purpose, string $subjectKey, string $bodyKey): string
+function email_issue(int $userId, string $purpose, string $subjectKey, string $bodyKey, bool $force = false): string
 {
     if (!email_verify_ready() || !in_array($purpose, ['verify', 'delete'], true)) {
         return 'unavailable';
@@ -260,20 +260,30 @@ function email_issue(int $userId, string $purpose, string $subjectKey, string $b
         if (!$user || !valid_email((string) $user['email'])) {
             return 'failed';
         }
-        $recent = one(
-            'SELECT id FROM email_tokens WHERE user_id = ? AND purpose = ? AND created_at > DATE_SUB(NOW(), INTERVAL 2 MINUTE)',
-            [$userId, $purpose]
-        );
-        if ($recent) {
-            return 'wait';
+        if (!$force) {
+            $recent = one(
+                'SELECT id FROM email_tokens WHERE user_id = ? AND purpose = ? AND used_at IS NULL AND created_at > DATE_SUB(NOW(), INTERVAL 2 MINUTE)',
+                [$userId, $purpose]
+            );
+            if ($recent) {
+                return 'wait';
+            }
         }
         $token = bin2hex(random_bytes(32));
         $hash = hash('sha256', $token);
+        $emailHash = hash('sha256', strtolower((string) $user['email']));
         exec_sql('DELETE FROM email_tokens WHERE user_id = ? AND purpose = ? AND used_at IS NULL', [$userId, $purpose]);
-        exec_sql(
-            "INSERT INTO email_tokens (user_id, purpose, token_hash, expires_at, created_at) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL {$interval}), NOW())",
-            [$userId, $purpose, $hash]
-        );
+        if (table_has_column('email_tokens', 'email_hash')) {
+            exec_sql(
+                "INSERT INTO email_tokens (user_id, purpose, token_hash, email_hash, expires_at, created_at) VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL {$interval}), NOW())",
+                [$userId, $purpose, $hash, $emailHash]
+            );
+        } else {
+            exec_sql(
+                "INSERT INTO email_tokens (user_id, purpose, token_hash, expires_at, created_at) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL {$interval}), NOW())",
+                [$userId, $purpose, $hash]
+            );
+        }
         $link = absolute_url($path . $token);
         $body = site_line($bodyKey, ['link' => $link]);
         [$subject, $letter] = email_letter(site_text($subjectKey), $body, $link);
@@ -292,10 +302,22 @@ function email_find_open(string $token, string $purpose): ?array
     if (!email_verify_ready() || !email_token_ok($token) || !in_array($purpose, ['verify', 'delete'], true)) {
         return null;
     }
-    return one(
-        'SELECT id, user_id FROM email_tokens WHERE token_hash = ? AND purpose = ? AND used_at IS NULL AND expires_at > NOW()',
+    $hashColumn = table_has_column('email_tokens', 'email_hash') ? ', t.email_hash, u.email' : '';
+    $row = one(
+        "SELECT t.id, t.user_id{$hashColumn}
+         FROM email_tokens t
+         JOIN users u ON u.id = t.user_id
+         WHERE t.token_hash = ? AND t.purpose = ? AND t.used_at IS NULL AND t.expires_at > NOW()",
         [hash('sha256', $token), $purpose]
     );
+    if (!$row) {
+        return null;
+    }
+    $stored = (string) ($row['email_hash'] ?? '');
+    if ($stored !== '' && !hash_equals($stored, hash('sha256', strtolower((string) $row['email'])))) {
+        return null;
+    }
+    return ['id' => (int) $row['id'], 'user_id' => (int) $row['user_id']];
 }
 
 function email_lock_open(string $token, string $purpose): ?array
@@ -303,8 +325,9 @@ function email_lock_open(string $token, string $purpose): ?array
     if (!email_verify_ready() || !email_token_ok($token) || !in_array($purpose, ['verify', 'delete'], true)) {
         return null;
     }
+    $hashColumn = table_has_column('email_tokens', 'email_hash') ? ', email_hash' : '';
     $tokenRow = one(
-        'SELECT id, user_id FROM email_tokens WHERE token_hash = ? AND purpose = ? AND used_at IS NULL AND expires_at > NOW() FOR UPDATE',
+        "SELECT id, user_id{$hashColumn} FROM email_tokens WHERE token_hash = ? AND purpose = ? AND used_at IS NULL AND expires_at > NOW() FOR UPDATE",
         [hash('sha256', $token), $purpose]
     );
     if (!$tokenRow) {
@@ -314,11 +337,14 @@ function email_lock_open(string $token, string $purpose): ?array
     if (!$user) {
         return null;
     }
+    $emailHash = (string) ($tokenRow['email_hash'] ?? '');
+    $matches = $emailHash === '' || hash_equals($emailHash, hash('sha256', strtolower((string) $user['email'])));
     return [
         'id' => (int) $tokenRow['id'],
         'user_id' => (int) $user['id'],
         'email' => (string) $user['email'],
         'role' => (string) $user['role'],
+        'matches' => $matches,
     ];
 }
 
@@ -342,6 +368,10 @@ function email_finish_verify(string $token): ?int
             if ($db->inTransaction()) {
                 $db->rollBack();
             }
+            return null;
+        }
+        if (!$row['matches']) {
+            $db->commit();
             return null;
         }
         exec_sql(
@@ -370,6 +400,14 @@ function email_finish_delete(string $token): array
         $row = email_lock_open($token, 'delete');
         if (!$row) {
             $db->rollBack();
+            return $fail;
+        }
+        if (!$row['matches']) {
+            if (!email_mark_used((int) $row['id'])) {
+                $db->rollBack();
+                return $fail;
+            }
+            $db->commit();
             return $fail;
         }
         if ($row['role'] === 'admin') {

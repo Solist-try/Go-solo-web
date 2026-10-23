@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS email_tokens (
   user_id INT UNSIGNED NOT NULL,
   purpose ENUM('verify', 'delete') NOT NULL,
   token_hash CHAR(64) NOT NULL,
+  email_hash CHAR(64) NULL,
   expires_at DATETIME NOT NULL,
   used_at DATETIME NULL,
   created_at DATETIME NOT NULL,
@@ -25,6 +26,8 @@ CREATE TABLE IF NOT EXISTS email_tokens (
   KEY email_tokens_user (user_id, purpose, created_at),
   CONSTRAINT email_tokens_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE email_tokens ADD COLUMN IF NOT EXISTS email_hash CHAR(64) NULL;
 
 UPDATE users AS u
 LEFT JOIN schema_updates AS s ON s.update_key = 'email-verify-2026-10-23'

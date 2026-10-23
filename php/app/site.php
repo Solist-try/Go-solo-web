@@ -936,7 +936,8 @@ function page_account_save(array $params): void
             flash(site_text('msg_email'));
         } elseif (email_verify_ready()) {
             exec_sql('UPDATE users SET email = ?, email_verified_at = NULL WHERE id = ?', [$email, (int) $user['id']]);
-            email_flash_result(email_issue((int) $user['id'], 'verify', 'email_verify_subject', 'email_verify_body'), 'msg_verify_sent');
+            exec_sql('DELETE FROM email_tokens WHERE user_id = ? AND used_at IS NULL', [(int) $user['id']]);
+            email_flash_result(email_issue((int) $user['id'], 'verify', 'email_verify_subject', 'email_verify_body', true), 'msg_verify_sent');
         } else {
             exec_sql('UPDATE users SET email = ? WHERE id = ?', [$email, (int) $user['id']]);
             flash(site_text('msg_email'));
