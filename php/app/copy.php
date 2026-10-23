@@ -71,6 +71,7 @@ function site_text(string $key): string
         'editor_heading' => ['Medium heading', 'Section Heading'],
         'editor_subheading' => ['Small heading', 'Subheading'],
         'editor_numbered' => ['Numbered list'],
+        'editor_article_help' => ['The title above stays the main heading. Medium headings and small headings are sections inside the piece.'],
     ];
     if (isset($earlier[$key]) && in_array($value, $earlier[$key], true)) {
         return $default;
@@ -313,6 +314,16 @@ function content_groups(): array
             'editor_preview' => 'Preview',
             'editor_article_start' => 'Article placeholder',
             'editor_article_help' => 'Article editor note',
+            'editor_image' => 'Insert image',
+            'editor_image_alt' => 'Image description',
+            'editor_image_alt_help' => 'Image description help',
+            'editor_image_caption' => 'Image caption',
+            'editor_image_replace' => 'Replace image',
+            'editor_image_remove' => 'Remove image',
+            'editor_image_needs' => 'Image needs a description',
+            'editor_image_failed' => 'Image could not be added',
+            'editor_image_missing' => 'Image missing',
+            'editor_image_unavailable' => 'Inline images unavailable',
             'editor_article_create' => 'Create article',
             'editor_article_save' => 'Save article',
             'editor_article_draft' => 'Save draft',

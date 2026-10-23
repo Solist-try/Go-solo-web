@@ -11,10 +11,23 @@ $editorNumberLabel = (string) ($editor['numbered_label'] ?? '1.');
 $editorNumberName = (string) ($editor['numbered_name'] ?? site_text('editor_numbered'));
 $editorQuoteLabel = (string) ($editor['quote_label'] ?? site_text('editor_quote'));
 $editorHeadings = !empty($editor['headings']);
+$editorImages = !empty($editor['images']);
 $editorPlaceholder = trim((string) ($editor['placeholder'] ?? ''));
 $editorAttrs = ' data-link-ask="' . e(site_text('editor_link_ask')) . '"';
 if ($editorPlaceholder !== '') {
     $editorAttrs .= ' data-placeholder="' . e($editorPlaceholder) . '"';
+}
+if ($editorImages) {
+    $editorAttrs .= ' data-image-url="' . e((string) ($editor['image_url'] ?? '')) . '"';
+    $editorAttrs .= ' data-article-id="' . e((string) ($editor['article_id'] ?? '0')) . '"';
+    $editorAttrs .= ' data-image-alt-label="' . e(site_text('editor_image_alt')) . '"';
+    $editorAttrs .= ' data-image-alt-help="' . e(site_text('editor_image_alt_help')) . '"';
+    $editorAttrs .= ' data-image-caption-label="' . e(site_text('editor_image_caption')) . '"';
+    $editorAttrs .= ' data-image-replace-label="' . e(site_text('editor_image_replace')) . '"';
+    $editorAttrs .= ' data-image-remove-label="' . e(site_text('editor_image_remove')) . '"';
+    $editorAttrs .= ' data-image-needs="' . e(site_text('editor_image_needs')) . '"';
+    $editorAttrs .= ' data-image-failed="' . e(site_text('editor_image_failed')) . '"';
+    $editorAttrs .= ' data-image-missing="' . e(site_text('editor_image_missing')) . '"';
 }
 ?>
 <?php if ($editorEmbedded): ?>
@@ -41,11 +54,18 @@ if ($editorPlaceholder !== '') {
     <?php endif; ?>
     <button type="button" data-cmd="insertUnorderedList" aria-label="<?= e($editorListLabel) ?>" title="<?= e($editorListLabel) ?>"<?= $editorHeadings ? ' aria-pressed="false"' : '' ?>><?= e($editorListLabel) ?></button>
     <button type="button" data-cmd="insertOrderedList" aria-label="<?= e($editorNumberName) ?>" title="<?= e($editorNumberName) ?>"<?= $editorHeadings ? ' aria-pressed="false"' : '' ?>><?= e($editorNumberLabel) ?></button>
+    <?php if ($editorImages): ?>
+      <button type="button" data-cmd="image" aria-label="<?= e(site_text('editor_image')) ?>" title="<?= e(site_text('editor_image')) ?>"><?= e(site_text('editor_image')) ?></button>
+    <?php endif; ?>
     <?php if (!$editorHeadings): ?>
       <button type="button" data-cmd="quote" aria-label="<?= e($editorQuoteLabel) ?>" title="<?= e($editorQuoteLabel) ?>"><?= e($editorQuoteLabel) ?></button>
       <button type="button" data-cmd="link" aria-label="<?= e(site_text('editor_link')) ?>" title="<?= e(site_text('editor_link')) ?>"><?= e(site_text('editor_link')) ?></button>
     <?php endif; ?>
   </div>
+  <?php if ($editorImages): ?>
+    <input class="editor-image-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+    <p class="error" data-image-error role="alert" hidden></p>
+  <?php endif; ?>
   <div class="editor-surface" contenteditable="true" role="textbox" aria-multiline="true" aria-label="<?= e((string) ($editor['body_label'] ?? 'Write here')) ?>"<?php if (!empty($editor['describedby'])): ?> aria-describedby="<?= e((string) $editor['describedby']) ?>"<?php endif; ?>></div>
   <textarea class="editor-source" name="<?= e((string) ($editor['body_name'] ?? 'body')) ?>" maxlength="20000"><?= e((string) ($editor['body'] ?? '')) ?></textarea>
 <?php if (!$editorEmbedded): ?>

@@ -5,6 +5,15 @@ $deskWide = true;
 $creating = empty($article['id']);
 include __DIR__ . '/open.php';
 $existingImage = trim((string) ($article['image_path'] ?? ''));
+$readingImagesReady = function_exists('reading_images_ready') && reading_images_ready();
+$readingMedia = [];
+if ($readingImagesReady && function_exists('reading_media_catalog')) {
+    try {
+        $readingMedia = reading_media_catalog((string) ($article['body'] ?? ''));
+    } catch (Throwable $e) {
+        $readingMedia = [];
+    }
+}
 ?>
 <div class="reading-editor article-sheet" data-reading-preview data-preview-url="<?= e(url('/steward/reading/preview')) ?>" data-existing-image="<?= e($existingImage !== '' ? media($existingImage) : '') ?>">
   <h1><?= e($creating ? site_text('editor_article_create') : 'Edit article') ?></h1>
@@ -60,10 +69,15 @@ $existingImage = trim((string) ($article['image_path'] ?? ''));
             'list_label' => site_text('editor_bullets'),
             'numbered_label' => site_text('editor_numbered'),
             'quote_label' => site_text('editor_blockquote'),
+            'images' => $readingImagesReady,
+            'image_url' => url('/steward/reading/image'),
+            'article_id' => (int) ($article['id'] ?? 0),
             'describedby' => !empty($error) ? 'reading-error' : '',
         ];
         include __DIR__ . '/../partials/editor.php';
       ?>
+      <?php if (!$readingImagesReady): ?><p class="soft"><?= e(site_text('editor_image_unavailable')) ?></p><?php endif; ?>
+      <script type="application/json" id="reading-media"><?= json_encode($readingMedia, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?></script>
       <div class="article-media">
         <label><span>Image</span><input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif"></label>
         <?php if ($existingImage !== ''): ?>

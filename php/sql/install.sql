@@ -470,7 +470,7 @@ CREATE TABLE waypoint_readings (
 CREATE TABLE content_images (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id INT UNSIGNED NOT NULL,
-  parent_type ENUM('story', 'campfire', 'waypoint', 'comment', 'conversation') NOT NULL,
+  parent_type ENUM('story', 'campfire', 'waypoint', 'comment', 'conversation', 'reading') NOT NULL,
   parent_id INT UNSIGNED NOT NULL,
   path VARCHAR(255) NOT NULL,
   alt VARCHAR(255) NOT NULL DEFAULT '',

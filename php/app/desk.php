@@ -820,7 +820,7 @@ function reading_article_from_post(?array $existing, string $intent): array
     $article['slug'] = post_text('slug', 120);
     $article['category_id'] = (int) ($_POST['category_id'] ?? 0);
     $article['standfirst'] = clip(post_text('standfirst', 255), 255);
-    $article['body'] = writing_from_post('body');
+    $article['body'] = writing_from_post('body', reading_images_ready());
     $commit = (string) ($_POST['commit'] ?? '');
     if ($commit === 'publish') {
         $article['status'] = 'published';
@@ -835,11 +835,69 @@ function reading_article_from_post(?array $existing, string $intent): array
     return $article;
 }
 
+function desk_reading_image(array $params): void
+{
+    $user = require_steward();
+    header('Content-Type: application/json; charset=UTF-8');
+    if (!reading_images_ready()) {
+        http_response_code(409);
+        echo json_encode(['error' => site_text('editor_image_unavailable')], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $problem = upload_problem('inline_image');
+    if ($problem) {
+        http_response_code(422);
+        echo json_encode(['error' => $problem], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    if (empty($_FILES['inline_image']) || (int) ($_FILES['inline_image']['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+        http_response_code(422);
+        echo json_encode(['error' => site_text('editor_image_failed')], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $path = store_upload('inline_image', 'covers');
+    if ($path === null) {
+        http_response_code(422);
+        echo json_encode(['error' => site_text('editor_image_failed')], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+    $articleId = (int) ($_POST['article_id'] ?? 0);
+    if ($articleId > 0 && !one('SELECT id FROM readings WHERE id = ?', [$articleId])) {
+        $articleId = 0;
+    }
+    $replace = (int) ($_POST['id'] ?? 0);
+    if ($replace > 0) {
+        $row = one("SELECT id, parent_id, path, alt FROM content_images WHERE id = ? AND parent_type = 'reading'", [$replace]);
+        $parent = (int) ($row['parent_id'] ?? -1);
+        if (!$row || ($parent !== 0 && $parent !== $articleId)) {
+            forget_upload($path);
+            http_response_code(404);
+            echo json_encode(['error' => site_text('editor_image_missing')], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        forget_upload((string) $row['path']);
+        $alt = array_key_exists('alt', $_POST) ? clip(post_text('alt', 255), 255) : (string) $row['alt'];
+        exec_sql(
+            "UPDATE content_images SET path = ?, alt = ? WHERE id = ? AND parent_type = 'reading'",
+            [$path, $alt, $replace]
+        );
+        echo json_encode(['id' => $replace, 'url' => media($path), 'alt' => $alt], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+        exit;
+    }
+    exec_sql(
+        "INSERT INTO content_images (user_id, parent_type, parent_id, path, alt, created_at) VALUES (?, 'reading', ?, ?, '', NOW())",
+        [(int) $user['id'], $articleId, $path]
+    );
+    $id = (int) db()->lastInsertId();
+    echo json_encode(['id' => $id, 'url' => media($path), 'alt' => ''], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+    exit;
+}
+
 function desk_reading_preview(array $params): void
 {
     require_steward();
     header('Content-Type: text/html; charset=UTF-8');
-    echo render_writing(writing_from_post('body'));
+    echo reading_render_body(writing_from_post('body', reading_images_ready()), 0, true);
     exit;
 }
 
@@ -860,6 +918,10 @@ function desk_reading_save(array $params): void
     $article = reading_article_from_post($existing, $intent);
     if ($article['title'] === '' || !one('SELECT id FROM reading_categories WHERE id = ?', [(int) $article['category_id']])) {
         reading_form_show($article, 'An article needs a title and a category.');
+        return;
+    }
+    if (reading_images_ready() && reading_missing_alt((string) $article['body'])) {
+        reading_form_show($article, site_text('editor_image_needs'));
         return;
     }
     $problem = upload_problem('image');
@@ -900,6 +962,12 @@ function desk_reading_save(array $params): void
         );
         $savedId = (int) db()->lastInsertId();
     }
+    if (reading_images_ready() && $savedId > 0) {
+        $bound = reading_bind_images($savedId, $body);
+        if ($bound !== $body) {
+            exec_sql('UPDATE readings SET body = ? WHERE id = ?', [$bound, $savedId]);
+        }
+    }
     if (pin_ready() && $savedId > 0) {
         $wantFeature = !empty($article['featured']) && $status === 'published';
         if ($wantFeature) {
@@ -919,7 +987,9 @@ function desk_reading_delete(array $params): void
 {
     require_admin();
     if (($_POST['yes'] ?? '') === '1') {
-        exec_sql('DELETE FROM readings WHERE id = ?', [(int) ($_POST['id'] ?? 0)]);
+        $articleId = (int) ($_POST['id'] ?? 0);
+        reading_release_images($articleId);
+        exec_sql('DELETE FROM readings WHERE id = ?', [$articleId]);
         flash('The article is deleted.');
     }
     redirect('/steward/reading');

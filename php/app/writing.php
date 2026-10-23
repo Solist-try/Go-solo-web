@@ -26,7 +26,7 @@ function rooms_ready(): bool
     return $ready;
 }
 
-function sanitize_writing(string $html): string
+function sanitize_writing(string $html, bool $figures = false): string
 {
     $html = str_replace("\0", '', $html);
     if (strlen($html) > 20000) {
@@ -53,19 +53,20 @@ function sanitize_writing(string $html): string
     }
     $clean = new DOMDocument('1.0', 'UTF-8');
     $root = $clean->appendChild($clean->createElement('div'));
-    copy_writing_children($source, $clean, $root);
+    $figureCount = 0;
+    copy_writing_children($source, $clean, $root, $figures, $figureCount);
     $saved = '';
     foreach ($root->childNodes as $child) {
         $saved .= $clean->saveHTML($child);
     }
     $saved = trim($saved);
-    if (writing_is_empty($saved)) {
+    if (writing_is_empty($saved) && !preg_match('/data-media="[1-9]/', $saved)) {
         return '';
     }
     return $saved;
 }
 
-function copy_writing_children(DOMNode $source, DOMDocument $document, DOMNode $target): void
+function copy_writing_children(DOMNode $source, DOMDocument $document, DOMNode $target, bool $figures = false, int &$figureCount = 0): void
 {
     $allowed = [
         'p' => true,
@@ -101,25 +102,31 @@ function copy_writing_children(DOMNode $source, DOMDocument $document, DOMNode $
         if (in_array($tag, ['script', 'style', 'iframe', 'object', 'embed'], true)) {
             continue;
         }
+        if ($tag === 'figure') {
+            if ($figures) {
+                append_reading_figure($child, $document, $target, $figureCount);
+            }
+            continue;
+        }
         if ($tag === 'div') {
             $hasBlock = false;
             foreach ($child->childNodes as $grand) {
-                if ($grand instanceof DOMElement && in_array(strtolower($grand->nodeName), ['p', 'div', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'blockquote'], true)) {
+                if ($grand instanceof DOMElement && in_array(strtolower($grand->nodeName), ['p', 'div', 'h1', 'h2', 'h3', 'h4', 'ul', 'ol', 'blockquote', 'figure'], true)) {
                     $hasBlock = true;
                     break;
                 }
             }
             if ($hasBlock) {
-                copy_writing_children($child, $document, $target);
+                copy_writing_children($child, $document, $target, $figures, $figureCount);
                 continue;
             }
             $paragraph = $document->createElement('p');
-            copy_writing_children($child, $document, $paragraph);
+            copy_writing_children($child, $document, $paragraph, $figures, $figureCount);
             $target->appendChild($paragraph);
             continue;
         }
         if (!isset($allowed[$tag])) {
-            copy_writing_children($child, $document, $target);
+            copy_writing_children($child, $document, $target, $figures, $figureCount);
             continue;
         }
         if ($tag === 'br') {
@@ -129,7 +136,7 @@ function copy_writing_children(DOMNode $source, DOMDocument $document, DOMNode $
         if ($tag === 'a') {
             $href = safe_writing_href($child->getAttribute('href'));
             if ($href === '') {
-                copy_writing_children($child, $document, $target);
+                copy_writing_children($child, $document, $target, $figures, $figureCount);
                 continue;
             }
             $link = $document->createElement('a');
@@ -137,14 +144,63 @@ function copy_writing_children(DOMNode $source, DOMDocument $document, DOMNode $
             if (preg_match('#^https?://#i', $href)) {
                 $link->setAttribute('rel', 'nofollow noopener noreferrer');
             }
-            copy_writing_children($child, $document, $link);
+            copy_writing_children($child, $document, $link, $figures, $figureCount);
             $target->appendChild($link);
             continue;
         }
         $element = $document->createElement($tag);
-        copy_writing_children($child, $document, $element);
+        copy_writing_children($child, $document, $element, $figures, $figureCount);
         $target->appendChild($element);
     }
+}
+
+function append_reading_figure(DOMElement $source, DOMDocument $document, DOMNode $target, int &$figureCount): void
+{
+    if ($figureCount >= 24) {
+        return;
+    }
+    $mediaId = $source->getAttribute('data-media');
+    if (!preg_match('/^[1-9][0-9]{0,9}$/', $mediaId)) {
+        return;
+    }
+    $alt = trim($source->getAttribute('data-alt'));
+    $caption = '';
+    $altField = reading_figure_field($source, 'data-image-alt');
+    $captionField = reading_figure_field($source, 'data-image-caption');
+    if ($altField !== null) {
+        $alt = $altField;
+    }
+    if ($captionField !== null) {
+        $caption = $captionField;
+    }
+    if ($caption === '') {
+        $captions = $source->getElementsByTagName('figcaption');
+        if ($captions->length > 0) {
+            $caption = trim((string) $captions->item(0)?->textContent);
+        }
+    }
+    $alt = clip(trim((string) preg_replace('/\s+/', ' ', str_replace("\0", '', $alt))), 255);
+    $caption = clip(trim((string) preg_replace('/\s+/', ' ', str_replace("\0", '', $caption))), 300);
+    $figure = $document->createElement('figure');
+    $figure->setAttribute('data-media', $mediaId);
+    $figure->setAttribute('data-alt', $alt);
+    if ($caption !== '') {
+        $captionNode = $document->createElement('figcaption');
+        $captionNode->appendChild($document->createTextNode($caption));
+        $figure->appendChild($captionNode);
+    }
+    $target->appendChild($figure);
+    $figureCount++;
+}
+
+function reading_figure_field(DOMElement $figure, string $attribute): ?string
+{
+    foreach ($figure->getElementsByTagName('*') as $node) {
+        if ($node instanceof DOMElement && $node->hasAttribute($attribute)) {
+            return (string) $node->getAttribute('value');
+        }
+    }
+    return null;
 }
 
 function safe_writing_href(string $href): string
@@ -189,9 +245,9 @@ function writing_is_empty(string $html): bool
     return trim($plain) === '';
 }
 
-function writing_from_post(string $key = 'body'): string
+function writing_from_post(string $key = 'body', bool $figures = false): string
 {
-    return sanitize_writing((string) ($_POST[$key] ?? ''));
+    return sanitize_writing((string) ($_POST[$key] ?? ''), $figures);
 }
 
 function render_writing(string $value): string
@@ -206,8 +262,282 @@ function render_writing(string $value): string
     return '<div class="writing">' . sanitize_writing($value) . '</div>';
 }
 
+function reading_images_ready(): bool
+{
+    try {
+        return column_type_has('content_images', 'parent_type', 'reading');
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
+function reading_render_body(string $value, int $articleId = 0, bool $preview = false): string
+{
+    $value = trim($value);
+    if ($value === '') {
+        return '';
+    }
+    if (!preg_match('/<(p|br|strong|em|ul|ol|li|blockquote|a|h2|h3|figure)\b/i', $value)) {
+        return paragraphs($value);
+    }
+    $clean = sanitize_writing($value, true);
+    if ($clean === '') {
+        return '';
+    }
+    if (!str_contains($clean, '<figure')) {
+        return '<div class="writing">' . $clean . '</div>';
+    }
+    return '<div class="writing">' . reading_expand_figures($clean, $articleId, $preview) . '</div>';
+}
+
+function reading_figure_ids(string $html): array
+{
+    preg_match_all('/data-media="([1-9][0-9]{0,9})"/', $html, $matches);
+    $ids = [];
+    foreach ($matches[1] ?? [] as $id) {
+        $ids[] = (int) $id;
+    }
+    return array_values(array_unique($ids));
+}
+
+function reading_figure_alts(string $html): array
+{
+    $alts = [];
+    if (!preg_match_all('/<figure\b[^>]*>/', $html, $figures)) {
+        return $alts;
+    }
+    foreach ($figures[0] as $opening) {
+        if (!preg_match('/data-media="([1-9][0-9]{0,9})"/', $opening, $idMatch)) {
+            continue;
+        }
+        $alt = '';
+        if (preg_match('/data-alt="([^"]*)"/', $opening, $altMatch)) {
+            $alt = html_entity_decode($altMatch[1], ENT_QUOTES, 'UTF-8');
+        }
+        $alts[(int) $idMatch[1]] = clip(trim($alt), 255);
+    }
+    return $alts;
+}
+
+function reading_figure_rows(array $ids, int $articleId, bool $preview): array
+{
+    if (!$ids || !reading_images_ready()) {
+        return [];
+    }
+    $marks = implode(',', array_fill(0, count($ids), '?'));
+    $rows = q(
+        "SELECT id, parent_id, path, alt FROM content_images WHERE parent_type = 'reading' AND id IN ({$marks})",
+        $ids
+    );
+    $out = [];
+    foreach ($rows as $row) {
+        $parent = (int) $row['parent_id'];
+        if (!$preview && $parent !== $articleId) {
+            continue;
+        }
+        $path = safe_media_path((string) $row['path']);
+        if (!str_starts_with($path, '/uploads/covers/')) {
+            continue;
+        }
+        $row['path'] = $path;
+        $out[(int) $row['id']] = $row;
+    }
+    return $out;
+}
+
+function reading_media_catalog(string $body): array
+{
+    $clean = sanitize_writing($body, true);
+    $rows = reading_figure_rows(reading_figure_ids($clean), 0, true);
+    $catalog = [];
+    foreach ($rows as $id => $row) {
+        $catalog[(string) $id] = [
+            'url' => media((string) $row['path']),
+            'alt' => (string) $row['alt'],
+        ];
+    }
+    return $catalog;
+}
+
+function reading_missing_alt(string $body): bool
+{
+    $alts = reading_figure_alts($body);
+    foreach (reading_figure_ids($body) as $id) {
+        if (trim($alts[$id] ?? '') === '') {
+            return true;
+        }
+    }
+    return false;
+}
+
+function reading_expand_figures(string $html, int $articleId, bool $preview): string
+{
+    $rows = reading_figure_rows(reading_figure_ids($html), $articleId, $preview);
+    $document = new DOMDocument('1.0', 'UTF-8');
+    $previous = libxml_use_internal_errors(true);
+    $document->loadHTML(
+        '<?xml encoding="UTF-8"><div id="gosolo-writing">' . $html . '</div>',
+        LIBXML_HTML_NODEFDTD
+    );
+    libxml_clear_errors();
+    libxml_use_internal_errors($previous);
+    $source = $document->getElementById('gosolo-writing');
+    if (!$source) {
+        return $html;
+    }
+    $figures = [];
+    foreach ($source->getElementsByTagName('figure') as $figure) {
+        $figures[] = $figure;
+    }
+    foreach ($figures as $figure) {
+        if (!$figure->parentNode) {
+            continue;
+        }
+        $id = (int) $figure->getAttribute('data-media');
+        $row = $rows[$id] ?? null;
+        $caption = '';
+        $captions = $figure->getElementsByTagName('figcaption');
+        if ($captions->length > 0) {
+            $caption = trim((string) $captions->item(0)?->textContent);
+        }
+        $alt = trim((string) ($row['alt'] ?? ''));
+        if ($preview) {
+            $posted = trim($figure->getAttribute('data-alt'));
+            if ($posted !== '') {
+                $alt = $posted;
+            }
+        }
+        if (!$row || $alt === '') {
+            if ($caption !== '') {
+                $paragraph = $document->createElement('p');
+                $paragraph->appendChild($document->createTextNode($caption));
+                $figure->parentNode->replaceChild($paragraph, $figure);
+            } else {
+                $figure->parentNode->removeChild($figure);
+            }
+            continue;
+        }
+        $replacement = $document->createElement('figure');
+        $replacement->setAttribute('class', 'writing-figure');
+        $image = $document->createElement('img');
+        $image->setAttribute('src', media((string) $row['path']));
+        $image->setAttribute('alt', $alt);
+        $replacement->appendChild($image);
+        if ($caption !== '') {
+            $captionNode = $document->createElement('figcaption');
+            $captionNode->appendChild($document->createTextNode($caption));
+            $replacement->appendChild($captionNode);
+        }
+        $figure->parentNode->replaceChild($replacement, $figure);
+    }
+    $saved = '';
+    foreach ($source->childNodes as $child) {
+        $saved .= $document->saveHTML($child);
+    }
+    return $saved;
+}
+
+function reading_drop_figures(string $html, array $kept): string
+{
+    $keep = [];
+    foreach ($kept as $id) {
+        $keep[(int) $id] = true;
+    }
+    $document = new DOMDocument('1.0', 'UTF-8');
+    $previous = libxml_use_internal_errors(true);
+    $document->loadHTML(
+        '<?xml encoding="UTF-8"><div id="gosolo-writing">' . $html . '</div>',
+        LIBXML_HTML_NODEFDTD
+    );
+    libxml_clear_errors();
+    libxml_use_internal_errors($previous);
+    $source = $document->getElementById('gosolo-writing');
+    if (!$source) {
+        return $html;
+    }
+    $figures = [];
+    foreach ($source->getElementsByTagName('figure') as $figure) {
+        $figures[] = $figure;
+    }
+    foreach ($figures as $figure) {
+        $id = (int) $figure->getAttribute('data-media');
+        if (!isset($keep[$id]) && $figure->parentNode) {
+            $figure->parentNode->removeChild($figure);
+        }
+    }
+    $saved = '';
+    foreach ($source->childNodes as $child) {
+        $saved .= $document->saveHTML($child);
+    }
+    return trim($saved);
+}
+
+function reading_bind_images(int $articleId, string $body): string
+{
+    if ($articleId <= 0 || !reading_images_ready()) {
+        return $body;
+    }
+    $ids = reading_figure_ids($body);
+    $alts = reading_figure_alts($body);
+    $kept = [];
+    foreach ($ids as $id) {
+        $row = one("SELECT id, parent_id FROM content_images WHERE id = ? AND parent_type = 'reading'", [$id]);
+        if (!$row) {
+            continue;
+        }
+        $parent = (int) $row['parent_id'];
+        if ($parent !== 0 && $parent !== $articleId) {
+            continue;
+        }
+        exec_sql(
+            "UPDATE content_images SET parent_id = ?, alt = ? WHERE id = ? AND parent_type = 'reading'",
+            [$articleId, clip($alts[$id] ?? '', 255), $id]
+        );
+        $kept[] = $id;
+    }
+    $body = reading_drop_figures($body, $kept);
+    $existing = q("SELECT id, path FROM content_images WHERE parent_type = 'reading' AND parent_id = ?", [$articleId]);
+    foreach ($existing as $row) {
+        if (in_array((int) $row['id'], $kept, true)) {
+            continue;
+        }
+        forget_upload((string) $row['path']);
+        exec_sql("DELETE FROM content_images WHERE id = ? AND parent_type = 'reading'", [(int) $row['id']]);
+    }
+    $removed = array_filter(array_map('intval', explode(',', (string) ($_POST['removed_media'] ?? ''))));
+    foreach ($removed as $id) {
+        if ($id <= 0 || in_array($id, $kept, true)) {
+            continue;
+        }
+        $row = one("SELECT id, parent_id, path FROM content_images WHERE id = ? AND parent_type = 'reading'", [$id]);
+        if (!$row) {
+            continue;
+        }
+        $parent = (int) $row['parent_id'];
+        if ($parent !== 0 && $parent !== $articleId) {
+            continue;
+        }
+        forget_upload((string) $row['path']);
+        exec_sql("DELETE FROM content_images WHERE id = ? AND parent_type = 'reading'", [$id]);
+    }
+    return $body;
+}
+
+function reading_release_images(int $articleId): void
+{
+    if ($articleId <= 0 || !reading_images_ready()) {
+        return;
+    }
+    $rows = q("SELECT path FROM content_images WHERE parent_type = 'reading' AND parent_id = ?", [$articleId]);
+    foreach ($rows as $row) {
+        forget_upload((string) $row['path']);
+    }
+    exec_sql("DELETE FROM content_images WHERE parent_type = 'reading' AND parent_id = ?", [$articleId]);
+}
+
 function writing_plain(string $value, int $max = 0): string
 {
+    $value = preg_replace('/<figure\b[^>]*>.*?<\/figure>/is', ' ', $value) ?? $value;
     $spaced = preg_replace('/<(\/)?(p|div|h1|h2|h3|h4|li|blockquote|ul|ol|br)\b[^>]*>/i', ' ', $value) ?? $value;
     $plain = trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($spaced), ENT_QUOTES, 'UTF-8')) ?? '');
     if ($max > 0) {
@@ -218,7 +548,7 @@ function writing_plain(string $value, int $max = 0): string
 
 function writing_keep_original(string $previous, string $sanitized): string
 {
-    if (preg_match('/<(strong|em|h2|h3|ul|ol|blockquote|a)\b/i', $sanitized)) {
+    if (preg_match('/<(strong|em|h2|h3|ul|ol|blockquote|a|figure)\b/i', $sanitized)) {
         return $sanitized;
     }
     if (preg_match('/<[^>]+>/', $previous)) {
