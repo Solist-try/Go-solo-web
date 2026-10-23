@@ -55,6 +55,9 @@ function sanitize_writing(string $html, bool $figures = false): string
     $root = $clean->appendChild($clean->createElement('div'));
     $figureCount = 0;
     copy_writing_children($source, $clean, $root, $figures, $figureCount);
+    if ($figures) {
+        hoist_reading_figures($root);
+    }
     $saved = '';
     foreach ($root->childNodes as $child) {
         $saved .= $clean->saveHTML($child);
@@ -154,9 +157,49 @@ function copy_writing_children(DOMNode $source, DOMDocument $document, DOMNode $
     }
 }
 
+function reading_inline_limit(): int
+{
+    return 2;
+}
+
+function reading_inline_hold(): int
+{
+    return 8;
+}
+
+function hoist_reading_figures(DOMNode $root): void
+{
+    $figures = [];
+    foreach ($root->getElementsByTagName('figure') as $figure) {
+        $figures[] = $figure;
+    }
+    foreach ($figures as $figure) {
+        if (!$figure->parentNode || $figure->parentNode === $root) {
+            continue;
+        }
+        $top = $figure;
+        while ($top->parentNode && $top->parentNode !== $root) {
+            $top = $top->parentNode;
+        }
+        if ($top->parentNode !== $root) {
+            continue;
+        }
+        $anchor = $top;
+        while ($anchor->nextSibling instanceof DOMElement && strtolower($anchor->nextSibling->nodeName) === 'figure') {
+            $anchor = $anchor->nextSibling;
+        }
+        $next = $anchor->nextSibling;
+        if ($next) {
+            $root->insertBefore($figure, $next);
+        } else {
+            $root->appendChild($figure);
+        }
+    }
+}
+
 function append_reading_figure(DOMElement $source, DOMDocument $document, DOMNode $target, int &$figureCount): void
 {
-    if ($figureCount >= 24) {
+    if ($figureCount >= reading_inline_hold()) {
         return;
     }
     $mediaId = $source->getAttribute('data-media');
@@ -332,7 +375,7 @@ function reading_figure_rows(array $ids, int $articleId, bool $preview): array
     $out = [];
     foreach ($rows as $row) {
         $parent = (int) $row['parent_id'];
-        if (!$preview && $parent !== $articleId) {
+        if ($parent !== $articleId && !($preview && $parent === 0)) {
             continue;
         }
         $path = safe_media_path((string) $row['path']);
@@ -345,10 +388,10 @@ function reading_figure_rows(array $ids, int $articleId, bool $preview): array
     return $out;
 }
 
-function reading_media_catalog(string $body): array
+function reading_media_catalog(string $body, int $articleId = 0): array
 {
     $clean = sanitize_writing($body, true);
-    $rows = reading_figure_rows(reading_figure_ids($clean), 0, true);
+    $rows = reading_figure_rows(reading_figure_ids($clean), $articleId, true);
     $catalog = [];
     foreach ($rows as $id => $row) {
         $catalog[(string) $id] = [
@@ -370,6 +413,121 @@ function reading_missing_alt(string $body): bool
     return false;
 }
 
+function reading_block_text(DOMNode $node): string
+{
+    $text = str_replace("\xc2\xa0", ' ', (string) $node->textContent);
+    $text = preg_replace('/\s+/', ' ', $text) ?? $text;
+    return trim($text);
+}
+
+function reading_inline_scan(string $body): array
+{
+    $clean = sanitize_writing($body, true);
+    $scan = ['figures' => 0, 'missing' => false, 'gap' => false, 'words' => false];
+    if ($clean === '' || !str_contains($clean, '<figure')) {
+        $scan['words'] = $clean !== '' && !writing_is_empty($clean);
+        return $scan;
+    }
+    $document = new DOMDocument('1.0', 'UTF-8');
+    $previous = libxml_use_internal_errors(true);
+    $document->loadHTML(
+        '<?xml encoding="UTF-8"><div id="gosolo-writing">' . $clean . '</div>',
+        LIBXML_HTML_NODEFDTD
+    );
+    libxml_clear_errors();
+    libxml_use_internal_errors($previous);
+    $source = $document->getElementById('gosolo-writing');
+    if (!$source) {
+        return $scan;
+    }
+    $previousFigure = false;
+    foreach ($source->childNodes as $child) {
+        if (!$child instanceof DOMElement) {
+            continue;
+        }
+        if (strtolower($child->nodeName) === 'figure') {
+            $scan['figures']++;
+            if (trim($child->getAttribute('data-alt')) === '') {
+                $scan['missing'] = true;
+            }
+            if ($previousFigure) {
+                $scan['gap'] = true;
+            }
+            $previousFigure = true;
+            continue;
+        }
+        if (reading_block_text($child) === '') {
+            continue;
+        }
+        $scan['words'] = true;
+        $previousFigure = false;
+    }
+    return $scan;
+}
+
+function reading_inline_problem(string $body): string
+{
+    $scan = reading_inline_scan($body);
+    if ($scan['figures'] === 0) {
+        return '';
+    }
+    if ($scan['missing']) {
+        return site_text('editor_image_needs');
+    }
+    if ($scan['figures'] > reading_inline_limit()) {
+        return site_line('editor_image_limit', ['count' => (string) reading_inline_limit()]);
+    }
+    if ($scan['gap']) {
+        return site_text('editor_image_gap');
+    }
+    if (!$scan['words']) {
+        return site_text('editor_image_words');
+    }
+    return '';
+}
+
+function reading_unusable_images(string $body, int $articleId): bool
+{
+    if (!reading_images_ready()) {
+        return false;
+    }
+    foreach (reading_figure_ids($body) as $id) {
+        $row = one("SELECT id, parent_id FROM content_images WHERE id = ? AND parent_type = 'reading'", [$id]);
+        if (!$row) {
+            return true;
+        }
+        $parent = (int) $row['parent_id'];
+        if ($parent !== 0 && $parent !== $articleId) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function reading_article_library(int $articleId): array
+{
+    if ($articleId <= 0 || !reading_images_ready()) {
+        return [];
+    }
+    $rows = q(
+        "SELECT id, path, alt FROM content_images WHERE parent_type = 'reading' AND parent_id = ? ORDER BY id",
+        [$articleId]
+    );
+    $library = [];
+    foreach ($rows as $row) {
+        $path = safe_media_path((string) $row['path']);
+        if (!str_starts_with($path, '/uploads/covers/')) {
+            continue;
+        }
+        $library[] = [
+            'id' => (int) $row['id'],
+            'url' => media($path),
+            'alt' => (string) $row['alt'],
+        ];
+    }
+    return $library;
+}
+
 function reading_expand_figures(string $html, int $articleId, bool $preview): string
 {
     $rows = reading_figure_rows(reading_figure_ids($html), $articleId, $preview);
@@ -389,6 +547,14 @@ function reading_expand_figures(string $html, int $articleId, bool $preview): st
     foreach ($source->getElementsByTagName('figure') as $figure) {
         $figures[] = $figure;
     }
+    $hasWords = false;
+    foreach ($source->childNodes as $child) {
+        if ($child instanceof DOMElement && strtolower($child->nodeName) !== 'figure' && reading_block_text($child) !== '') {
+            $hasWords = true;
+            break;
+        }
+    }
+    $shown = 0;
     foreach ($figures as $figure) {
         if (!$figure->parentNode) {
             continue;
@@ -407,8 +573,9 @@ function reading_expand_figures(string $html, int $articleId, bool $preview): st
                 $alt = $posted;
             }
         }
-        if (!$row || $alt === '') {
-            if ($caption !== '') {
+        $blocked = !$hasWords || $shown >= reading_inline_limit() || reading_previous_figure($figure);
+        if (!$row || $alt === '' || $blocked) {
+            if (!$blocked && $caption !== '') {
                 $paragraph = $document->createElement('p');
                 $paragraph->appendChild($document->createTextNode($caption));
                 $figure->parentNode->replaceChild($paragraph, $figure);
@@ -417,6 +584,7 @@ function reading_expand_figures(string $html, int $articleId, bool $preview): st
             }
             continue;
         }
+        $shown++;
         $replacement = $document->createElement('figure');
         $replacement->setAttribute('class', 'writing-figure');
         $image = $document->createElement('img');
@@ -435,6 +603,33 @@ function reading_expand_figures(string $html, int $articleId, bool $preview): st
         $saved .= $document->saveHTML($child);
     }
     return $saved;
+}
+
+function reading_previous_figure(DOMNode $node): bool
+{
+    $previous = $node->previousSibling;
+    while ($previous) {
+        if ($previous instanceof DOMText) {
+            if (trim(str_replace("\xc2\xa0", ' ', $previous->nodeValue ?? '')) !== '') {
+                return false;
+            }
+            $previous = $previous->previousSibling;
+            continue;
+        }
+        if (!$previous instanceof DOMElement) {
+            $previous = $previous->previousSibling;
+            continue;
+        }
+        if (strtolower($previous->nodeName) === 'figure') {
+            return true;
+        }
+        if (reading_block_text($previous) === '') {
+            $previous = $previous->previousSibling;
+            continue;
+        }
+        return false;
+    }
+    return false;
 }
 
 function reading_drop_figures(string $html, array $kept): string
@@ -472,7 +667,7 @@ function reading_drop_figures(string $html, array $kept): string
     return trim($saved);
 }
 
-function reading_bind_images(int $articleId, string $body): string
+function reading_bind_images(int $articleId, string $body, ?array &$forget = null): string
 {
     if ($articleId <= 0 || !reading_images_ready()) {
         return $body;
@@ -501,7 +696,7 @@ function reading_bind_images(int $articleId, string $body): string
         if (in_array((int) $row['id'], $kept, true)) {
             continue;
         }
-        forget_upload((string) $row['path']);
+        reading_queue_forget($forget, (string) $row['path']);
         exec_sql("DELETE FROM content_images WHERE id = ? AND parent_type = 'reading'", [(int) $row['id']]);
     }
     $removed = array_filter(array_map('intval', explode(',', (string) ($_POST['removed_media'] ?? ''))));
@@ -517,10 +712,19 @@ function reading_bind_images(int $articleId, string $body): string
         if ($parent !== 0 && $parent !== $articleId) {
             continue;
         }
-        forget_upload((string) $row['path']);
+        reading_queue_forget($forget, (string) $row['path']);
         exec_sql("DELETE FROM content_images WHERE id = ? AND parent_type = 'reading'", [$id]);
     }
     return $body;
+}
+
+function reading_queue_forget(?array &$forget, string $path): void
+{
+    if ($forget === null) {
+        forget_upload($path);
+        return;
+    }
+    $forget[] = $path;
 }
 
 function reading_release_images(int $articleId): void

@@ -304,6 +304,138 @@ function store_upload(string $field, string $folder): ?string
     return '/uploads/' . $name;
 }
 
+function settle_upload(string $path): void
+{
+    try {
+        settle_upload_file($path);
+    } catch (Throwable $e) {
+        // The stored file stays as it was uploaded.
+    }
+}
+
+function settle_upload_file(string $path): void
+{
+    if (!preg_match('#^/uploads/covers/[A-Za-z0-9._-]+$#', $path) || !function_exists('imagecreatetruecolor')) {
+        return;
+    }
+    $full = __DIR__ . '/..' . $path;
+    if (!is_file($full)) {
+        return;
+    }
+    $info = @getimagesize($full);
+    if ($info === false) {
+        return;
+    }
+    $type = (int) $info[2];
+    if ($type === IMAGETYPE_GIF) {
+        return;
+    }
+    $image = match ($type) {
+        IMAGETYPE_JPEG => function_exists('imagecreatefromjpeg') ? @imagecreatefromjpeg($full) : false,
+        IMAGETYPE_PNG => function_exists('imagecreatefrompng') ? @imagecreatefrompng($full) : false,
+        IMAGETYPE_WEBP => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($full) : false,
+        default => false,
+    };
+    if (!$image instanceof GdImage) {
+        return;
+    }
+    $changed = false;
+    if ($type === IMAGETYPE_JPEG && function_exists('imageflip') && function_exists('imagerotate') && jpeg_orientation($full) >= 2) {
+        $image = orient_upload($full, $image);
+        $changed = true;
+    }
+    $width = imagesx($image);
+    $height = imagesy($image);
+    $max = 1600;
+    if ($width > $max || $height > $max) {
+        $scale = $max / max($width, $height);
+        $targetWidth = max(1, (int) round($width * $scale));
+        $targetHeight = max(1, (int) round($height * $scale));
+        $scaled = imagecreatetruecolor($targetWidth, $targetHeight);
+        if (!$scaled instanceof GdImage) {
+            imagedestroy($image);
+            return;
+        }
+        if ($type === IMAGETYPE_PNG || $type === IMAGETYPE_WEBP) {
+            imagealphablending($scaled, false);
+            imagesavealpha($scaled, true);
+            $clear = imagecolorallocatealpha($scaled, 0, 0, 0, 127);
+            if ($clear !== false) {
+                imagefilledrectangle($scaled, 0, 0, $targetWidth, $targetHeight, $clear);
+            }
+        }
+        imagecopyresampled($scaled, $image, 0, 0, 0, 0, $targetWidth, $targetHeight, $width, $height);
+        imagedestroy($image);
+        $image = $scaled;
+        $changed = true;
+    }
+    if (!$changed) {
+        imagedestroy($image);
+        return;
+    }
+    $temp = $full . '.settling';
+    $saved = match ($type) {
+        IMAGETYPE_JPEG => imagejpeg($image, $temp, 85),
+        IMAGETYPE_PNG => imagepng($image, $temp, 6),
+        IMAGETYPE_WEBP => function_exists('imagewebp') ? imagewebp($image, $temp, 85) : false,
+        default => false,
+    };
+    imagedestroy($image);
+    if ($saved && is_file($temp) && filesize($temp) > 0) {
+        rename($temp, $full);
+        return;
+    }
+    if (is_file($temp)) {
+        unlink($temp);
+    }
+}
+
+function jpeg_orientation(string $full): int
+{
+    if (!function_exists('exif_read_data')) {
+        return 1;
+    }
+    $exif = @exif_read_data($full);
+    return (int) ($exif['Orientation'] ?? 1);
+}
+
+function orient_upload(string $full, GdImage $image): GdImage
+{
+    if (!function_exists('imageflip') || !function_exists('imagerotate')) {
+        return $image;
+    }
+    $orientation = jpeg_orientation($full);
+    if ($orientation < 2 || $orientation > 8) {
+        return $image;
+    }
+    if ($orientation === 2) {
+        imageflip($image, IMG_FLIP_HORIZONTAL);
+        return $image;
+    }
+    if ($orientation === 4) {
+        imageflip($image, IMG_FLIP_VERTICAL);
+        return $image;
+    }
+    $angle = match ($orientation) {
+        3 => 180,
+        5, 6 => -90,
+        7, 8 => 90,
+        default => 0,
+    };
+    if ($angle !== 0) {
+        $turned = imagerotate($image, $angle, 0);
+        if (!$turned instanceof GdImage) {
+            return $image;
+        }
+        imagedestroy($image);
+        $image = $turned;
+    }
+    if ($orientation === 5 || $orientation === 7) {
+        imageflip($image, IMG_FLIP_HORIZONTAL);
+    }
+    return $image;
+}
+
 function hex_color(string $value, string $fallback): string
 {
     return preg_match('/^#[0-9a-fA-F]{6}$/', $value) ? $value : $fallback;
