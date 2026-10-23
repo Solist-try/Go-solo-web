@@ -821,11 +821,26 @@ function reading_article_from_post(?array $existing, string $intent): array
     $article['category_id'] = (int) ($_POST['category_id'] ?? 0);
     $article['standfirst'] = clip(post_text('standfirst', 255), 255);
     $article['body'] = writing_from_post('body');
-    $article['status'] = ($_POST['status'] ?? '') === 'published' ? 'published' : 'draft';
+    $commit = (string) ($_POST['commit'] ?? '');
+    if ($commit === 'publish') {
+        $article['status'] = 'published';
+    } elseif ($commit === 'draft') {
+        $article['status'] = 'draft';
+    } else {
+        $article['status'] = ($_POST['status'] ?? '') === 'published' ? 'published' : 'draft';
+    }
     $article['featured'] = isset($_POST['featured']) ? 1 : 0;
     $article['featured_order'] = (int) ($_POST['featured_order'] ?? 0);
     $article['image_path'] = (string) ($existing['image_path'] ?? '');
     return $article;
+}
+
+function desk_reading_preview(array $params): void
+{
+    require_steward();
+    header('Content-Type: text/html; charset=UTF-8');
+    echo render_writing(writing_from_post('body'));
+    exit;
 }
 
 function desk_reading_save(array $params): void

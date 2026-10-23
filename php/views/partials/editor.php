@@ -39,7 +39,7 @@ if ($editorPlaceholder !== '') {
     <button type="button" data-cmd="quote" aria-label="<?= e(site_text('editor_quote')) ?>" title="<?= e(site_text('editor_quote')) ?>"><?= e(site_text('editor_quote')) ?></button>
     <button type="button" data-cmd="link" aria-label="<?= e(site_text('editor_link')) ?>" title="<?= e(site_text('editor_link')) ?>"><?= e(site_text('editor_link')) ?></button>
   </div>
-  <div class="editor-surface" contenteditable="true" role="textbox" aria-multiline="true" aria-label="<?= e((string) ($editor['body_label'] ?? 'Write here')) ?>"></div>
+  <div class="editor-surface" contenteditable="true" role="textbox" aria-multiline="true" aria-label="<?= e((string) ($editor['body_label'] ?? 'Write here')) ?>"<?php if (!empty($editor['describedby'])): ?> aria-describedby="<?= e((string) $editor['describedby']) ?>"<?php endif; ?>></div>
   <textarea class="editor-source" name="<?= e((string) ($editor['body_name'] ?? 'body')) ?>" maxlength="20000"><?= e((string) ($editor['body'] ?? '')) ?></textarea>
 <?php if (!$editorEmbedded): ?>
   <?php if (!empty($editor['show_image'])): ?>
