@@ -3,6 +3,17 @@
   <div class="frame section">
   <h1><?= e(site_text('reading_title')) ?></h1>
   <p><?= e(site_text('reading_intro')) ?></p>
+  <?php if (count($categories) > 1): ?>
+    <nav aria-label="Categories">
+      <ul class="reading-places">
+        <?php foreach ($categories as $category): ?>
+          <?php $place = trim((string) ($category['slug'] ?? '')); ?>
+          <?php if ($place === '') { continue; } ?>
+          <li><a href="#<?= e($place) ?>"><?= e($category['title']) ?></a></li>
+        <?php endforeach; ?>
+      </ul>
+    </nav>
+  <?php endif; ?>
   <?php if (!empty($featured)): ?>
     <article class="reading-note">
       <p class="kicker"><?= e(site_text('pin_featured')) ?></p>
@@ -30,8 +41,9 @@
       if ($image !== '' && ((int) $index % 2) === 1) {
           $shelfClass .= ' image-left';
       }
+      $place = trim((string) ($category['slug'] ?? ''));
     ?>
-    <article class="<?= e($shelfClass) ?>">
+    <article class="<?= e($shelfClass) ?>"<?= $place !== '' ? ' id="' . e($place) . '"' : '' ?>>
       <div class="shelf-copy">
         <h2><?= e($category['title']) ?></h2>
         <?php if (trim((string) $category['line']) !== ''): ?><p class="shelf-line"><?= e($category['line']) ?></p><?php endif; ?>

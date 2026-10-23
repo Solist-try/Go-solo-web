@@ -164,7 +164,9 @@ a.card.sage:hover { background: var(--sage-hover); }
 }
 .reading-note { margin-top: 2rem; }
 .reading-note .previews a strong { font-size: 1.15rem; font-weight: 500; }
-.reading-shelf { margin-top: 4.25rem; }
+.reading-places { display: flex; flex-wrap: wrap; gap: 0.35rem 1.25rem; margin: 0.15rem 0 0; padding: 0; list-style: none; }
+.reading-places a { font-family: var(--serif); text-decoration: underline; text-underline-offset: 0.18em; }
+.reading-shelf { margin-top: 4.25rem; scroll-margin-top: 1.25rem; }
 .reading-shelf .shelf-copy { min-width: 0; overflow-wrap: break-word; }
 .reading-shelf h2 {
   margin: 0;

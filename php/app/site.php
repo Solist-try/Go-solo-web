@@ -433,7 +433,7 @@ function page_reading(array $params): void
 function page_reading_show(array $params): void
 {
     $article = one(
-        'SELECT r.*, c.title AS category_title
+        'SELECT r.*, c.title AS category_title, c.slug AS category_slug
          FROM readings r
          JOIN reading_categories c ON c.id = r.category_id
          WHERE r.slug = ? AND r.status = ?',
