@@ -425,29 +425,96 @@ th, td { text-align: left; padding: 0.75rem 0.5rem; border-bottom: 1px solid var
 .writing blockquote p:last-child { margin-bottom: 0; }
 .writing ul, .writing ol,
 .editor-surface ul, .editor-surface ol { margin: 0.4rem 0 0.9rem 1.2rem; }
-.writing-figure { margin: 1.2rem 0 1.45rem; }
+.writing-figure {
+  width: min(100%, 36rem);
+  margin: 1.6rem auto 1.15rem;
+}
 .writing-figure img {
   display: block;
-  width: auto;
+  width: 100%;
   max-width: 100%;
   height: auto;
-  max-height: 32rem;
+  max-height: none;
+  object-fit: contain;
   margin-inline: auto;
   border-radius: 20px;
 }
 .writing figcaption,
-.writing-figure figcaption { color: var(--soft); font-size: 0.95rem; line-height: 1.5; margin: 0.45rem 0 0; }
+.writing-figure figcaption,
+.writing-figure-caption {
+  color: var(--soft);
+  font-size: 0.92rem;
+  line-height: 1.45;
+  margin: 0.4rem 0 0;
+  text-align: center;
+}
+.writing-figure-label {
+  margin: 0 0 0.45rem;
+  color: var(--soft);
+  font-size: 0.82rem;
+}
+.writing-figure-status { margin: 0.45rem 0 0; font-size: 0.92rem; color: var(--ink); }
 .editor-surface .writing-figure {
+  position: relative;
   background: var(--mist);
   border-radius: 20px;
   padding: 0.75rem;
 }
-.editor-surface .writing-figure img { max-height: 22rem; background: var(--bg); }
+.editor-surface .writing-figure:focus,
+.editor-surface .writing-figure:focus-within {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+.editor-surface .writing-figure img { background: var(--bg); }
 .editor-surface .writing-figure label { margin: 0.7rem 0 0; }
 .editor-surface .writing-figure input[type="text"] { max-width: none; background: var(--bg); }
+.editor-surface .writing-figure:not(:focus-within) .writing-figure-tools {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 .writing-figure-actions { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.7rem; }
 .writing-figure-actions button { min-height: 2.75rem; padding: 0.45rem 0.8rem; }
+.writing-figure-actions button:disabled { opacity: 0.45; }
 .writing-figure-missing { margin: 0; }
+.editor-image-panel {
+  width: min(100%, 36rem);
+  margin: 0.7rem auto 0.9rem;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--mist);
+}
+.editor-image-panel img {
+  display: block;
+  width: min(100%, 16rem);
+  height: auto;
+  margin: 0 auto 0.45rem;
+  border-radius: 12px;
+}
+.editor-image-choice {
+  display: block;
+  width: 100%;
+  margin: 0 0 0.45rem;
+  min-height: 2.75rem;
+  text-align: center;
+}
+.editor-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
 .writing li + li { margin-top: 0.25rem; }
 .editor-surface.is-empty::before {
   content: attr(data-placeholder);
@@ -483,6 +550,7 @@ th, td { text-align: left; padding: 0.75rem 0.5rem; border-bottom: 1px solid var
   min-height: 2.75rem;
   padding: 0.45rem 0.8rem;
 }
+.editor.editor-article .editor-tools button:disabled { opacity: 0.45; }
 .editor.editor-article .editor-tools button.is-active {
   border: 2px solid var(--ink);
   font-weight: 700;

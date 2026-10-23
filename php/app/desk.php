@@ -861,6 +861,7 @@ function desk_reading_image(array $params): void
         echo json_encode(['error' => site_text('editor_image_failed')], JSON_UNESCAPED_UNICODE);
         exit;
     }
+    settle_upload($path);
     $articleId = (int) ($_POST['article_id'] ?? 0);
     if ($articleId > 0 && !one('SELECT id FROM readings WHERE id = ?', [$articleId])) {
         $articleId = 0;
@@ -897,7 +898,11 @@ function desk_reading_preview(array $params): void
 {
     require_steward();
     header('Content-Type: text/html; charset=UTF-8');
-    echo reading_render_body(writing_from_post('body', reading_images_ready()), 0, true);
+    $articleId = (int) ($_POST['article_id'] ?? 0);
+    if ($articleId > 0 && !one('SELECT id FROM readings WHERE id = ?', [$articleId])) {
+        $articleId = 0;
+    }
+    echo reading_render_body(writing_from_post('body', reading_images_ready()), $articleId, true);
     exit;
 }
 
@@ -920,9 +925,17 @@ function desk_reading_save(array $params): void
         reading_form_show($article, 'An article needs a title and a category.');
         return;
     }
-    if (reading_images_ready() && reading_missing_alt((string) $article['body'])) {
-        reading_form_show($article, site_text('editor_image_needs'));
-        return;
+    if (reading_images_ready()) {
+        $inlineProblem = reading_inline_problem((string) $article['body']);
+        if ($inlineProblem !== '') {
+            reading_form_show($article, $inlineProblem);
+            return;
+        }
+        $ownerId = $intent === 'update' ? (int) $existing['id'] : 0;
+        if (reading_unusable_images((string) $article['body'], $ownerId)) {
+            reading_form_show($article, site_text('editor_image_missing'));
+            return;
+        }
     }
     $problem = upload_problem('image');
     if ($problem) {
@@ -942,31 +955,52 @@ function desk_reading_save(array $params): void
     }
     $image = store_upload('image', 'reading');
     $status = (string) $article['status'];
-    if ($intent === 'update') {
-        $savedId = (int) $existing['id'];
-        if ($image) {
-            exec_sql(
-                'UPDATE readings SET category_id = ?, slug = ?, title = ?, standfirst = ?, body = ?, image_path = ?, status = ?, updated_at = NOW() WHERE id = ?',
-                [(int) $article['category_id'], $slug, $article['title'], $article['standfirst'], $body, $image, $status, $savedId]
-            );
+    $savedId = $intent === 'update' ? (int) $existing['id'] : 0;
+    $forget = [];
+    $db = db();
+    try {
+        $db->beginTransaction();
+        if ($intent === 'update') {
+            if ($image) {
+                exec_sql(
+                    'UPDATE readings SET category_id = ?, slug = ?, title = ?, standfirst = ?, body = ?, image_path = ?, status = ?, updated_at = NOW() WHERE id = ?',
+                    [(int) $article['category_id'], $slug, $article['title'], $article['standfirst'], $body, $image, $status, $savedId]
+                );
+            } else {
+                exec_sql(
+                    'UPDATE readings SET category_id = ?, slug = ?, title = ?, standfirst = ?, body = ?, status = ?, updated_at = NOW() WHERE id = ?',
+                    [(int) $article['category_id'], $slug, $article['title'], $article['standfirst'], $body, $status, $savedId]
+                );
+            }
         } else {
             exec_sql(
-                'UPDATE readings SET category_id = ?, slug = ?, title = ?, standfirst = ?, body = ?, status = ?, updated_at = NOW() WHERE id = ?',
-                [(int) $article['category_id'], $slug, $article['title'], $article['standfirst'], $body, $status, $savedId]
+                'INSERT INTO readings (category_id, slug, title, standfirst, body, image_path, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())',
+                [(int) $article['category_id'], $slug, $article['title'], $article['standfirst'], $body, $image ?? '', $status]
             );
+            $savedId = (int) $db->lastInsertId();
         }
-    } else {
-        exec_sql(
-            'INSERT INTO readings (category_id, slug, title, standfirst, body, image_path, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())',
-            [(int) $article['category_id'], $slug, $article['title'], $article['standfirst'], $body, $image ?? '', $status]
-        );
-        $savedId = (int) db()->lastInsertId();
+        if (reading_images_ready() && $savedId > 0) {
+            $bound = reading_bind_images($savedId, $body, $forget);
+            if ($bound !== $body) {
+                exec_sql('UPDATE readings SET body = ? WHERE id = ?', [$bound, $savedId]);
+            }
+        }
+        $db->commit();
+    } catch (Throwable $e) {
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
+        error_log('Reading article save failed: ' . $e->getMessage());
+        $message = 'The article could not be saved. Your writing is still here.';
+        try {
+            $message = site_text('editor_article_unsaved');
+        } catch (Throwable $ignored) {
+        }
+        reading_form_show($article, $message);
+        return;
     }
-    if (reading_images_ready() && $savedId > 0) {
-        $bound = reading_bind_images($savedId, $body);
-        if ($bound !== $body) {
-            exec_sql('UPDATE readings SET body = ? WHERE id = ?', [$bound, $savedId]);
-        }
+    foreach ($forget as $path) {
+        forget_upload($path);
     }
     if (pin_ready() && $savedId > 0) {
         $wantFeature = !empty($article['featured']) && $status === 'published';

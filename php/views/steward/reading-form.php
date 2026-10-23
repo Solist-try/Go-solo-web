@@ -7,11 +7,19 @@ include __DIR__ . '/open.php';
 $existingImage = trim((string) ($article['image_path'] ?? ''));
 $readingImagesReady = function_exists('reading_images_ready') && reading_images_ready();
 $readingMedia = [];
+$readingLibrary = [];
 if ($readingImagesReady && function_exists('reading_media_catalog')) {
     try {
-        $readingMedia = reading_media_catalog((string) ($article['body'] ?? ''));
+        $readingMedia = reading_media_catalog((string) ($article['body'] ?? ''), (int) ($article['id'] ?? 0));
     } catch (Throwable $e) {
         $readingMedia = [];
+    }
+}
+if ($readingImagesReady && function_exists('reading_article_library')) {
+    try {
+        $readingLibrary = reading_article_library((int) ($article['id'] ?? 0));
+    } catch (Throwable $e) {
+        $readingLibrary = [];
     }
 }
 ?>
@@ -78,8 +86,10 @@ if ($readingImagesReady && function_exists('reading_media_catalog')) {
       ?>
       <?php if (!$readingImagesReady): ?><p class="soft"><?= e(site_text('editor_image_unavailable')) ?></p><?php endif; ?>
       <script type="application/json" id="reading-media"><?= json_encode($readingMedia, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?></script>
+      <script type="application/json" id="reading-library"><?= json_encode($readingLibrary, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?></script>
       <div class="article-media">
-        <label><span>Image</span><input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif"></label>
+        <label><span><?= e(site_text('editor_featured_image')) ?></span><input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif"></label>
+        <p class="soft"><?= e(site_text('editor_featured_note')) ?></p>
         <?php if ($existingImage !== ''): ?>
           <img class="photo support-photo" src="<?= e(media($existingImage)) ?>" alt="">
         <?php endif; ?>
