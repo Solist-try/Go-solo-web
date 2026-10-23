@@ -706,58 +706,268 @@ function desk_waypoint_save(array $params): void
     redirect('/steward/waypoints');
 }
 
+function reading_list_state(?array $source = null): array
+{
+    $source = $source ?? $_GET;
+    $status = (string) ($source['status'] ?? 'all');
+    if (!in_array($status, ['all', 'published', 'draft'], true)) {
+        $status = 'all';
+    }
+    $category = (int) ($source['category'] ?? 0);
+    if ($category < 0) {
+        $category = 0;
+    }
+    $q = clip(trim((string) ($source['q'] ?? '')), 120);
+    $sort = (string) ($source['sort'] ?? 'edited');
+    if (!in_array($sort, ['edited', 'title', 'category', 'status'], true)) {
+        $sort = 'edited';
+    }
+    $dir = strtolower((string) ($source['dir'] ?? ''));
+    if ($dir !== 'asc' && $dir !== 'desc') {
+        $dir = $sort === 'edited' ? 'desc' : 'asc';
+    }
+    return [
+        'status' => $status,
+        'category' => $category,
+        'q' => $q,
+        'sort' => $sort,
+        'dir' => $dir,
+    ];
+}
+
+function reading_list_query(array $state, array $over = []): string
+{
+    $state = array_merge($state, $over);
+    $parts = [];
+    if (($state['status'] ?? 'all') !== 'all') {
+        $parts['status'] = (string) $state['status'];
+    }
+    if ((int) ($state['category'] ?? 0) > 0) {
+        $parts['category'] = (string) (int) $state['category'];
+    }
+    $q = trim((string) ($state['q'] ?? ''));
+    if ($q !== '') {
+        $parts['q'] = $q;
+    }
+    $sort = (string) ($state['sort'] ?? 'edited');
+    $dir = (string) ($state['dir'] ?? 'desc');
+    if (!in_array($sort, ['edited', 'title', 'category', 'status'], true)) {
+        $sort = 'edited';
+    }
+    if ($dir !== 'asc' && $dir !== 'desc') {
+        $dir = 'desc';
+    }
+    if ($sort !== 'edited' || $dir !== 'desc') {
+        $parts['sort'] = $sort;
+        $parts['dir'] = $dir;
+    }
+    return http_build_query($parts);
+}
+
+function reading_list_url(array $state, array $over = []): string
+{
+    $query = reading_list_query($state, $over);
+    return '/steward/reading' . ($query !== '' ? '?' . $query : '');
+}
+
+function reading_sort_url(array $state, string $column): string
+{
+    $first = $column === 'edited' ? 'desc' : 'asc';
+    if (($state['sort'] ?? '') === $column) {
+        $dir = ($state['dir'] ?? '') === 'asc' ? 'desc' : 'asc';
+    } else {
+        $dir = $first;
+    }
+    return reading_list_url($state, ['sort' => $column, 'dir' => $dir]);
+}
+
+function reading_desk_return(): string
+{
+    $place = (string) ($_POST['return'] ?? '');
+    if ($place === 'layout') {
+        return '/steward/reading/layout';
+    }
+    if ($place === 'categories') {
+        return '/steward/reading/categories';
+    }
+    return reading_list_url(reading_list_state($_POST));
+}
+
+function reading_categories_with_counts(): array
+{
+    return q(
+        'SELECT c.*, (SELECT COUNT(*) FROM readings r WHERE r.category_id = c.id) AS article_count
+         FROM reading_categories c
+         ORDER BY c.sort_order, c.title'
+    );
+}
+
+function reading_posted_order(bool $emptyIsNext): int
+{
+    $raw = trim((string) ($_POST['sort_order'] ?? ''));
+    if ($raw === '' && $emptyIsNext) {
+        return count_of('SELECT COUNT(*) AS n FROM reading_categories') + 1;
+    }
+    $sort = (int) $raw;
+    if ($sort < 0) {
+        return 0;
+    }
+    if ($sort > 9999) {
+        return 9999;
+    }
+    return $sort;
+}
+
 function desk_reading(array $params): void
 {
     require_steward();
+    $filters = reading_list_state();
+    $where = [];
+    $bind = [];
+    if ($filters['status'] !== 'all') {
+        $where[] = 'r.status = ?';
+        $bind[] = $filters['status'];
+    }
+    if ($filters['category'] > 0) {
+        $where[] = 'r.category_id = ?';
+        $bind[] = $filters['category'];
+    }
+    if ($filters['q'] !== '') {
+        $where[] = "r.title LIKE ? ESCAPE '\\\\'";
+        $bind[] = like_contains($filters['q']);
+    }
+    $orderMap = [
+        'edited' => 'r.updated_at',
+        'title' => 'r.title',
+        'category' => 'c.title',
+        'status' => 'r.status',
+    ];
+    $order = $orderMap[$filters['sort']] . ($filters['dir'] === 'asc' ? ' ASC' : ' DESC') . ', r.id DESC';
+    $sql = 'SELECT r.id, r.slug, r.title, r.status, r.updated_at, c.title AS category_title'
+        . (pin_ready() ? ', r.featured' : '')
+        . ' FROM readings r JOIN reading_categories c ON c.id = r.category_id';
+    if ($where) {
+        $sql .= ' WHERE ' . implode(' AND ', $where);
+    }
+    $sql .= ' ORDER BY ' . $order;
     view('steward/reading', [
-        'categories' => q('SELECT * FROM reading_categories ORDER BY sort_order, title'),
-        'articles' => q(
-            'SELECT r.id, r.title, r.status, c.title AS category_title' . (pin_ready() ? ', r.featured, r.featured_order' : '') . '
-             FROM readings r JOIN reading_categories c ON c.id = r.category_id
-             ORDER BY r.updated_at DESC'
-        ),
+        'articles' => q($sql, $bind),
+        'categories' => q('SELECT id, title FROM reading_categories ORDER BY sort_order, title'),
+        'filters' => $filters,
+        'pins' => pin_ready(),
+    ]);
+}
+
+function desk_reading_categories(array $params): void
+{
+    require_steward();
+    view('steward/reading-categories', [
+        'categories' => reading_categories_with_counts(),
+    ]);
+}
+
+function desk_reading_layout(array $params): void
+{
+    require_steward();
+    view('steward/reading-layout', [
+        'categories' => reading_categories_with_counts(),
         'featured' => pin_ready()
             ? q('SELECT id, title, featured_order FROM readings WHERE featured = 1 ORDER BY featured_order, title, id')
             : [],
     ]);
 }
 
+function desk_reading_status(array $params): void
+{
+    require_steward();
+    $id = (int) ($_POST['id'] ?? 0);
+    $next = ($_POST['next'] ?? '') === 'published' ? 'published' : 'draft';
+    $row = one(
+        'SELECT id, status' . (pin_ready() ? ', featured' : '') . ' FROM readings WHERE id = ?',
+        [$id]
+    );
+    if (!$row) {
+        flash('That article could not be found.');
+        redirect(reading_desk_return());
+    }
+    if ((string) $row['status'] !== $next) {
+        exec_sql('UPDATE readings SET status = ?, updated_at = NOW() WHERE id = ?', [$next, $id]);
+        if ($next === 'draft' && pin_ready() && !empty($row['featured'])) {
+            pin_featured_save($id, 'clear');
+        }
+    }
+    flash($next === 'published' ? 'The article is published.' : 'The article is a draft.');
+    redirect(reading_desk_return());
+}
+
 function desk_reading_category(array $params): void
 {
     require_steward();
+    $back = '/steward/reading/categories';
     $id = (int) ($_POST['id'] ?? 0);
     $title = clip(post_text('title', 120), 120);
     if ($title === '') {
         flash('A category needs a title.');
-        redirect('/steward/reading');
+        redirect($back);
     }
     $line = clip(post_text('line', 255), 255);
     $alt = clip(post_text('image_alt', 255), 255);
     $problem = upload_problem('image');
     if ($problem) {
         flash($problem);
-        redirect('/steward/reading');
+        redirect($back);
     }
     $image = store_upload('image', 'reading');
-    $slug = unique_slug('reading_categories', slugify($title), $id);
-    if ($id && one('SELECT id FROM reading_categories WHERE id = ?', [$id])) {
+    $existing = $id ? one('SELECT id FROM reading_categories WHERE id = ?', [$id]) : null;
+    if ($existing) {
+        $sort = reading_posted_order(false);
         if ($image) {
             exec_sql(
-                'UPDATE reading_categories SET title = ?, line = ?, image_alt = ?, image_path = ? WHERE id = ?',
-                [$title, $line, $alt, $image, $id]
+                'UPDATE reading_categories SET title = ?, line = ?, image_alt = ?, image_path = ?, sort_order = ? WHERE id = ?',
+                [$title, $line, $alt, $image, $sort, $id]
             );
         } else {
-            exec_sql('UPDATE reading_categories SET title = ?, line = ?, image_alt = ? WHERE id = ?', [$title, $line, $alt, $id]);
+            exec_sql(
+                'UPDATE reading_categories SET title = ?, line = ?, image_alt = ?, sort_order = ? WHERE id = ?',
+                [$title, $line, $alt, $sort, $id]
+            );
         }
     } else {
-        $sort = count_of('SELECT COUNT(*) AS n FROM reading_categories') + 1;
+        $slug = unique_slug('reading_categories', slugify($title), 0);
+        $sort = reading_posted_order(true);
         exec_sql(
             'INSERT INTO reading_categories (slug, title, line, image_path, image_alt, sort_order) VALUES (?, ?, ?, ?, ?, ?)',
             [$slug, $title, $line, $image ?? '', $alt, $sort]
         );
     }
     flash('The category is saved.');
-    redirect('/steward/reading');
+    redirect($back);
+}
+
+function desk_reading_category_order(array $params): void
+{
+    require_steward();
+    $orders = $_POST['sort_order'] ?? [];
+    if (!is_array($orders)) {
+        flash('The order could not be saved.');
+        redirect('/steward/reading/layout');
+    }
+    foreach ($orders as $key => $value) {
+        $id = (int) $key;
+        if ($id <= 0) {
+            continue;
+        }
+        $sort = (int) $value;
+        if ($sort < 0) {
+            $sort = 0;
+        }
+        if ($sort > 9999) {
+            $sort = 9999;
+        }
+        exec_sql('UPDATE reading_categories SET sort_order = ? WHERE id = ?', [$sort, $id]);
+    }
+    flash('The category order is saved.');
+    redirect('/steward/reading/layout');
 }
 
 function desk_reading_category_delete(array $params): void
@@ -769,7 +979,7 @@ function desk_reading_category_delete(array $params): void
     } catch (Throwable $e) {
         flash('That shelf still has articles. Move or delete them first.');
     }
-    redirect('/steward/reading');
+    redirect('/steward/reading/categories');
 }
 
 function desk_reading_form(array $params): void

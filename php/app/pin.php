@@ -247,14 +247,14 @@ function desk_pin_feature(array $params): void
     require_steward();
     if (!pin_ready()) {
         flash(site_text('pin_import'));
-        redirect('/steward/reading');
+        redirect(reading_desk_return());
     }
     $action = (string) ($_POST['action'] ?? '');
     if ($action === 'order') {
         $orders = $_POST['featured_order'] ?? [];
         if (!is_array($orders)) {
             flash(site_text('pin_unavailable'));
-            redirect('/steward/reading');
+            redirect(reading_desk_return());
         }
         foreach ($orders as $key => $value) {
             $id = (int) $key;
@@ -264,15 +264,15 @@ function desk_pin_feature(array $params): void
             exec_sql('UPDATE readings SET featured_order = ? WHERE id = ? AND featured = 1', [(int) $value, $id]);
         }
         flash(site_text('pin_msg'));
-        redirect('/steward/reading');
+        redirect(reading_desk_return());
     }
     $id = (int) ($_POST['id'] ?? 0);
     if (!pin_featured_save($id, $action)) {
         flash(site_text('pin_unavailable'));
-        redirect('/steward/reading');
+        redirect(reading_desk_return());
     }
     flash(site_text('pin_msg'));
-    redirect('/steward/reading');
+    redirect(reading_desk_return());
 }
 
 function desk_campfire_edit_form(array $params): void

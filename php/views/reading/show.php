@@ -1,7 +1,8 @@
 <?php $pageTitle = ($article['title'] ?? 'Reading') . ' · ' . site_text('site_title'); ?>
 <section class="band mist">
   <div class="frame section narrow">
-  <p class="kicker"><a href="<?= e(url('/reading')) ?>"><?= e($article['category_title']) ?></a></p>
+  <?php $place = trim((string) ($article['category_slug'] ?? '')); ?>
+  <p class="kicker"><a href="<?= e(url($place !== '' ? '/reading#' . $place : '/reading')) ?>"><?= e($article['category_title']) ?></a></p>
   <h1 class="article-title"><?= e($article['title']) ?></h1>
   <?php if ($article['standfirst']): ?><p class="lede article-standfirst"><?= e($article['standfirst']) ?></p><?php endif; ?>
   <?php if (!empty($article['image_path'])): ?>
