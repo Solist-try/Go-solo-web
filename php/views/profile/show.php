@@ -42,6 +42,7 @@ $name = $person['display_name'] ?: site_text('garden_member');
         <?php foreach ($talkRequests as $conversation): ?>
           <li>
             <a href="<?= e(url('/conversations/' . $conversation['id'])) ?>"><?= e($conversation['context_label'] ?: site_text('talk_request_heading')) ?></a>
+            <?php include __DIR__ . '/../partials/talk-unread.php'; ?>
             <?php if ($conversation['other_name']): ?><span class="soft"> · <?= e($conversation['other_name']) ?></span><?php endif; ?>
           </li>
         <?php endforeach; ?>
@@ -53,6 +54,7 @@ $name = $person['display_name'] ?: site_text('garden_member');
         <?php foreach ($talkWaiting as $conversation): ?>
           <li>
             <a href="<?= e(url('/conversations/' . $conversation['id'])) ?>"><?= e($conversation['context_label'] ?: site_text('talk_heading')) ?></a>
+            <?php include __DIR__ . '/../partials/talk-unread.php'; ?>
             <?php if ($conversation['other_name']): ?><span class="soft"> · <?= e($conversation['other_name']) ?></span><?php endif; ?>
           </li>
         <?php endforeach; ?>
@@ -66,6 +68,7 @@ $name = $person['display_name'] ?: site_text('garden_member');
         <?php foreach ($conversations as $conversation): ?>
           <li>
             <a href="<?= e(url('/conversations/' . $conversation['id'])) ?>"><?= e($conversation['context_label'] ?: site_text('talk_heading')) ?></a>
+            <?php include __DIR__ . '/../partials/talk-unread.php'; ?>
             <?php if ($conversation['other_name']): ?><span class="soft"> · <?= e($conversation['other_name']) ?></span><?php endif; ?>
             <?php if ((int) $conversation['closed'] === 1): ?><span class="soft"> · <?= e(site_text('talk_closed')) ?></span><?php endif; ?>
           </li>
@@ -92,7 +95,7 @@ $name = $person['display_name'] ?: site_text('garden_member');
           <h2><?= e(site_text('life_talk_archived')) ?></h2>
           <ul class="list">
             <?php foreach ($lifeTalk['archived'] as $conversation): ?>
-              <li><a href="<?= e(url('/conversations/' . $conversation['id'])) ?>"><?= e($conversation['context_label'] ?: site_text('talk_heading')) ?></a></li>
+              <li><a href="<?= e(url('/conversations/' . $conversation['id'])) ?>"><?= e($conversation['context_label'] ?: site_text('talk_heading')) ?></a><?php include __DIR__ . '/../partials/talk-unread.php'; ?></li>
             <?php endforeach; ?>
           </ul>
         <?php endif; ?>
@@ -100,7 +103,7 @@ $name = $person['display_name'] ?: site_text('garden_member');
           <h2><?= e(site_text('life_talk_closed_heading')) ?></h2>
           <ul class="list">
             <?php foreach ($lifeTalk['closed'] as $conversation): ?>
-              <li><a href="<?= e(url('/conversations/' . $conversation['id'])) ?>"><?= e($conversation['context_label'] ?: site_text('talk_heading')) ?></a></li>
+              <li><a href="<?= e(url('/conversations/' . $conversation['id'])) ?>"><?= e($conversation['context_label'] ?: site_text('talk_heading')) ?></a><?php include __DIR__ . '/../partials/talk-unread.php'; ?></li>
             <?php endforeach; ?>
           </ul>
         <?php endif; ?>

@@ -297,14 +297,80 @@ function talk_outgoing(int $userId): array
     return talk_with_names($rows, $userId);
 }
 
+function talk_read_ready(): bool
+{
+    static $ready = null;
+    if ($ready === null) {
+        $ready = table_has_column('conversation_messages', 'read_at');
+    }
+    return $ready;
+}
+
 function talk_with_names(array $rows, int $userId): array
 {
+    $counts = talk_unread_counts(array_map(static fn (array $row): int => (int) $row['id'], $rows), $userId);
     foreach ($rows as $i => $row) {
         $other = talk_other((int) $row['id'], $userId);
         $rows[$i]['other_id'] = $other;
         $rows[$i]['other_name'] = $other ? display_name_of($other) : '';
+        $rows[$i]['unread_count'] = $counts[(int) $row['id']] ?? 0;
     }
     return $rows;
+}
+
+function talk_unread_counts(array $conversationIds, int $userId): array
+{
+    $conversationIds = array_values(array_unique(array_filter(array_map('intval', $conversationIds), static fn (int $id): bool => $id > 0)));
+    if (!talk_read_ready() || $userId <= 0 || !$conversationIds) {
+        return [];
+    }
+    $holders = implode(',', array_fill(0, count($conversationIds), '?'));
+    $rows = q(
+        'SELECT conversation_id, COUNT(*) AS n
+         FROM conversation_messages
+         WHERE conversation_id IN (' . $holders . ') AND user_id <> ? AND read_at IS NULL
+         GROUP BY conversation_id',
+        array_merge($conversationIds, [$userId])
+    );
+    $counts = [];
+    foreach ($rows as $row) {
+        $counts[(int) $row['conversation_id']] = (int) $row['n'];
+    }
+    return $counts;
+}
+
+function talk_unread_total(int $userId): int
+{
+    if (!talk_read_ready() || !conversations_ready() || $userId <= 0) {
+        return 0;
+    }
+    return count_of(
+        'SELECT COUNT(*) AS n
+         FROM conversation_messages m
+         JOIN conversation_participants p ON p.conversation_id = m.conversation_id AND p.user_id = ?
+         JOIN conversations c ON c.id = m.conversation_id
+         WHERE m.user_id <> ? AND m.read_at IS NULL AND c.status <> ?',
+        [$userId, $userId, 'declined']
+    );
+}
+
+function talk_mark_seen(int $conversationId, int $userId, bool $messagesVisible): void
+{
+    if (!talk_read_ready() || $conversationId <= 0 || $userId <= 0 || !talk_participant($conversationId, $userId)) {
+        return;
+    }
+    if ($messagesVisible) {
+        exec_sql(
+            'UPDATE conversation_messages
+             SET read_at = NOW()
+             WHERE conversation_id = ? AND user_id <> ? AND read_at IS NULL',
+            [$conversationId, $userId]
+        );
+    }
+    exec_sql(
+        'UPDATE notices SET read_at = NOW() WHERE user_id = ? AND read_at IS NULL AND href = ?',
+        [$userId, '/conversations/' . $conversationId]
+    );
 }
 
 function talk_block_list(int $userId): array
@@ -866,6 +932,7 @@ function page_talk(array $params): void
             'ended' => $ended,
         ];
     }
+    talk_mark_seen($id, $mine, $status !== 'declined');
     $clear = $other > 0 && !talk_blocked($mine, $other) && !talk_held($mine) && !talk_held($other) && talk_pref($mine) !== 'none' && talk_pref($other) !== 'none';
     $chair = function_exists('path_chair') ? path_chair($conversation, $mine) : ['ready' => false];
     view('talk/show', [

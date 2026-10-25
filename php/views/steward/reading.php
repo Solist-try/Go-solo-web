@@ -2,21 +2,36 @@
 $pageTitle = 'Reading Room · Steward Desk';
 $desk = 'reading';
 $readingDesk = 'articles';
-$filters = $filters ?? ['status' => 'all', 'category' => 0, 'q' => '', 'sort' => 'edited', 'dir' => 'desc'];
+$filters = $filters ?? ['status' => 'all', 'category' => 0, 'q' => '', 'sort' => 'edited', 'dir' => 'asc'];
 include __DIR__ . '/open.php';
 $tabs = ['all' => 'All', 'published' => 'Published', 'draft' => 'Drafts'];
 $columns = [
     'title' => 'Title',
     'category' => 'Category',
     'status' => 'Status',
+    'published' => 'Published',
     'edited' => 'Last edited',
 ];
 $sortNotes = [
-    'edited' => ['desc' => 'newest first', 'asc' => 'oldest first'],
+    'edited' => ['asc' => 'oldest first', 'desc' => 'newest first'],
     'title' => ['asc' => 'A to Z', 'desc' => 'Z to A'],
+    'published' => ['asc' => 'oldest first', 'desc' => 'newest first'],
     'category' => ['asc' => 'A to Z', 'desc' => 'Z to A'],
     'status' => ['asc' => 'drafts first', 'desc' => 'published first'],
 ];
+$orders = [
+    'edited|asc' => 'Oldest edited first',
+    'edited|desc' => 'Newest edited first',
+    'title|asc' => 'Title, A to Z',
+    'title|desc' => 'Title, Z to A',
+    'published|asc' => 'Published date, oldest first',
+    'published|desc' => 'Published date, newest first',
+    'category|asc' => 'Category, A to Z',
+    'category|desc' => 'Category, Z to A',
+    'status|asc' => 'Status, drafts first',
+    'status|desc' => 'Status, published first',
+];
+$currentOrder = $filters['sort'] . '|' . $filters['dir'];
 ?>
 <h1>Reading Room</h1>
 <?php include __DIR__ . '/reading-nav.php'; ?>
@@ -28,10 +43,13 @@ $sortNotes = [
 </nav>
 <form class="reading-filters" method="get" action="<?= e(url('/steward/reading')) ?>">
   <?php if ($filters['status'] !== 'all'): ?><input type="hidden" name="status" value="<?= e($filters['status']) ?>"><?php endif; ?>
-  <?php if ($filters['sort'] !== 'edited' || $filters['dir'] !== 'desc'): ?>
-    <input type="hidden" name="sort" value="<?= e($filters['sort']) ?>">
-    <input type="hidden" name="dir" value="<?= e($filters['dir']) ?>">
-  <?php endif; ?>
+  <label><span>Order</span>
+    <select name="order">
+      <?php foreach ($orders as $value => $label): ?>
+        <option value="<?= e($value) ?>"<?= $currentOrder === $value ? ' selected' : '' ?>><?= e($label) ?></option>
+      <?php endforeach; ?>
+    </select>
+  </label>
   <label><span>Category</span>
     <select name="category">
       <option value="0">All categories</option>
@@ -67,7 +85,8 @@ $sortNotes = [
             <td><a href="<?= e(url('/steward/reading/' . $article['id'])) ?>"><?= e($article['title']) ?></a></td>
             <td><?= e($article['category_title']) ?></td>
             <td><span class="reading-state reading-state-<?= e($article['status']) ?>"><?= e($published ? 'Published' : 'Draft') ?></span></td>
-            <td><time datetime="<?= e((string) $article['updated_at']) ?>"><?= e(nice_date($article['updated_at'])) ?></time></td>
+            <td><?php if (!empty($article['published_at'])): ?><time datetime="<?= e((string) $article['published_at']) ?>"><?= e(nice_date($article['published_at'])) ?></time><?php else: ?>—<?php endif; ?></td>
+            <td><time datetime="<?= e((string) $article['updated_at']) ?>"><?= e(nice_stamp($article['updated_at'])) ?></time></td>
             <?php if (!empty($pins)): ?><td><?= !empty($article['featured']) ? 'Featured' : '' ?></td><?php endif; ?>
             <td>
               <div class="row-actions">

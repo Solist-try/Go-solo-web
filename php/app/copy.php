@@ -459,6 +459,7 @@ function content_groups(): array
             'talk_paused_self' => 'Paused, own view',
             'talk_paused_block' => 'Set aside',
             'talk_active' => 'Active conversations',
+            'talk_unread' => 'Unread conversation',
             'talk_empty' => 'No conversations yet',
             'talk_requests' => 'Conversation requests',
             'talk_waiting' => 'Waiting',

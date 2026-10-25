@@ -52,7 +52,8 @@ $logoImage = site_text('logo_image');
         <a href="<?= e(url($href)) ?>"<?= $path === $href ? ' aria-current="page"' : '' ?>><?= e($label) ?></a>
       <?php endforeach; ?>
       <?php if ($currentUser): ?>
-        <a href="<?= e(url('/profile')) ?>"><?= e(site_text('nav_profile')) ?></a>
+        <?php $unreadTalk = function_exists('talk_unread_total') ? talk_unread_total((int) $currentUser['id']) : 0; ?>
+        <a href="<?= e(url('/profile')) ?>"><?= e(site_text('nav_profile')) ?><?php if ($unreadTalk > 0): ?> <span class="unread-count"><?= e(site_text('talk_unread')) ?> <?= e((string) $unreadTalk) ?></span><?php endif; ?></a>
         <?php if (in_array($currentUser['role'], ['admin', 'moderator'], true)): ?>
           <a href="<?= e(url('/steward')) ?>"><?= e(site_text('nav_steward')) ?></a>
         <?php endif; ?>
