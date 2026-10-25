@@ -448,6 +448,7 @@ CREATE TABLE readings (
   featured_order INT NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL,
   updated_at DATETIME NOT NULL,
+  published_at DATETIME NULL,
   PRIMARY KEY (id),
   UNIQUE KEY readings_slug (slug),
   KEY readings_category (category_id),
@@ -582,6 +583,7 @@ CREATE TABLE conversation_messages (
   user_id INT UNSIGNED NOT NULL,
   body TEXT NOT NULL,
   created_at DATETIME NOT NULL,
+  read_at DATETIME NULL,
   PRIMARY KEY (id),
   KEY conversation_messages_room (conversation_id, id),
   CONSTRAINT conversation_messages_conversation_fk FOREIGN KEY (conversation_id) REFERENCES conversations (id) ON DELETE CASCADE,
@@ -1005,8 +1007,12 @@ Excitement is one kind of growth. Capability is another. The person who finally 
 
 Ask of this month: what would make my actual days feel more intentional, more connected, more capable? The answer might be Poland. It might be Tuesday. Both count.', '', 'published', NOW(), NOW());
 
+UPDATE readings SET published_at = updated_at WHERE status = 'published' AND published_at IS NULL;
+
 INSERT INTO schema_updates (update_key, applied_at) VALUES ('rooms-2026-10-08', NOW());
 INSERT INTO schema_updates (update_key, applied_at) VALUES ('path-2026-10-09', NOW());
 INSERT INTO schema_updates (update_key, applied_at) VALUES ('feature-2026-10-18', NOW());
 INSERT INTO schema_updates (update_key, applied_at) VALUES ('email-verify-2026-10-23', NOW());
+INSERT INTO schema_updates (update_key, applied_at) VALUES ('message-read-2026-10-25', NOW());
+INSERT INTO schema_updates (update_key, applied_at) VALUES ('reading-published-2026-10-25', NOW());
 

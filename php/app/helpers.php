@@ -240,6 +240,19 @@ function nice_date(?string $value): string
     return date('j M Y', $time);
 }
 
+function nice_stamp(?string $value): string
+{
+    if (!$value) {
+        return '';
+    }
+    try {
+        $moment = new DateTimeImmutable($value, new DateTimeZone('UTC'));
+    } catch (Throwable $e) {
+        return '';
+    }
+    return $moment->setTimezone(new DateTimeZone('Europe/Tallinn'))->format('j M Y, H:i');
+}
+
 function log_activity(int $userId, string $summary): void
 {
     if ($userId <= 0 || $summary === '') {
@@ -256,9 +269,20 @@ function notify(int $userId, string $body, string $href = ''): void
     if (function_exists('life_notice_allowed') && !life_notice_allowed($userId, $href)) {
         return;
     }
+    $href = clip($href, 255);
+    $body = clip($body, 255);
+    if (function_exists('talk_read_ready') && talk_read_ready() && str_starts_with($href, '/conversations/')) {
+        $open = one(
+            'SELECT id FROM notices WHERE user_id = ? AND href = ? AND read_at IS NULL LIMIT 1',
+            [$userId, $href]
+        );
+        if ($open) {
+            return;
+        }
+    }
     exec_sql(
         'INSERT INTO notices (user_id, body, href, created_at) VALUES (?, ?, ?, NOW())',
-        [$userId, clip($body, 255), clip($href, 255)]
+        [$userId, $body, $href]
     );
 }
 

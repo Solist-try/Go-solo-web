@@ -706,8 +706,34 @@ function desk_waypoint_save(array $params): void
     redirect('/steward/waypoints');
 }
 
+function reading_sort_whitelist(): array
+{
+    return ['edited', 'title', 'published', 'category', 'status'];
+}
+
+function reading_published_ready(): bool
+{
+    static $ready = null;
+    if ($ready === null) {
+        $ready = table_has_column('readings', 'published_at');
+    }
+    return $ready;
+}
+
+function reading_publish_stamp(int $id, string $status): void
+{
+    if ($id <= 0 || $status !== 'published' || !reading_published_ready()) {
+        return;
+    }
+    exec_sql(
+        'UPDATE readings SET published_at = COALESCE(published_at, NOW()) WHERE id = ? AND published_at IS NULL',
+        [$id]
+    );
+}
+
 function reading_list_state(?array $source = null): array
 {
+    $fromRequest = $source === null;
     $source = $source ?? $_GET;
     $status = (string) ($source['status'] ?? 'all');
     if (!in_array($status, ['all', 'published', 'draft'], true)) {
@@ -718,13 +744,31 @@ function reading_list_state(?array $source = null): array
         $category = 0;
     }
     $q = clip(trim((string) ($source['q'] ?? '')), 120);
-    $sort = (string) ($source['sort'] ?? 'edited');
-    if (!in_array($sort, ['edited', 'title', 'category', 'status'], true)) {
+    $sort = '';
+    $dir = '';
+    $explicit = false;
+    $order = trim((string) ($source['order'] ?? ''));
+    if ($order !== '' && str_contains($order, '|')) {
+        [$sort, $dir] = explode('|', $order, 2);
+        $explicit = true;
+    } elseif (trim((string) ($source['sort'] ?? '')) !== '') {
+        $sort = trim((string) $source['sort']);
+        $dir = (string) ($source['dir'] ?? '');
+        $explicit = true;
+    } elseif ($fromRequest && is_array($_SESSION['reading_desk_sort'] ?? null)) {
+        $saved = $_SESSION['reading_desk_sort'];
+        $sort = (string) ($saved['sort'] ?? '');
+        $dir = (string) ($saved['dir'] ?? '');
+    }
+    if (!in_array($sort, reading_sort_whitelist(), true)) {
         $sort = 'edited';
     }
-    $dir = strtolower((string) ($source['dir'] ?? ''));
+    $dir = strtolower($dir);
     if ($dir !== 'asc' && $dir !== 'desc') {
-        $dir = $sort === 'edited' ? 'desc' : 'asc';
+        $dir = 'asc';
+    }
+    if ($explicit) {
+        $_SESSION['reading_desk_sort'] = ['sort' => $sort, 'dir' => $dir];
     }
     return [
         'status' => $status,
@@ -750,14 +794,14 @@ function reading_list_query(array $state, array $over = []): string
         $parts['q'] = $q;
     }
     $sort = (string) ($state['sort'] ?? 'edited');
-    $dir = (string) ($state['dir'] ?? 'desc');
-    if (!in_array($sort, ['edited', 'title', 'category', 'status'], true)) {
+    $dir = (string) ($state['dir'] ?? 'asc');
+    if (!in_array($sort, reading_sort_whitelist(), true)) {
         $sort = 'edited';
     }
     if ($dir !== 'asc' && $dir !== 'desc') {
-        $dir = 'desc';
+        $dir = 'asc';
     }
-    if ($sort !== 'edited' || $dir !== 'desc') {
+    if ($sort !== 'edited' || $dir !== 'asc') {
         $parts['sort'] = $sort;
         $parts['dir'] = $dir;
     }
@@ -772,7 +816,7 @@ function reading_list_url(array $state, array $over = []): string
 
 function reading_sort_url(array $state, string $column): string
 {
-    $first = $column === 'edited' ? 'desc' : 'asc';
+    $first = 'asc';
     if (($state['sort'] ?? '') === $column) {
         $dir = ($state['dir'] ?? '') === 'asc' ? 'desc' : 'asc';
     } else {
@@ -836,14 +880,22 @@ function desk_reading(array $params): void
         $where[] = "r.title LIKE ? ESCAPE '\\\\'";
         $bind[] = like_contains($filters['q']);
     }
-    $orderMap = [
-        'edited' => 'r.updated_at',
-        'title' => 'r.title',
-        'category' => 'c.title',
-        'status' => 'r.status',
-    ];
-    $order = $orderMap[$filters['sort']] . ($filters['dir'] === 'asc' ? ' ASC' : ' DESC') . ', r.id DESC';
+    $dirSql = $filters['dir'] === 'asc' ? 'ASC' : 'DESC';
+    if ($filters['sort'] === 'published' && reading_published_ready()) {
+        $order = 'r.published_at IS NULL, r.published_at ' . $dirSql . ', r.id DESC';
+    } elseif ($filters['sort'] === 'published') {
+        $order = 'r.id DESC';
+    } else {
+        $orderMap = [
+            'edited' => 'r.updated_at',
+            'title' => 'r.title',
+            'category' => 'c.title',
+            'status' => 'r.status',
+        ];
+        $order = $orderMap[$filters['sort']] . ' ' . $dirSql . ', r.id DESC';
+    }
     $sql = 'SELECT r.id, r.slug, r.title, r.status, r.updated_at, c.title AS category_title'
+        . (reading_published_ready() ? ', r.published_at' : '')
         . (pin_ready() ? ', r.featured' : '')
         . ' FROM readings r JOIN reading_categories c ON c.id = r.category_id';
     if ($where) {
@@ -892,6 +944,7 @@ function desk_reading_status(array $params): void
     }
     if ((string) $row['status'] !== $next) {
         exec_sql('UPDATE readings SET status = ?, updated_at = NOW() WHERE id = ?', [$next, $id]);
+        reading_publish_stamp($id, $next);
         if ($next === 'draft' && pin_ready() && !empty($row['featured'])) {
             pin_featured_save($id, 'clear');
         }
@@ -1195,6 +1248,7 @@ function desk_reading_save(array $params): void
                 exec_sql('UPDATE readings SET body = ? WHERE id = ?', [$bound, $savedId]);
             }
         }
+        reading_publish_stamp($savedId, $status);
         $db->commit();
     } catch (Throwable $e) {
         if ($db->inTransaction()) {

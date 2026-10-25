@@ -419,6 +419,7 @@
     "talk_paused_self": "Private conversations are paused. You can change this whenever you want.",
     "talk_paused_block": "Private conversations with this member are set aside.",
     "talk_active": "Active conversations",
+    "talk_unread": "New",
     "talk_empty": "No private conversations yet.",
     "talk_requests": "Conversation requests",
     "talk_waiting": "Waiting",
