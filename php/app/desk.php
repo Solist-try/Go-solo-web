@@ -1293,11 +1293,35 @@ function desk_reading_delete(array $params): void
     redirect('/steward/reading');
 }
 
+function contact_status_label(string $status): string
+{
+    return match ($status) {
+        'unread' => 'Unread',
+        'read' => 'Read',
+        'replied' => 'Replied',
+        'archived' => 'Archived',
+        default => $status,
+    };
+}
+
+function contact_read_ready(): bool
+{
+    return column_type_has('contact_messages', 'status', 'read');
+}
+
+function contact_mark_read(int $id): void
+{
+    if ($id <= 0 || !contact_read_ready()) {
+        return;
+    }
+    exec_sql("UPDATE contact_messages SET status = 'read' WHERE id = ? AND status = 'unread'", [$id]);
+}
+
 function desk_messages(array $params): void
 {
     require_steward();
     view('steward/messages', [
-        'messages' => q("SELECT id, name, status, created_at FROM contact_messages ORDER BY FIELD(status, 'unread', 'replied', 'archived'), id DESC LIMIT 200"),
+        'messages' => q("SELECT id, name, status, created_at FROM contact_messages ORDER BY FIELD(status, 'unread', 'read', 'replied', 'archived'), id DESC LIMIT 200"),
     ]);
 }
 
@@ -1308,6 +1332,13 @@ function desk_message(array $params): void
     if (!$message) {
         not_found();
         return;
+    }
+    if ((string) $message['status'] === 'unread') {
+        contact_mark_read((int) $message['id']);
+        $fresh = one('SELECT status FROM contact_messages WHERE id = ?', [(int) $message['id']]);
+        if ($fresh) {
+            $message['status'] = (string) $fresh['status'];
+        }
     }
     view('steward/message', ['message' => $message]);
 }
@@ -1322,7 +1353,11 @@ function desk_message_save(array $params): void
         flash('The note is deleted.');
         redirect('/steward/messages');
     }
-    if (in_array($action, ['unread', 'replied', 'archived'], true)) {
+    $allowed = ['unread', 'replied', 'archived'];
+    if (contact_read_ready()) {
+        $allowed[] = 'read';
+    }
+    if (in_array($action, $allowed, true)) {
         exec_sql('UPDATE contact_messages SET status = ? WHERE id = ?', [$action, $id]);
     }
     redirect('/steward/messages/' . $id);
