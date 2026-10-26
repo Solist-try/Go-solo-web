@@ -958,7 +958,7 @@ function page_talk(array $params): void
 
 function page_talk_send(array $params): void
 {
-    $me = require_verified();
+    $me = require_user();
     $conversation = talk_load((int) $params['id']);
     $back = '/conversations/' . (int) $params['id'];
     if (!$conversation || !talk_participant((int) $conversation['id'], (int) $me['id'])) {
@@ -969,6 +969,24 @@ function page_talk_send(array $params): void
     $mine = (int) $me['id'];
     $action = (string) ($_POST['action'] ?? '');
     $other = talk_other($id, $mine);
+    $recipient = talk_status($conversation) === 'requested' && (int) $conversation['opened_by'] !== $mine;
+    if ($action === 'later' && $recipient) {
+        log_activity($mine, 'Left a conversation request for later');
+        flash(site_text('msg_talk_later'));
+        redirect('/profile#requests');
+    }
+    if ($action === 'decline' && $recipient) {
+        talk_forget_notes($id);
+        exec_sql('UPDATE conversations SET status = ? WHERE id = ?', ['declined', $id]);
+        notify((int) $conversation['opened_by'], site_text('talk_notice_closed'), $back);
+        log_activity($mine, 'Set a conversation request aside');
+        flash(site_text('msg_talk_set_aside'));
+        redirect('/profile#requests');
+    }
+    if (!user_is_verified($me)) {
+        flash(site_text('msg_verify_first'));
+        redirect('/account');
+    }
     if ($action === 'keep' && function_exists('path_keep_chair')) {
         path_keep_chair($conversation, $mine);
         redirect($back);
@@ -995,16 +1013,6 @@ function page_talk_send(array $params): void
             flash(site_text('msg_talk_accepted'));
         } else {
             flash(site_text('msg_talk_unavailable'));
-        }
-        redirect($back);
-    }
-    if ($action === 'decline') {
-        if (talk_status($conversation) === 'requested' && (int) $conversation['opened_by'] !== $mine) {
-            talk_forget_notes($id);
-            exec_sql('UPDATE conversations SET status = ? WHERE id = ?', ['declined', $id]);
-            notify((int) $conversation['opened_by'], site_text('talk_notice_closed'), $back);
-            log_activity($mine, 'Set a conversation request aside');
-            flash(site_text('msg_talk_set_aside'));
         }
         redirect($back);
     }
