@@ -48,6 +48,18 @@ $name = $person['display_name'] ?: site_text('garden_member');
         <?php endforeach; ?>
       </ul>
     <?php endif; ?>
+    <?php if (!empty($talkLater)): ?>
+      <h2 id="later"><?= e(site_text('talk_not_now')) ?></h2>
+      <ul class="list">
+        <?php foreach ($talkLater as $conversation): ?>
+          <li>
+            <a href="<?= e(url('/conversations/' . $conversation['id'])) ?>"><?= e($conversation['other_name'] ?: ($conversation['context_label'] ?: site_text('talk_request_heading'))) ?></a>
+            <?php include __DIR__ . '/../partials/talk-unread.php'; ?>
+            <?php if (trim((string) ($conversation['context_label'] ?? '')) !== ''): ?><span class="soft"> · <?= e($conversation['context_label']) ?></span><?php endif; ?>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+    <?php endif; ?>
     <?php if ($talkWaiting): ?>
       <h2><?= e(site_text('talk_waiting')) ?></h2>
       <ul class="list">

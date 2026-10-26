@@ -725,6 +725,7 @@ function show_garden(int $id, bool $self): void
         'warnings' => $self ? q('SELECT note, created_at FROM warnings WHERE user_id = ? ORDER BY id DESC', [$id]) : [],
         'conversations' => $self ? talk_list($id) : [],
         'talkRequests' => $self ? talk_incoming($id) : [],
+        'talkLater' => $self && function_exists('talk_later') ? talk_later($id) : [],
         'talkWaiting' => $self ? talk_outgoing($id) : [],
         'talkBlocks' => $self ? talk_block_list($id) : [],
         'lifeTalk' => $self && function_exists('life_talk_lists') ? life_talk_lists($id) : ['archived' => [], 'closed' => []],

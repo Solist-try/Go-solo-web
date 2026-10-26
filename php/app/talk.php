@@ -266,16 +266,42 @@ function talk_list(int $userId): array
     return talk_with_names($rows, $userId);
 }
 
+function talk_not_now_ready(): bool
+{
+    static $ready = null;
+    if ($ready === null) {
+        $ready = table_has_column('conversation_participants', 'not_now');
+    }
+    return $ready;
+}
+
 function talk_incoming(int $userId): array
 {
     if (!conversations_ready()) {
+        return [];
+    }
+    $pending = talk_not_now_ready() ? ' AND p.not_now = 0' : '';
+    $rows = q(
+        'SELECT c.id, c.context_type, c.context_label, c.opened_by, c.created_at
+         FROM conversations c
+         JOIN conversation_participants p ON p.conversation_id = c.id
+         WHERE p.user_id = ? AND c.status = ? AND c.opened_by <> ?' . $pending . '
+         ORDER BY c.id DESC',
+        [$userId, 'requested', $userId]
+    );
+    return talk_with_names($rows, $userId);
+}
+
+function talk_later(int $userId): array
+{
+    if (!conversations_ready() || !talk_not_now_ready()) {
         return [];
     }
     $rows = q(
         'SELECT c.id, c.context_type, c.context_label, c.opened_by, c.created_at
          FROM conversations c
          JOIN conversation_participants p ON p.conversation_id = c.id
-         WHERE p.user_id = ? AND c.status = ? AND c.opened_by <> ?
+         WHERE p.user_id = ? AND p.not_now = 1 AND c.status = ? AND c.opened_by <> ?
          ORDER BY c.id DESC',
         [$userId, 'requested', $userId]
     );
@@ -354,17 +380,19 @@ function talk_unread_total(int $userId): int
     );
 }
 
-function talk_mark_seen(int $conversationId, int $userId, bool $messagesVisible): void
+function talk_mark_seen(int $conversationId, int $userId, array $visibleMessageIds): void
 {
     if (!talk_read_ready() || $conversationId <= 0 || $userId <= 0 || !talk_participant($conversationId, $userId)) {
         return;
     }
-    if ($messagesVisible) {
+    $ids = array_values(array_unique(array_filter(array_map('intval', $visibleMessageIds), static fn (int $id): bool => $id > 0)));
+    if ($ids) {
+        $holders = implode(',', array_fill(0, count($ids), '?'));
         exec_sql(
             'UPDATE conversation_messages
              SET read_at = NOW()
-             WHERE conversation_id = ? AND user_id <> ? AND read_at IS NULL',
-            [$conversationId, $userId]
+             WHERE conversation_id = ? AND user_id <> ? AND read_at IS NULL AND id IN (' . $holders . ')',
+            array_merge([$conversationId, $userId], $ids)
         );
     }
     exec_sql(
@@ -811,6 +839,9 @@ function talk_pause_line(array $conversation, int $me): string
     if (talk_status($conversation) === 'requested' && (int) $conversation['opened_by'] === $me) {
         return site_text('talk_request_with');
     }
+    if (function_exists('path_expired') && path_expired($conversation)) {
+        return site_text('path_expired');
+    }
     return '';
 }
 
@@ -932,27 +963,25 @@ function page_talk(array $params): void
             'ended' => $ended,
         ];
     }
-    talk_mark_seen($id, $mine, $status !== 'declined');
+    $messages = $status === 'declined' ? [] : talk_messages($id);
+    talk_mark_seen($id, $mine, array_map(static fn (array $message): int => (int) $message['id'], $messages));
     $clear = $other > 0 && !talk_blocked($mine, $other) && !talk_held($mine) && !talk_held($other) && talk_pref($mine) !== 'none' && talk_pref($other) !== 'none';
-    $chair = function_exists('path_chair') ? path_chair($conversation, $mine) : ['ready' => false];
+    $notNow = false;
+    if ($recipient && talk_not_now_ready()) {
+        $flag = one('SELECT not_now FROM conversation_participants WHERE conversation_id = ? AND user_id = ?', [$id, $mine]);
+        $notNow = $flag && (int) $flag['not_now'] === 1;
+    }
     view('talk/show', [
         'conversation' => $conversation,
         'people' => talk_people($id),
-        'messages' => $status === 'declined' ? [] : talk_messages($id),
+        'messages' => $messages,
         'canReply' => $canReply,
         'canAccept' => $recipient && $clear,
         'canDecline' => $recipient,
-        'canBlock' => talk_blocks_ready() && $other > 0 && !one('SELECT user_id FROM member_blocks WHERE user_id = ? AND blocked_id = ?', [$mine, $other]),
+        'canBlock' => $status === 'open' && talk_blocks_ready() && $other > 0 && !one('SELECT user_id FROM member_blocks WHERE user_id = ? AND blocked_id = ?', [$mine, $other]),
         'pauseLine' => $canReply ? '' : talk_pause_line($conversation, $mine),
-        'chair' => $chair,
         'life' => $life,
-        'editor' => editor_fields([
-            'mode' => 'compact',
-            'action' => url('/conversations/' . $id),
-            'body_label' => site_text('talk_body'),
-            'submit' => site_text('talk_send'),
-            'show_image' => column_type_has('content_images', 'parent_type', 'conversation'),
-        ]),
+        'notNow' => $notNow,
     ]);
 }
 
@@ -971,9 +1000,15 @@ function page_talk_send(array $params): void
     $other = talk_other($id, $mine);
     $recipient = talk_status($conversation) === 'requested' && (int) $conversation['opened_by'] !== $mine;
     if ($action === 'later' && $recipient) {
+        if (talk_not_now_ready()) {
+            exec_sql(
+                'UPDATE conversation_participants SET not_now = 1 WHERE conversation_id = ? AND user_id = ?',
+                [$id, $mine]
+            );
+        }
         log_activity($mine, 'Left a conversation request for later');
         flash(site_text('msg_talk_later'));
-        redirect('/profile#requests');
+        redirect(talk_not_now_ready() ? '/profile#later' : '/profile#requests');
     }
     if ($action === 'decline' && $recipient) {
         talk_forget_notes($id);
@@ -1005,6 +1040,9 @@ function page_talk_send(array $params): void
             && !talk_blocked($mine, $other);
         if ($clear) {
             exec_sql('UPDATE conversations SET status = ? WHERE id = ? AND status = ?', ['open', $id, 'requested']);
+            if (talk_not_now_ready()) {
+                exec_sql('UPDATE conversation_participants SET not_now = 0 WHERE conversation_id = ?', [$id]);
+            }
             if (function_exists('life_skill_parts_open')) {
                 life_skill_parts_open($conversation);
             }
