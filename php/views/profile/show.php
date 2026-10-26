@@ -37,13 +37,13 @@ $name = $person['display_name'] ?: site_text('garden_member');
       <button type="submit"><?= e(site_text('talk_pref_save')) ?></button>
     </form>
     <?php if ($talkRequests): ?>
-      <h2><?= e(site_text('talk_requests')) ?></h2>
+      <h2 id="requests"><?= e(site_text('talk_requests')) ?></h2>
       <ul class="list">
         <?php foreach ($talkRequests as $conversation): ?>
           <li>
-            <a href="<?= e(url('/conversations/' . $conversation['id'])) ?>"><?= e($conversation['context_label'] ?: site_text('talk_request_heading')) ?></a>
+            <a href="<?= e(url('/conversations/' . $conversation['id'])) ?>"><?= e($conversation['other_name'] ?: ($conversation['context_label'] ?: site_text('talk_request_heading'))) ?></a>
             <?php include __DIR__ . '/../partials/talk-unread.php'; ?>
-            <?php if ($conversation['other_name']): ?><span class="soft"> · <?= e($conversation['other_name']) ?></span><?php endif; ?>
+            <?php if (trim((string) ($conversation['context_label'] ?? '')) !== ''): ?><span class="soft"> · <?= e($conversation['context_label']) ?></span><?php endif; ?>
           </li>
         <?php endforeach; ?>
       </ul>

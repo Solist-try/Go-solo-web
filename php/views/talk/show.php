@@ -2,6 +2,7 @@
 $chair = $chair ?? ['ready' => false];
 $room = !empty($chair['temporary']) || !empty($chair['kept']);
 $declined = (string) ($conversation['status'] ?? '') === 'declined';
+$incomingRequest = !empty($canDecline) && (string) ($conversation['status'] ?? '') === 'requested';
 $roomTitle = $room
     ? 'path_room_name'
     : ($declined ? 'talk_heading' : ((string) $conversation['status'] === 'requested' ? 'talk_request_heading' : 'talk_heading'));
@@ -10,9 +11,12 @@ $reasons = preg_split("/\r\n|\n|\r/", (string) ($conversation['context_note'] ??
 $life = $life ?? ['ready' => false];
 ?>
 <section class="frame section narrow">
-  <p class="kicker"><a href="<?= e(url('/profile')) ?>"><?= e(site_text('talk_active')) ?></a></p>
+  <p class="kicker"><a href="<?= e(url($incomingRequest ? '/profile#requests' : '/profile')) ?>"><?= e(site_text($incomingRequest ? 'talk_requests' : 'talk_active')) ?></a></p>
   <h1><?= e(site_text($roomTitle)) ?></h1>
-  <?php if (!$declined): ?>
+  <?php if ($incomingRequest): ?>
+    <?php include __DIR__ . '/../partials/talk-request.php'; ?>
+  <?php endif; ?>
+  <?php if (!$declined && !$incomingRequest): ?>
     <p class="kicker"><?= e(talk_context_heading((string) $conversation['context_type'])) ?></p>
     <?php if (trim((string) $conversation['context_label']) !== '' && (string) $conversation['context_label'] !== site_text('path_room_name')): ?>
       <p><?= e((string) $conversation['context_label']) ?></p>
@@ -63,7 +67,7 @@ $life = $life ?? ['ready' => false];
       <?php endforeach; ?>
     </ul>
   <?php endif; ?>
-  <?php if (!empty($pauseLine)): ?>
+  <?php if (!empty($pauseLine) && !$incomingRequest): ?>
     <p class="soft"><?= e($pauseLine) ?></p>
   <?php endif; ?>
   <?php if (!empty($life['context'])): ?>
@@ -72,7 +76,7 @@ $life = $life ?? ['ready' => false];
   <?php if (!empty($life['served'])): ?>
     <p><?= e(site_text('life_talk_served_note')) ?></p>
   <?php endif; ?>
-  <?php if (!$declined): ?>
+  <?php if (!$declined && !$incomingRequest): ?>
     <div class="stack">
       <?php foreach ($messages as $message): ?>
         <article class="card">
@@ -83,7 +87,7 @@ $life = $life ?? ['ready' => false];
       <?php endforeach; ?>
     </div>
   <?php endif; ?>
-  <?php if (!empty($canAccept) || !empty($canDecline)): ?>
+  <?php if (!$incomingRequest && (!empty($canAccept) || !empty($canDecline))): ?>
     <div class="row-actions">
       <?php if (!empty($canAccept)): ?>
         <form method="post" action="<?= e(url('/conversations/' . $conversation['id'])) ?>">
