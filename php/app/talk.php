@@ -929,6 +929,62 @@ function page_talk_start(array $params): void
     redirect('/conversations/' . $id);
 }
 
+function quiet_note_ready(): bool
+{
+    static $ready = null;
+    if ($ready === null) {
+        $found = one(
+            'SELECT COUNT(*) AS n FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?',
+            ['quiet_notes']
+        );
+        $ready = (int) ($found['n'] ?? 0) > 0;
+    }
+    return $ready;
+}
+
+function quiet_note_key(string $key): string
+{
+    return in_array($key, ['decline', 'close', 'declined'], true) ? $key : '';
+}
+
+function quiet_note_seen(int $userId, string $key): bool
+{
+    if ($userId <= 0 || quiet_note_key($key) === '') {
+        return true;
+    }
+    if (!quiet_note_ready()) {
+        return !empty($_SESSION['quiet_seen'][$key]);
+    }
+    return (bool) one('SELECT user_id FROM quiet_notes WHERE user_id = ? AND note_key = ?', [$userId, $key]);
+}
+
+function quiet_note_offer(int $userId, string $key): bool
+{
+    if ($userId <= 0 || quiet_note_key($key) === '' || quiet_note_seen($userId, $key)) {
+        return false;
+    }
+    $_SESSION['quiet_pending'] = $key;
+    return true;
+}
+
+function quiet_note_take(int $userId): string
+{
+    $key = quiet_note_key((string) ($_SESSION['quiet_pending'] ?? ''));
+    unset($_SESSION['quiet_pending']);
+    if ($key === '' || $userId <= 0 || quiet_note_seen($userId, $key)) {
+        return '';
+    }
+    if (quiet_note_ready()) {
+        exec_sql(
+            'INSERT IGNORE INTO quiet_notes (user_id, note_key, created_at) VALUES (?, ?, NOW())',
+            [$userId, $key]
+        );
+    } else {
+        $_SESSION['quiet_seen'][$key] = 1;
+    }
+    return $key;
+}
+
 function page_talk(array $params): void
 {
     $me = require_user();
@@ -970,6 +1026,9 @@ function page_talk(array $params): void
     if ($recipient && talk_not_now_ready()) {
         $flag = one('SELECT not_now FROM conversation_participants WHERE conversation_id = ? AND user_id = ?', [$id, $mine]);
         $notNow = $flag && (int) $flag['not_now'] === 1;
+    }
+    if ($status === 'declined' && (int) $conversation['opened_by'] === $mine) {
+        quiet_note_offer($mine, 'declined');
     }
     view('talk/show', [
         'conversation' => $conversation,
@@ -1015,7 +1074,9 @@ function page_talk_send(array $params): void
         exec_sql('UPDATE conversations SET status = ? WHERE id = ?', ['declined', $id]);
         notify((int) $conversation['opened_by'], site_text('talk_notice_closed'), $back);
         log_activity($mine, 'Set a conversation request aside');
-        flash(site_text('msg_talk_set_aside'));
+        if (!quiet_note_offer($mine, 'decline')) {
+            flash(site_text('msg_talk_set_aside'));
+        }
         redirect('/profile#requests');
     }
     if (!user_is_verified($me)) {
@@ -1028,6 +1089,9 @@ function page_talk_send(array $params): void
     }
     if (function_exists('life_talk_actions') && in_array($action, life_talk_actions(), true)) {
         life_talk_action($conversation, $mine, $action);
+        if (in_array($action, ['close', 'end'], true) && quiet_note_offer($mine, 'close')) {
+            unset($_SESSION['flash']);
+        }
         redirect($back);
     }
     if ($action === 'accept') {

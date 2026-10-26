@@ -17,6 +17,7 @@ DROP TABLE IF EXISTS conversation_participants;
 DROP TABLE IF EXISTS conversations;
 DROP TABLE IF EXISTS private_notes;
 DROP TABLE IF EXISTS activity;
+DROP TABLE IF EXISTS quiet_notes;
 DROP TABLE IF EXISTS notices;
 DROP TABLE IF EXISTS readings;
 DROP TABLE IF EXISTS reading_categories;
@@ -503,6 +504,14 @@ CREATE TABLE schema_updates (
   update_key VARCHAR(80) NOT NULL,
   applied_at DATETIME NOT NULL,
   PRIMARY KEY (update_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE quiet_notes (
+  user_id INT UNSIGNED NOT NULL,
+  note_key VARCHAR(40) NOT NULL,
+  created_at DATETIME NOT NULL,
+  PRIMARY KEY (user_id, note_key),
+  CONSTRAINT quiet_notes_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE notices (
