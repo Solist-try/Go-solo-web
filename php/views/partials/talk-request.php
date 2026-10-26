@@ -19,9 +19,6 @@ if ($shared === $label) {
 <article class="card">
   <h2><?= e(site_text('talk_request_who')) ?></h2>
   <p><?= e($askerName) ?></p>
-  <?php if ($askerId > 0): ?>
-    <p><a class="button quiet small" href="<?= e(url('/members/' . $askerId)) ?>"><?= e(site_text('talk_view_profile')) ?></a></p>
-  <?php endif; ?>
   <h2><?= e(site_text('talk_request_why')) ?></h2>
   <p><?= e($why) ?></p>
   <?php if ($label !== '' && $label !== $why): ?>

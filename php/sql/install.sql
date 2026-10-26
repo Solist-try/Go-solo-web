@@ -569,6 +569,7 @@ CREATE TABLE conversation_participants (
   muted TINYINT(1) NOT NULL DEFAULT 0,
   served TINYINT(1) NOT NULL DEFAULT 0,
   keep_chair TINYINT(1) NOT NULL DEFAULT 0,
+  not_now TINYINT(1) NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL,
   PRIMARY KEY (conversation_id, user_id),
   KEY conversation_participants_user (user_id),
