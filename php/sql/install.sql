@@ -417,7 +417,7 @@ CREATE TABLE contact_messages (
   name VARCHAR(80) NOT NULL,
   email VARCHAR(190) NOT NULL,
   body TEXT NOT NULL,
-  status ENUM('unread', 'replied', 'archived') NOT NULL DEFAULT 'unread',
+  status ENUM('unread', 'read', 'replied', 'archived') NOT NULL DEFAULT 'unread',
   created_at DATETIME NOT NULL,
   PRIMARY KEY (id),
   KEY contact_status (status)

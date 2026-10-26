@@ -1,6 +1,6 @@
 <?php $pageTitle = 'Message · Steward Desk'; $desk = 'messages'; include __DIR__ . '/open.php'; ?>
 <h1><?= e($message['name']) ?></h1>
-<p class="soft"><a href="mailto:<?= e($message['email']) ?>"><?= e($message['email']) ?></a> · <?= e($message['status']) ?> · <?= e(nice_date($message['created_at'])) ?></p>
+<p class="soft"><a href="mailto:<?= e($message['email']) ?>"><?= e($message['email']) ?></a> · <?= e(contact_status_label((string) $message['status'])) ?> · <?= e(nice_date($message['created_at'])) ?></p>
 <?= paragraphs((string) $message['body']) ?>
 <div class="row-actions">
   <?php foreach (['unread' => 'Mark unread', 'replied' => 'Mark replied', 'archived' => 'Archive'] as $status => $label): ?>

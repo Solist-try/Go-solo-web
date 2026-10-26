@@ -5,7 +5,8 @@
   <?php foreach ($messages as $message): ?>
     <li>
       <a href="<?= e(url('/steward/messages/' . $message['id'])) ?>"><?= e($message['name']) ?></a>
-      <span class="soft"><?= e($message['status']) ?> · <?= e(nice_date($message['created_at'])) ?></span>
+      <?php if ((string) $message['status'] === 'unread'): ?><span class="unread-count">Unread</span><?php else: ?><span class="soft"><?= e(contact_status_label((string) $message['status'])) ?></span><?php endif; ?>
+      <span class="soft"> · <?= e(nice_date($message['created_at'])) ?></span>
     </li>
   <?php endforeach; ?>
 </ul>
