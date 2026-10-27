@@ -12,6 +12,7 @@ DROP TABLE IF EXISTS lifecycle_events;
 DROP TABLE IF EXISTS skill_parts;
 DROP TABLE IF EXISTS life_seasons;
 DROP TABLE IF EXISTS member_blocks;
+DROP TABLE IF EXISTS conversation_drafts;
 DROP TABLE IF EXISTS conversation_messages;
 DROP TABLE IF EXISTS conversation_participants;
 DROP TABLE IF EXISTS conversations;
@@ -598,6 +599,17 @@ CREATE TABLE conversation_messages (
   KEY conversation_messages_room (conversation_id, id),
   CONSTRAINT conversation_messages_conversation_fk FOREIGN KEY (conversation_id) REFERENCES conversations (id) ON DELETE CASCADE,
   CONSTRAINT conversation_messages_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE conversation_drafts (
+  conversation_id INT UNSIGNED NOT NULL,
+  user_id INT UNSIGNED NOT NULL,
+  body MEDIUMTEXT NOT NULL,
+  updated_at DATETIME NOT NULL,
+  PRIMARY KEY (conversation_id, user_id),
+  KEY conversation_drafts_user (user_id, updated_at),
+  CONSTRAINT conversation_drafts_conversation_fk FOREIGN KEY (conversation_id) REFERENCES conversations (id) ON DELETE CASCADE,
+  CONSTRAINT conversation_drafts_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE member_blocks (
