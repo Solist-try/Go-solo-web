@@ -3,6 +3,7 @@ $quietKeys = [
     'decline' => 'quiet_decline',
     'close' => 'quiet_close',
     'declined' => 'quiet_declined',
+    'closed' => 'quiet_closed',
 ];
 $quietKey = $quietKeys[$quietNote] ?? '';
 ?>

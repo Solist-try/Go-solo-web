@@ -18,7 +18,7 @@ $name = $person['display_name'] ?: site_text('garden_member');
       <a class="button quiet small" href="<?= e(url('/account')) ?>"><?= e(site_text('cta_account')) ?></a>
     </p>
     <?php if (conversations_ready()): ?>
-      <h2 id="conversations"><a href="<?= e(url('/conversations')) ?>"><?= e(site_text('nav_conversations')) ?></a><?php $gardenUnread = function_exists('talk_unread_total') ? talk_unread_total((int) $person['id']) : 0; if ($gardenUnread > 0): ?> <span class="unread-count"><?= e(site_text('talk_unread')) ?> <?= e((string) $gardenUnread) ?></span><?php endif; ?></h2>
+      <h2 id="conversations"><a href="<?= e(url('/conversations')) ?>"><?= e(site_text('nav_conversations')) ?></a><?php $gardenUnread = function_exists('talk_attention_total') ? talk_attention_total((int) $person['id']) : 0; if ($gardenUnread > 0): ?> (<?= e((string) $gardenUnread) ?>)<?php endif; ?></h2>
       <p><?= e(site_text('talk_home_note')) ?></p>
     <?php endif; ?>
   <?php endif; ?>

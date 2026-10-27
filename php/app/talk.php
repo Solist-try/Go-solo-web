@@ -131,9 +131,30 @@ function talk_find(string $type, string $kind, int $contextId, int $a, int $b): 
          JOIN conversation_participants pa ON pa.conversation_id = c.id AND pa.user_id = ?
          JOIN conversation_participants pb ON pb.conversation_id = c.id AND pb.user_id = ?
          WHERE c.context_type = ? AND c.context_kind = ? AND c.context_id = ? AND c.status <> ?
+           AND EXISTS (SELECT 1 FROM conversation_messages m WHERE m.conversation_id = c.id)
          ORDER BY c.id DESC
          LIMIT 1',
         [$a, $b, $type, $kind, $contextId, 'declined']
+    );
+    return $row ? (int) $row['id'] : 0;
+}
+
+function talk_shell_id(string $type, string $kind, int $contextId, int $from, int $to): int
+{
+    if (!conversations_ready() || $from <= 0 || $to <= 0 || $from === $to) {
+        return 0;
+    }
+    $row = one(
+        'SELECT c.id
+         FROM conversations c
+         JOIN conversation_participants pa ON pa.conversation_id = c.id AND pa.user_id = ?
+         JOIN conversation_participants pb ON pb.conversation_id = c.id AND pb.user_id = ?
+         WHERE c.context_type = ? AND c.context_kind = ? AND c.context_id = ?
+           AND c.status = ? AND c.opened_by = ?
+           AND NOT EXISTS (SELECT 1 FROM conversation_messages m WHERE m.conversation_id = c.id)
+         ORDER BY c.id DESC
+         LIMIT 1',
+        [$from, $to, $type, $kind, $contextId, 'requested', $from]
     );
     return $row ? (int) $row['id'] : 0;
 }
@@ -149,6 +170,7 @@ function talk_latest_live(int $a, int $b): int
          JOIN conversation_participants pa ON pa.conversation_id = c.id AND pa.user_id = ?
          JOIN conversation_participants pb ON pb.conversation_id = c.id AND pb.user_id = ?
          WHERE c.status IN (?, ?)
+           AND EXISTS (SELECT 1 FROM conversation_messages m WHERE m.conversation_id = c.id)
          ORDER BY c.id DESC
          LIMIT 1',
         [$a, $b, 'open', 'requested']
@@ -172,6 +194,16 @@ function talk_create(string $type, string $kind, int $contextId, string $label, 
         if ($row && talk_status($row) !== 'declined') {
             return $existing;
         }
+    }
+    $shell = talk_shell_id($type, $kind, $contextId, $from, $to);
+    if ($shell > 0) {
+        if (trim($opening) !== '') {
+            exec_sql(
+                'INSERT INTO conversation_messages (conversation_id, user_id, body, created_at) VALUES (?, ?, ?, NOW())',
+                [$shell, $from, $opening]
+            );
+        }
+        return $shell;
     }
     $db = db();
     $db->beginTransaction();
@@ -200,6 +232,14 @@ function talk_create(string $type, string $kind, int $contextId, string $label, 
         }
         return 0;
     }
+}
+
+function talk_message_count(int $conversationId): int
+{
+    if ($conversationId <= 0) {
+        return 0;
+    }
+    return count_of('SELECT COUNT(*) AS n FROM conversation_messages WHERE conversation_id = ?', [$conversationId]);
 }
 
 function talk_participant(int $conversationId, int $userId): bool
@@ -382,6 +422,7 @@ function talk_outgoing(int $userId): array
         'SELECT c.id, c.context_type, c.context_label, c.created_at
          FROM conversations c
          WHERE c.opened_by = ? AND c.status = ?
+           AND EXISTS (SELECT 1 FROM conversation_messages m WHERE m.conversation_id = c.id)
          ORDER BY c.id DESC',
         [$userId, 'requested']
     );
@@ -407,7 +448,11 @@ function talk_member_rows(int $userId, string $where, array $params): array
 function talk_new_list(int $userId): array
 {
     $quiet = table_has_column('conversations', 'member_closed') ? ' AND c.member_closed = 0' : '';
-    return talk_member_rows($userId, 'c.status = ? AND c.opened_by <> ?' . $quiet, ['requested', $userId]);
+    return talk_member_rows(
+        $userId,
+        'c.status = ? AND c.opened_by <> ?' . $quiet . ' AND EXISTS (SELECT 1 FROM conversation_messages m WHERE m.conversation_id = c.id)',
+        ['requested', $userId]
+    );
 }
 
 function talk_open_list(int $userId): array
@@ -560,6 +605,33 @@ function talk_unread_total(int $userId): int
          WHERE m.user_id <> ? AND m.read_at IS NULL AND c.status <> ?',
         [$userId, $userId, 'declined']
     );
+}
+
+function talk_attention_total(int $userId): int
+{
+    if (!conversations_ready() || $userId <= 0) {
+        return 0;
+    }
+    $sql = 'SELECT COUNT(DISTINCT c.id) AS n
+         FROM conversations c
+         JOIN conversation_participants p ON p.conversation_id = c.id AND p.user_id = ?
+         WHERE c.status <> ?';
+    $params = [$userId, 'declined'];
+    if (table_has_column('conversations', 'member_closed')) {
+        $sql .= ' AND c.member_closed = 0';
+    }
+    if (table_has_column('conversations', 'closed')) {
+        $sql .= ' AND c.closed = 0';
+    }
+    $sql .= ' AND ((c.status = ? AND c.opened_by <> ? AND EXISTS (SELECT 1 FROM conversation_messages m WHERE m.conversation_id = c.id))';
+    $params[] = 'requested';
+    $params[] = $userId;
+    if (talk_read_ready()) {
+        $sql .= ' OR EXISTS (SELECT 1 FROM conversation_messages u WHERE u.conversation_id = c.id AND u.user_id <> ? AND u.read_at IS NULL)';
+        $params[] = $userId;
+    }
+    $sql .= ')';
+    return count_of($sql, $params);
 }
 
 function talk_mark_seen(int $conversationId, int $userId, array $visibleMessageIds): void
@@ -932,7 +1004,8 @@ function talk_offer(?array $me, int $otherId, bool $verified, string $back, arra
     $existing = talk_find((string) $context['type'], (string) $context['kind'], (int) $context['id'], (int) $me['id'], $otherId);
     if ($existing > 0) {
         $row = talk_load($existing);
-        if ($row && talk_status($row) !== 'declined' && talk_participant($existing, (int) $me['id'])) {
+        $shell = $row && talk_status($row) === 'requested' && talk_message_count($existing) === 0;
+        if ($row && talk_status($row) !== 'declined' && !$shell && talk_participant($existing, (int) $me['id'])) {
             $open = talk_status($row) === 'open';
             $label = site_text($open ? 'talk_heading' : 'talk_request_heading');
             if ($open && function_exists('path_is_room') && path_is_room($row)) {
@@ -968,23 +1041,26 @@ function talk_profile_offer(?array $me, int $otherId): array
     $live = talk_latest_live((int) $me['id'], $otherId);
     if ($live > 0) {
         $row = talk_load($live);
-        $open = $row && talk_status($row) === 'open';
-        return [
-            'mode' => 'link',
-            'href' => '/conversations/' . $live,
-            'label' => site_text($open ? 'talk_heading' : 'talk_request_heading'),
-        ];
+        $shell = $row && talk_status($row) === 'requested' && talk_message_count($live) === 0;
+        if ($row && !$shell) {
+            $open = talk_status($row) === 'open';
+            return [
+                'mode' => 'link',
+                'href' => '/conversations/' . $live,
+                'label' => site_text($open ? 'talk_heading' : 'talk_request_heading'),
+            ];
+        }
     }
     $shared = talk_shared_context((int) $me['id'], $otherId);
     if ($shared) {
-        return talk_offer($me, $otherId, true, '/members/' . $otherId, $shared, site_text('talk_hello'));
+        return talk_offer($me, $otherId, true, '/members/' . $otherId, $shared, site_text('talk_start'));
     }
     return talk_offer($me, $otherId, false, '/members/' . $otherId, [
         'type' => 'member',
         'kind' => '',
         'id' => $otherId,
         'person' => 0,
-    ], site_text('talk_hello'));
+    ], site_text('talk_start'));
 }
 
 function talk_fields(): array
@@ -1063,10 +1139,15 @@ function page_talk_compose(array $params): void
         flash(site_text('talk_not_opened'));
         redirect($back);
     }
+    $shellId = talk_shell_id($fields['type'], $fields['kind'], $fields['id'], (int) $me['id'], (int) $subject['other']);
+    $draftBody = $shellId > 0 ? talk_draft($shellId, (int) $me['id']) : '';
     view('talk/new', [
         'fields' => $fields,
         'subject' => $subject,
         'otherName' => display_name_of((int) $subject['other']),
+        'draftBody' => $draftBody,
+        'formKey' => talk_form_issue($shellId),
+        'shellId' => $shellId,
     ]);
 }
 
@@ -1084,6 +1165,13 @@ function page_talk_start(array $params): void
         flash(site_text('msg_talk_unavailable'));
         redirect($back);
     }
+    $again = talk_compose_href([
+        'type' => $fields['type'],
+        'kind' => $fields['kind'],
+        'id' => $fields['id'],
+        'person' => $fields['person'],
+        'back' => $back,
+    ]);
     $existing = talk_find($fields['type'], $fields['kind'], $fields['id'], (int) $me['id'], (int) $subject['other']);
     if ($existing > 0) {
         $row = talk_load($existing);
@@ -1093,27 +1181,68 @@ function page_talk_start(array $params): void
         flash(site_text('talk_not_opened'));
         redirect($back);
     }
-    $opening = clip(trim(strip_tags(post_text('note', 1000))), 1000);
-    if ($opening === '') {
-        flash(site_text('msg_talk_note'));
-        redirect(talk_compose_href([
-            'type' => $fields['type'],
-            'kind' => $fields['kind'],
-            'id' => $fields['id'],
-            'person' => $fields['person'],
-            'back' => $back,
-        ]));
+    $shellId = talk_shell_id($fields['type'], $fields['kind'], $fields['id'], (int) $me['id'], (int) $subject['other']);
+    $action = (string) ($_POST['action'] ?? '');
+    if ($action === '' && (string) ($_POST['form_key'] ?? '') !== '') {
+        $action = 'send';
     }
-    $id = talk_create(
-        $fields['type'],
-        $fields['kind'],
-        $fields['id'],
-        (string) $subject['label'],
-        (string) $subject['note'],
-        (int) $me['id'],
-        (int) $subject['other'],
-        $opening
-    );
+    if (!talk_form_consume($shellId, (string) ($_POST['form_key'] ?? ''))) {
+        redirect($again);
+    }
+    if ($action === 'delete_draft') {
+        talk_draft_clear($shellId, (int) $me['id']);
+        if ($shellId > 0 && talk_message_count($shellId) === 0) {
+            exec_sql('DELETE FROM conversations WHERE id = ? AND opened_by = ? AND status = ?', [$shellId, (int) $me['id'], 'requested']);
+        }
+        flash(site_text('talk_draft_deleted'));
+        redirect($again);
+    }
+    $opening = talk_message_body((string) ($_POST['body'] ?? ''));
+    if ($opening === '') {
+        flash(site_text('msg_few_words'));
+        redirect($again);
+    }
+    if ($action === 'draft') {
+        if (!talk_drafts_ready()) {
+            flash(site_text('talk_draft_unavailable'));
+            redirect($again);
+        }
+        $id = $shellId > 0 ? $shellId : talk_create(
+            $fields['type'],
+            $fields['kind'],
+            $fields['id'],
+            (string) $subject['label'],
+            (string) $subject['note'],
+            (int) $me['id'],
+            (int) $subject['other'],
+            ''
+        );
+        if ($id <= 0 || !talk_draft_put($id, (int) $me['id'], $opening)) {
+            flash(site_text('talk_draft_unavailable'));
+            redirect($again);
+        }
+        flash(site_text('talk_draft_saved'));
+        redirect($again);
+    }
+    $id = $shellId;
+    if ($id <= 0) {
+        $id = talk_create(
+            $fields['type'],
+            $fields['kind'],
+            $fields['id'],
+            (string) $subject['label'],
+            (string) $subject['note'],
+            (int) $me['id'],
+            (int) $subject['other'],
+            $opening
+        );
+    } else {
+        exec_sql(
+            'INSERT INTO conversation_messages (conversation_id, user_id, body, created_at) VALUES (?, ?, ?, NOW())',
+            [$id, (int) $me['id'], $opening]
+        );
+        talk_draft_clear($id, (int) $me['id']);
+    }
     if ($id <= 0) {
         flash(site_text('msg_talk_unavailable'));
         redirect($back);
@@ -1139,7 +1268,7 @@ function quiet_note_ready(): bool
 
 function quiet_note_key(string $key): string
 {
-    return in_array($key, ['decline', 'close', 'declined'], true) ? $key : '';
+    return in_array($key, ['decline', 'close', 'declined', 'closed'], true) ? $key : '';
 }
 
 function quiet_note_seen(int $userId, string $key): bool
@@ -1210,6 +1339,19 @@ function page_talk(array $params): void
     $mine = (int) $me['id'];
     $other = talk_other($id, $mine);
     $status = talk_status($conversation);
+    if ($status === 'requested' && talk_message_count($id) === 0) {
+        if ((int) $conversation['opened_by'] === $mine) {
+            redirect(talk_compose_href([
+                'type' => (string) $conversation['context_type'],
+                'kind' => (string) $conversation['context_kind'],
+                'id' => (int) $conversation['context_id'],
+                'person' => $other,
+                'back' => '/conversations',
+            ]));
+        }
+        not_found();
+        return;
+    }
     $canReply = talk_can_reply($conversation, $mine);
     $recipient = $status === 'requested' && (int) $conversation['opened_by'] !== $mine;
     $life = ['ready' => false];
@@ -1242,8 +1384,17 @@ function page_talk(array $params): void
         $flag = one('SELECT not_now FROM conversation_participants WHERE conversation_id = ? AND user_id = ?', [$id, $mine]);
         $notNow = $flag && (int) $flag['not_now'] === 1;
     }
-    if ($status === 'declined' && (int) $conversation['opened_by'] === $mine) {
+    $showReflection = false;
+    if ($status === 'declined' && (int) $conversation['opened_by'] === $mine && !quiet_note_seen($mine, 'declined')) {
         quiet_note_offer($mine, 'declined');
+        $showReflection = true;
+    }
+    if ((int) ($conversation['member_closed'] ?? 0) === 1) {
+        $closedKey = (int) ($conversation['closed_by'] ?? 0) === $mine ? 'close' : 'closed';
+        if (!quiet_note_seen($mine, $closedKey)) {
+            quiet_note_offer($mine, $closedKey);
+            $showReflection = true;
+        }
     }
     view('talk/show', [
         'conversation' => $conversation,
@@ -1256,7 +1407,7 @@ function page_talk(array $params): void
         'canAccept' => $recipient && $clear,
         'canDecline' => $recipient,
         'canBlock' => $status === 'open' && talk_blocks_ready() && $other > 0 && !one('SELECT user_id FROM member_blocks WHERE user_id = ? AND blocked_id = ?', [$mine, $other]),
-        'pauseLine' => $canReply ? '' : talk_pause_line($conversation, $mine),
+        'pauseLine' => ($canReply || $showReflection) ? '' : talk_pause_line($conversation, $mine),
         'life' => $life,
         'notNow' => $notNow,
     ]);
@@ -1431,7 +1582,8 @@ function page_talk_send(array $params): void
         log_activity($mine, 'Answered a private conversation');
     }
     if ($other > 0) {
-        notify($other, site_line('talk_notice_note', ['name' => display_name_of($mine)]), $back);
+        $notice = $openedNow ? 'talk_notice_open' : 'talk_notice_note';
+        notify($other, site_line($notice, ['name' => display_name_of($mine)]), $back);
     }
     redirect($back);
 }

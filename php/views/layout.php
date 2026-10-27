@@ -52,9 +52,9 @@ $logoImage = site_text('logo_image');
         <a href="<?= e(url($href)) ?>"<?= $path === $href ? ' aria-current="page"' : '' ?>><?= e($label) ?></a>
       <?php endforeach; ?>
       <?php if ($currentUser): ?>
-        <?php $unreadTalk = function_exists('talk_unread_total') ? talk_unread_total((int) $currentUser['id']) : 0; ?>
+        <?php $unreadTalk = function_exists('talk_attention_total') ? talk_attention_total((int) $currentUser['id']) : 0; ?>
         <?php $talkHere = $path === '/conversations' || str_starts_with($path, '/conversations/'); ?>
-        <a href="<?= e(url('/conversations')) ?>"<?= $talkHere ? ' aria-current="page"' : '' ?>><?= e(site_text('nav_conversations')) ?><?php if ($unreadTalk > 0): ?> <span class="unread-count"><?= e(site_text('talk_unread')) ?> <?= e((string) $unreadTalk) ?></span><?php endif; ?></a>
+        <a href="<?= e(url('/conversations')) ?>"<?= $talkHere ? ' aria-current="page"' : '' ?>><?= e(site_text('nav_conversations')) ?><?php if ($unreadTalk > 0): ?> (<?= e((string) $unreadTalk) ?>)<?php endif; ?></a>
         <a href="<?= e(url('/profile')) ?>"<?= $path === '/profile' ? ' aria-current="page"' : '' ?>><?= e(site_text('nav_profile')) ?></a>
         <?php if (in_array($currentUser['role'], ['admin', 'moderator'], true)): ?>
           <a href="<?= e(url('/steward')) ?>"><?= e(site_text('nav_steward')) ?></a>
