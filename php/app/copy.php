@@ -86,6 +86,7 @@ function site_text(string $key): string
         ],
         'verify_notice' => [
             'Your email is not verified yet. You can read. Posting, seeds, conversations, and photographs wait until you open the letter.',
+            "The confirmation email is on its way. Take a look around. Posting, Seeds, Conversations, and photographs will be ready once you've confirmed your email.",
         ],
         'notices_title' => [
             'Notes',
@@ -879,7 +880,8 @@ function content_groups(): array
             'account_confirm' => 'Delete confirmation',
             'delete_confirm_body' => 'Confirm deletion text',
             'verify_title' => 'Verify heading',
-            'verify_notice' => 'Unverified notice',
+            'verify_notice_title' => 'Confirmation title',
+            'verify_notice' => 'Confirmation note',
             'join_verify_note' => 'Join verification note',
             'cta_resend_verify' => 'Send the letter again',
             'cta_confirm_delete' => 'Confirm deletion',

@@ -517,7 +517,10 @@ function page_join(array $params): void
     $_SESSION['user_id'] = $id;
     log_activity($id, 'Joined Go Solo');
     if ($verify) {
-        email_flash_result(email_issue($id, 'verify', 'email_welcome_subject', 'email_welcome_body'), 'msg_verify_sent');
+        $sent = email_issue($id, 'verify', 'email_welcome_subject', 'email_welcome_body');
+        if ($sent !== 'sent') {
+            email_flash_result($sent, 'msg_verify_sent');
+        }
         redirect('/account');
     }
     flash(site_text('msg_joined'));
@@ -938,7 +941,10 @@ function page_account_save(array $params): void
         } elseif (email_verify_ready()) {
             exec_sql('UPDATE users SET email = ?, email_verified_at = NULL WHERE id = ?', [$email, (int) $user['id']]);
             exec_sql('DELETE FROM email_tokens WHERE user_id = ? AND used_at IS NULL', [(int) $user['id']]);
-            email_flash_result(email_issue((int) $user['id'], 'verify', 'email_verify_subject', 'email_verify_body', true), 'msg_verify_sent');
+            $sent = email_issue((int) $user['id'], 'verify', 'email_verify_subject', 'email_verify_body', true);
+            if ($sent !== 'sent') {
+                email_flash_result($sent, 'msg_verify_sent');
+            }
         } else {
             exec_sql('UPDATE users SET email = ? WHERE id = ?', [$email, (int) $user['id']]);
             flash(site_text('msg_email'));
@@ -1015,7 +1021,10 @@ function page_verify_resend(array $params): void
     if (!email_verify_ready() || user_is_verified($user)) {
         redirect('/account');
     }
-    email_flash_result(email_issue((int) $user['id'], 'verify', 'email_verify_subject', 'email_verify_body'), 'msg_verify_sent');
+    $sent = email_issue((int) $user['id'], 'verify', 'email_verify_subject', 'email_verify_body');
+    if ($sent !== 'sent') {
+        email_flash_result($sent, 'msg_verify_sent');
+    }
     redirect('/account');
 }
 
