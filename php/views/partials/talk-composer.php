@@ -10,7 +10,7 @@ $hasDraft = trim($draftBody) !== '';
         'mode' => 'compact',
         'embedded' => true,
         'body' => $draftBody,
-        'body_label' => site_text('talk_body'),
+        'body_label' => site_text('talk_write'),
         'body_name' => 'body',
     ];
     include __DIR__ . '/editor.php';

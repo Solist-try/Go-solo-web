@@ -99,6 +99,16 @@ function site_text(string $key): string
         ],
         'talk_notice_open' => [
             'A private conversation is open with {name}.',
+            '{name} opened the conversation.',
+        ],
+        'quiet_decline' => [
+            "Not every conversation is the right fit.\n\nYou declined the situation, not the person.",
+        ],
+        'quiet_close' => [
+            "Conversations can end without anyone being at fault.\n\nYou closed the situation, not the person.",
+        ],
+        'quiet_declined' => [
+            "Not every invitation becomes a conversation.\n\nA declined request says more about timing and fit than worth.",
         ],
         'talk_notice_note' => [
             'A note is waiting from {name}.',
@@ -537,6 +547,8 @@ function content_groups(): array
             'talk_offer' => 'Offer Support',
             'talk_interested' => "I'm Interested",
             'talk_hello' => 'Say Hello',
+            'talk_start' => 'Start a Conversation',
+            'talk_write' => 'Write message',
             'talk_with' => 'With {name}',
             'talk_opening' => 'Short note',
             'talk_opening_hint' => 'Short note hint',
@@ -584,6 +596,7 @@ function content_groups(): array
             'quiet_decline' => 'After a decline',
             'quiet_close' => 'After a conversation ends',
             'quiet_declined' => 'When a request is declined',
+            'quiet_closed' => 'When a conversation is closed',
             'quiet_note_hide' => 'Hide the reminder',
             'msg_talk_later' => 'Request can wait',
             'msg_talk_unavailable' => 'Conversation not available',
