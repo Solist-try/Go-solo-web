@@ -124,7 +124,7 @@ function desk_member_save(array $params): void
                 'INSERT INTO warnings (user_id, steward_id, note, created_at) VALUES (?, ?, ?, NOW())',
                 [$id, (int) $actor['id'], $note]
             );
-            notify($id, 'A note from the steward is on your profile.', '/profile');
+            notify($id, site_line('note_steward', ['name' => display_name_of((int) $actor['id'])]), '/profile');
             log_activity($id, 'Received a warning');
             flash('The warning is with them.');
         }
@@ -405,13 +405,13 @@ function desk_same_status(array $params): void
             ['closed', (int) $actor['id'], (int) $match['id'], $match['status']]
         );
         life_event('introduction', (int) $match['id'], (string) $match['status'], 'closed', (int) $actor['id'], 'steward');
-        notify((int) $match['user_a_id'], site_text('life_intro_closed_line'), '/profile');
-        notify((int) $match['user_b_id'], site_text('life_intro_closed_line'), '/profile');
+        notify((int) $match['user_a_id'], site_line('note_intro_closed', ['name' => display_name_of((int) $actor['id'])]), '/profile');
+        notify((int) $match['user_b_id'], site_line('note_intro_closed', ['name' => display_name_of((int) $actor['id'])]), '/profile');
         flash(site_text('life_msg_status'));
     } elseif ($action === 'archive' && $match['status'] !== 'archived') {
         exec_sql('UPDATE same_matches SET status = ? WHERE id = ?', ['archived', (int) $match['id']]);
-        notify((int) $match['user_a_id'], 'The introduction was set aside. You can ask again whenever you want.', '/seeds/same');
-        notify((int) $match['user_b_id'], 'The introduction was set aside. You can ask again whenever you want.', '/seeds/same');
+        notify((int) $match['user_a_id'], site_line('note_intro_aside', ['name' => display_name_of((int) $actor['id'])]), '/seeds/same');
+        notify((int) $match['user_b_id'], site_line('note_intro_aside', ['name' => display_name_of((int) $actor['id'])]), '/seeds/same');
         flash('The introduction is set aside.');
     }
     redirect('/steward/same');
@@ -1525,7 +1525,7 @@ function desk_report_action(array $params): void
         exec_sql('UPDATE reports SET status = ? WHERE id = ?', ['reviewed', (int) $report['id']]);
     } elseif ($action === 'warn' && $owner > 0 && $note !== '') {
         exec_sql('INSERT INTO warnings (user_id, steward_id, note, created_at) VALUES (?, ?, ?, NOW())', [$owner, (int) $actor['id'], $note]);
-        notify($owner, 'A note from the steward is on your profile.', '/profile');
+        notify($owner, site_line('note_steward', ['name' => display_name_of((int) $actor['id'])]), '/profile');
         log_activity($owner, 'Received a warning');
         exec_sql('UPDATE reports SET status = ? WHERE id = ?', ['reviewed', (int) $report['id']]);
     } elseif ($action === 'note' && $owner > 0 && $note !== '') {

@@ -551,11 +551,11 @@ function life_intro_post(array $params): void
                 );
             }
             if (!empty($chair['created'])) {
-                notify($mine, site_text('path_room_opened'), '/conversations/' . $chair['id']);
-                notify($other, site_text('path_room_opened'), '/conversations/' . $chair['id']);
+                notify($mine, site_line('path_room_opened', ['name' => display_name_of($other)]), '/conversations/' . $chair['id']);
+                notify($other, site_line('path_room_opened', ['name' => display_name_of($mine)]), '/conversations/' . $chair['id']);
             } else {
-                notify($mine, site_text('life_intro_opened'), '/profile');
-                notify($other, site_text('life_intro_opened'), '/profile');
+                notify($mine, site_line('life_intro_opened', ['name' => display_name_of($other)]), '/profile');
+                notify($other, site_line('life_intro_opened', ['name' => display_name_of($mine)]), '/profile');
             }
         }
         flash(site_text('life_msg_status'));
@@ -572,7 +572,7 @@ function life_intro_post(array $params): void
             redirect('/profile');
         }
         life_event('introduction', (int) $match['id'], $status, 'declined', $mine);
-        notify($other, site_text('life_intro_closed_line'), '/profile');
+        notify($other, site_line('note_intro_closed', ['name' => display_name_of($mine)]), '/profile');
         flash(site_text('life_msg_status'));
         redirect('/profile');
     }
@@ -587,7 +587,7 @@ function life_intro_post(array $params): void
             redirect('/profile');
         }
         life_event('introduction', (int) $match['id'], $status, 'closed', $mine);
-        notify($other, site_text('life_intro_closed_line'), '/profile');
+        notify($other, site_line('note_intro_closed', ['name' => display_name_of($mine)]), '/profile');
         flash(site_text('life_msg_status'));
         redirect('/profile');
     }
@@ -658,7 +658,7 @@ function life_talk_action(array $conversation, int $mine, string $action): void
         exec_sql('UPDATE conversations SET member_closed = 1, closed_by = ? WHERE id = ? AND member_closed = 0', [$mine, $id]);
         life_event('conversation', $id, 'open', 'closed', $mine);
         if ($other > 0) {
-            notify($other, site_text('life_talk_closed'), '/conversations/' . $id);
+            notify($other, site_line('talk_notice_member_closed', ['name' => display_name_of($mine)]), '/conversations/' . $id);
         }
         flash(site_text('life_msg_status'));
         return;

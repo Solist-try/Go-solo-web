@@ -59,8 +59,6 @@ function site_text(string $key): string
         'label_bio' => ['Bio'],
         'empty_bio' => ['A few words can wait.'],
         'garden_similar' => ['Someone on a similar path'],
-        'garden_match' => ['A steward suggested {name} for this stretch. You can take your time.'],
-        'garden_skill_match' => ['A steward connected you with {name} for a skill swap. You can take your time.'],
         'life_intro_fit' => ['It was not quite the right fit.'],
         'home_same_body' => ['Someone on a similar path. A steward can introduce you. There is no rush.'],
         'seeds_same_body' => [
@@ -88,6 +86,44 @@ function site_text(string $key): string
         ],
         'verify_notice' => [
             'Your email is not verified yet. You can read. Posting, seeds, conversations, and photographs wait until you open the letter.',
+        ],
+        'notices_title' => [
+            'Notes',
+        ],
+        'empty_notices' => [
+            'No notes yet',
+        ],
+        'talk_notice_request' => [
+            'A private conversation request is waiting from {name}.',
+        ],
+        'talk_notice_open' => [
+            'A private conversation is open with {name}.',
+        ],
+        'talk_notice_note' => [
+            'A note is waiting from {name}.',
+        ],
+        'talk_notice_resting' => [
+            'A private conversation is resting.',
+        ],
+        'talk_notice_closed' => [
+            'This conversation was not opened.',
+        ],
+        'garden_match' => [
+            'A steward introduced {name}. You can walk a little of this stretch together, and take your time.',
+            'A steward suggested {name} for this stretch. You can take your time.',
+        ],
+        'garden_skill_match' => [
+            'A steward introduced {name} so you can learn from each other. You can take your time.',
+            'A steward connected you with {name} for a skill swap. You can take your time.',
+        ],
+        'life_intro_opened' => [
+            'An introduction is open. You can take your time.',
+        ],
+        'path_room_opened' => [
+            'A chair is open for a while. You can sit down together, then decide whether to keep talking.',
+        ],
+        'path_skill_invited' => [
+            'A steward introduced you to {name} so you can learn from each other. You can take your time.',
         ],
     ];
     if (isset($earlier[$key]) && in_array($value, $earlier[$key], true)) {
@@ -522,11 +558,22 @@ function content_groups(): array
             'talk_held' => 'Conversations resting',
             'talk_body' => 'Note label',
             'talk_send' => 'Leave a note',
-            'talk_notice_request' => 'Request notice, use {name}',
-            'talk_notice_open' => 'Opened notice, use {name}',
-            'talk_notice_note' => 'Note notice, use {name}',
-            'talk_notice_resting' => 'Rested notice',
-            'talk_notice_closed' => 'Not opened notice',
+            'talk_notice_request' => 'Wrote to you, use {name}',
+            'talk_notice_seed' => 'Offered Seed support, use {name}',
+            'talk_notice_skill' => 'Offered a skill swap, use {name}',
+            'talk_notice_story' => 'Responded to a story, use {name}',
+            'talk_notice_campfire' => 'Replied around the Campfire, use {name}',
+            'talk_notice_waypoint' => 'Replied in a discussion, use {name}',
+            'talk_notice_introduction' => 'Wrote after an introduction, use {name}',
+            'talk_notice_open' => 'Opened the conversation, use {name}',
+            'talk_notice_note' => 'Replied, use {name}',
+            'talk_notice_resting' => 'Rested a conversation, use {name}',
+            'talk_notice_closed' => 'Set a conversation aside, use {name}',
+            'talk_notice_member_closed' => 'Closed a conversation, use {name}',
+            'note_left' => 'Left a note, use {name}',
+            'note_steward' => 'Steward note, use {name}',
+            'note_intro_closed' => 'Closed an introduction, use {name}',
+            'note_intro_aside' => 'Set an introduction aside, use {name}',
             'msg_talk_pref' => 'Preference saved',
             'msg_talk_choice' => 'Choice required',
             'msg_talk_note' => 'Note required',

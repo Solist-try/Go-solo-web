@@ -362,7 +362,31 @@ function save_reply(array $user, string $type, int $targetId, string $back, stri
         redirect($back);
     }
     log_activity((int) $user['id'], $activity);
+    note_public_reply($user, $type, $targetId, $back);
     redirect($back);
+}
+
+function note_public_reply(array $user, string $type, int $targetId, string $back): void
+{
+    $tables = [
+        'campfire' => 'campfire_posts',
+        'story' => 'stories',
+        'waypoint' => 'waypoint_posts',
+    ];
+    $keys = [
+        'campfire' => 'talk_notice_campfire',
+        'story' => 'talk_notice_story',
+        'waypoint' => 'talk_notice_waypoint',
+    ];
+    if (!isset($tables[$type], $keys[$type])) {
+        return;
+    }
+    $post = one('SELECT user_id FROM ' . $tables[$type] . ' WHERE id = ?', [$targetId]);
+    $author = (int) ($post['user_id'] ?? 0);
+    if ($author <= 0 || $author === (int) $user['id']) {
+        return;
+    }
+    notify($author, site_line($keys[$type], ['name' => display_name_of((int) $user['id'])]), $back);
 }
 
 function room_comment_delete(array $params): void

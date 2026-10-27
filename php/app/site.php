@@ -869,7 +869,7 @@ function page_notes(array $params): void
             'INSERT INTO private_notes (context_type, context_id, user_id, body, created_at) VALUES (?, ?, ?, ?, NOW())',
             [$type, $contextId, (int) $user['id'], $body]
         );
-        notify($other, 'A note is waiting from ' . display_name_of((int) $user['id']) . '.', '/profile');
+        notify($other, site_line('note_left', ['name' => display_name_of((int) $user['id'])]), '/profile');
     }
     redirect('/profile');
 }

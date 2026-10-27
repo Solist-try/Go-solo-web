@@ -1,7 +1,6 @@
 <?php $pageTitle = site_text('notices_title') . ' · ' . site_text('site_title'); ?>
 <section class="frame section narrow">
   <h1><?= e(site_text('notices_title')) ?></h1>
-  <p class="soft"><?= e(site_text('notices_intro')) ?></p>
   <?php if (!$notices): ?>
     <p><?= e(site_text('empty_notices')) ?></p>
   <?php else: ?>
