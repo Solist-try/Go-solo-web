@@ -431,6 +431,47 @@ th, td { text-align: left; padding: 0.75rem 0.5rem; border-bottom: 1px solid var
 }
 .editor.is-ready .editor-surface { display: block; }
 .editor-compact .editor-surface { min-height: 4.5rem; }
+.talk-sheet { max-width: 44rem; }
+.talk-sheet .talk-note {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0.15rem 0 1.35rem;
+  border-bottom: 1px solid var(--line);
+}
+.talk-sheet .talk-note .writing,
+.talk-sheet .talk-note p {
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  max-width: none;
+}
+.talk-sheet .stack { margin: 0.4rem 0 1.8rem; }
+.talk-sheet > form { margin-top: 1.5rem; }
+.editor.editor-letter { width: 100%; max-width: none; }
+.editor.editor-letter .editor-surface,
+.editor.editor-letter .editor-source {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  min-height: 180px;
+  background: var(--bg);
+  padding: 1rem 1.05rem 1.25rem;
+  font-size: 1.0625rem;
+  line-height: 1.7;
+}
+.editor.editor-letter .editor-surface {
+  resize: vertical;
+  overflow: auto;
+}
+.editor.editor-letter .editor-surface p { margin: 0 0 0.95rem; }
+@media (min-width: 700px) {
+  .editor.editor-letter .editor-surface,
+  .editor.editor-letter .editor-source { min-height: 220px; }
+}
+@media (min-width: 1100px) {
+  .editor.editor-letter .editor-surface,
+  .editor.editor-letter .editor-source { min-height: 300px; }
+}
 .editor-surface:focus { outline: 2px solid var(--sage); }
 .editor-source { min-height: 8rem; }
 .editor.is-ready .editor-source {
