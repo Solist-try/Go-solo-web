@@ -7,7 +7,7 @@
   </label>
   <label>
     <input type="radio" name="conversations_pref" value="context"<?= $talkSelected === 'context' ? ' checked' : '' ?>>
-    <span class="choice-title"><?= e(site_text('talk_pref_context')) ?> <span class="soft"><?= e(site_text('talk_pref_recommended')) ?></span></span>
+    <span class="choice-title"><?= e(site_text('talk_pref_context')) ?></span>
     <p class="soft"><?= e(site_text('talk_pref_context_note')) ?></p>
   </label>
   <label>

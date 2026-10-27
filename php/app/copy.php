@@ -86,6 +86,9 @@ function site_text(string $key): string
         'account_close_body' => [
             'This removes your chair, your seeds, and what you shared. It cannot be undone.',
         ],
+        'verify_notice' => [
+            'Your email is not verified yet. You can read. Posting, seeds, conversations, and photographs wait until you open the letter.',
+        ],
     ];
     if (isset($earlier[$key]) && in_array($value, $earlier[$key], true)) {
         return $default;
@@ -448,7 +451,6 @@ function content_groups(): array
             'talk_pref_anyone' => 'Anyone',
             'talk_pref_anyone_note' => 'Anyone note',
             'talk_pref_context' => 'Shared context',
-            'talk_pref_recommended' => 'Recommended',
             'talk_pref_context_note' => 'Shared context note',
             'talk_pref_none' => 'No private conversations at this time',
             'talk_pref_none_note' => 'Paused note',
