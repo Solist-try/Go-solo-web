@@ -75,7 +75,14 @@ $logoImage = site_text('logo_image');
     <?php if ($quietNote !== ''): ?>
       <?php include __DIR__ . '/partials/quiet-note.php'; ?>
     <?php endif; ?>
-    <?php if ($currentUser && !user_is_verified($currentUser)): ?><div class="frame"><p class="verify-note"><?= e(site_text('verify_notice')) ?> <a href="<?= e(url('/account')) ?>"><?= e(site_text('cta_account')) ?></a></p></div><?php endif; ?>
+    <?php if ($currentUser && !user_is_verified($currentUser)): ?>
+      <div class="frame">
+        <div class="verify-note">
+          <p class="verify-title"><?= e(site_text('verify_notice_title')) ?></p>
+          <?php foreach (site_lines('verify_notice') as $line): ?><p><?= e($line) ?></p><?php endforeach; ?>
+        </div>
+      </div>
+    <?php endif; ?>
     <?= $content ?>
   </main>
   <footer class="site-footer">

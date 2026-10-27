@@ -2,7 +2,6 @@
 <section class="frame section narrow">
   <h1><?= e(site_text('account_title')) ?></h1>
   <?php if (!empty($verifyReady) && empty($verified)): ?>
-    <p class="soft"><?= e(site_text('verify_notice')) ?></p>
     <form method="post" action="<?= e(url('/account/verify')) ?>">
       <?= csrf_field() ?>
       <button type="submit"><?= e(site_text('cta_resend_verify')) ?></button>
