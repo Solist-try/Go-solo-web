@@ -720,7 +720,7 @@ function show_garden(int $id, bool $self): void
         'helpRequests' => q('SELECT id, title FROM help_requests WHERE user_id = ? ORDER BY id', [$id]),
         'helpOffers' => user_titles('help_offers', $id),
         'waypoints' => life_visible_waypoints(q(
-            'SELECT w.id, w.slug, w.title FROM waypoint_members wm JOIN waypoints w ON w.id = wm.waypoint_id WHERE wm.user_id = ? AND w.archived = 0 ORDER BY w.title',
+            'SELECT w.id, w.slug, w.title FROM waypoint_members wm JOIN waypoints w ON w.id = wm.waypoint_id WHERE wm.user_id = ? AND w.archived = 0 ORDER BY wm.created_at DESC, w.title',
             [$id]
         ), $id, $self),
         'stories' => life_visible_stories(q($storySql, [$id]), $id, $self),
