@@ -444,6 +444,19 @@ th, td { text-align: left; padding: 0.75rem 0.5rem; border-bottom: 1px solid var
   border: 0;
 }
 .path-culture { max-width: 40rem; }
+.garden-lead { font-family: var(--serif); font-size: 1.35rem; line-height: 1.45; max-width: 36rem; margin: 0.4rem 0 1rem; }
+.garden-lead p { margin: 0 0 0.6rem; }
+.garden-lead p:last-child { margin-bottom: 0; }
+.garden-season { margin: 0 0 1rem; }
+.garden-now { margin: 0 0 1.1rem; }
+.garden-now h2 { font-size: 1.15rem; margin: 0 0 0.25rem; }
+.garden-start { margin: 0.2rem 0 1.8rem; }
+.garden-start .button { min-width: 14rem; }
+.garden-fold { margin: 0.15rem 0 0.4rem; border-top: 1px solid var(--line); }
+.garden-fold summary { cursor: pointer; padding: 0.85rem 0 0.35rem; }
+.garden-fold summary h2 { display: inline; font-size: 1.45rem; margin: 0; }
+.garden-fold summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.garden-fold .list, .garden-fold .chips { margin-top: 0.2rem; }
 .path-portrait {
   background: #f3f6f4;
   border: 1px solid #e3ebe4;

@@ -16,22 +16,159 @@ $name = $person['display_name'] ?: site_text('garden_member');
       <a class="button quiet small" href="<?= e(url('/profile/edit')) ?>"><?= e(site_text('cta_tend')) ?></a>
       <a class="button quiet small" href="<?= e(url('/notices')) ?>"><?= e(site_text('cta_notes')) ?></a>
       <a class="button quiet small" href="<?= e(url('/account')) ?>"><?= e(site_text('cta_account')) ?></a>
+      <?php if (conversations_ready()): ?>
+        <?php $gardenUnread = function_exists('talk_attention_total') ? talk_attention_total((int) $person['id']) : 0; ?>
+        <a class="button quiet small" id="conversations" href="<?= e(url('/conversations')) ?>"><?= e(site_text('nav_conversations')) ?><?php if ($gardenUnread > 0): ?> (<?= e((string) $gardenUnread) ?>)<?php endif; ?></a>
+      <?php endif; ?>
     </p>
     <?php if (conversations_ready()): ?>
-      <h2 id="conversations"><a href="<?= e(url('/conversations')) ?>"><?= e(site_text('nav_conversations')) ?></a><?php $gardenUnread = function_exists('talk_attention_total') ? talk_attention_total((int) $person['id']) : 0; if ($gardenUnread > 0): ?> (<?= e((string) $gardenUnread) ?>)<?php endif; ?></h2>
       <p><?= e(site_text('talk_home_note')) ?></p>
     <?php endif; ?>
   <?php endif; ?>
 
-  <p class="path-culture"><?= e(site_text('path_culture')) ?></p>
-  <?php if (function_exists('path_portrait')) { $portrait = path_portrait((int) $person['id'], $isSelf); include __DIR__ . '/../partials/path-portrait.php'; } ?>
+  <?php $bio = trim((string) $person['bio']); ?>
+  <?php if ($bio !== ''): ?>
+    <div class="garden-lead"><?= paragraphs($bio) ?></div>
+  <?php elseif ($isSelf): ?>
+    <p class="soft"><?= e(site_text('path_bio_note')) ?></p>
+  <?php endif; ?>
 
-  <h2><?= e(site_text('garden_bio')) ?></h2>
-  <p class="soft"><?= e(site_text('path_bio_note')) ?></p>
-  <?php if (trim((string) $person['bio']) === ''): ?>
-    <p class="soft"><?= e(site_text('empty_bio')) ?></p>
-  <?php else: ?>
-    <?= paragraphs((string) $person['bio']) ?>
+  <?php if (life_ready() && $lifeSeason !== ''): ?>
+    <p class="soft garden-season"><?= e($lifeSeason) ?></p>
+  <?php endif; ?>
+
+  <?php if ($waypoints): ?>
+    <div class="garden-now">
+      <h2><?= e(site_text('garden_waypoint_now')) ?></h2>
+      <p><a href="<?= e(url('/waypoints/' . $waypoints[0]['slug'])) ?>"><?= e($waypoints[0]['title']) ?></a></p>
+    </div>
+  <?php endif; ?>
+
+  <?php if (!$isSelf && $currentUser): ?>
+    <?php
+      $reach = function_exists('talk_pref_public_line') ? talk_pref_public_line($currentUser, (int) $person['id']) : '';
+      $talkOffer = talk_profile_offer($currentUser, (int) $person['id']);
+      $talkOffer['prominent'] = true;
+    ?>
+    <?php if ($reach !== '' || ($talkOffer['mode'] ?? 'none') !== 'none'): ?>
+      <div class="garden-start">
+        <?php if ($reach !== ''): ?><p><?= e($reach) ?></p><?php endif; ?>
+        <?php include __DIR__ . '/../partials/talk-offer.php'; ?>
+      </div>
+    <?php endif; ?>
+  <?php endif; ?>
+
+  <?php $showGrowing = $isSelf || $growing || $planted; ?>
+  <?php if ($showGrowing): ?>
+    <details class="garden-fold" open>
+      <summary><h2><?= e(site_text('garden_growing')) ?></h2></summary>
+      <?php if (!$growing && !$planted): ?><p class="soft"><?= e(site_text('empty_planted')) ?></p><?php else: ?>
+        <ul class="list">
+          <?php foreach ($planted as $seed): ?>
+            <li><a href="<?= e(url('/seeds/' . $seed['slug'])) ?>"><?= e($seed['title']) ?></a></li>
+          <?php endforeach; ?>
+          <?php foreach ($growing as $seed): ?>
+            <li>
+              <?= e($seed['title']) ?><?php if (life_ready()): ?> <span class="soft">· <?= e(life_seed_label((string) $seed['status'])) ?></span><?php elseif ($seed['status'] === 'resting'): ?> <span class="soft">· <?= e(site_text('garden_resting')) ?></span><?php endif; ?><?php if (!empty($seed['looking_for_support']) && ($seed['status'] ?? '') === 'active'): ?> <span class="soft">· <?= e(site_text('garden_open_help')) ?></span><?php endif; ?>
+              <?php if (!$isSelf && life_seed_accepts_support($seed, (int) $person['id'])): ?>
+                <?php $talkOffer = talk_offer($currentUser, (int) $person['id'], true, '/members/' . $person['id'], ['type' => 'seed', 'kind' => 'growing', 'id' => (int) $seed['id'], 'person' => 0], site_text('talk_offer')); include __DIR__ . '/../partials/talk-offer.php'; ?>
+              <?php endif; ?>
+            </li>
+          <?php endforeach; ?>
+        </ul>
+      <?php endif; ?>
+    </details>
+  <?php endif; ?>
+
+  <?php if ($stories): ?>
+    <div class="garden-now">
+      <h2><?= e(site_text('garden_story_now')) ?></h2>
+      <p>
+        <a href="<?= e(url('/out-there/' . $stories[0]['id'])) ?>"><?= e($stories[0]['title']) ?></a>
+        <span class="soft"> · <?= e(nice_date($stories[0]['created_at'])) ?></span>
+        <?php if (!empty($stories[0]['hidden'])): ?><span class="soft"> · <?= e(site_text('garden_hidden')) ?></span><?php endif; ?>
+      </p>
+    </div>
+  <?php endif; ?>
+
+  <?php if (life_ready() && $lifeTrust): ?>
+    <div class="garden-now">
+      <h2><?= e(site_text('life_trust_heading')) ?></h2>
+      <ul class="list">
+        <?php foreach ($lifeTrust as $line): ?><li><?= e($line) ?></li><?php endforeach; ?>
+      </ul>
+    </div>
+  <?php endif; ?>
+
+  <?php if ($helpRequests): ?>
+    <details class="garden-fold">
+      <summary><h2><?= e(site_text('garden_help')) ?></h2></summary>
+      <ul class="list">
+        <?php foreach ($helpRequests as $request): ?>
+          <li>
+            <?= e($request['title']) ?>
+            <?php if (!$isSelf && !(life_ready() && life_paused((int) $person['id'], 'pause_seed_support'))): ?>
+              <?php $talkOffer = talk_offer($currentUser, (int) $person['id'], true, '/members/' . $person['id'], ['type' => 'seed', 'kind' => 'help', 'id' => (int) $request['id'], 'person' => 0], site_text('talk_offer')); include __DIR__ . '/../partials/talk-offer.php'; ?>
+            <?php endif; ?>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+    </details>
+  <?php endif; ?>
+
+  <?php if ($helpOffers): ?>
+    <details class="garden-fold">
+      <summary><h2><?= e(site_text('garden_offers')) ?></h2></summary>
+      <ul class="chips"><?php foreach ($helpOffers as $title): ?><li><?= e($title) ?></li><?php endforeach; ?></ul>
+    </details>
+  <?php endif; ?>
+
+  <?php if (count($stories) > 1): ?>
+    <details class="garden-fold">
+      <summary><h2><?= e(site_text('garden_stories')) ?></h2></summary>
+      <ul class="list">
+        <?php foreach (array_slice($stories, 1) as $story): ?>
+          <li>
+            <a href="<?= e(url('/out-there/' . $story['id'])) ?>"><?= e($story['title']) ?></a>
+            <span class="soft"> · <?= e(nice_date($story['created_at'])) ?></span>
+            <?php if (!empty($story['hidden'])): ?><span class="soft"> · <?= e(site_text('garden_hidden')) ?></span><?php endif; ?>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+    </details>
+  <?php endif; ?>
+
+  <?php if (count($waypoints) > 1): ?>
+    <details class="garden-fold">
+      <summary><h2><?= e(site_text('garden_waypoints')) ?></h2></summary>
+      <ul class="chips">
+        <?php foreach (array_slice($waypoints, 1) as $waypoint): ?>
+          <li><a href="<?= e(url('/waypoints/' . $waypoint['slug'])) ?>"><?= e($waypoint['title']) ?></a></li>
+        <?php endforeach; ?>
+      </ul>
+    </details>
+  <?php endif; ?>
+
+  <?php
+    $gardenFrequency = trim((string) ($person['contact_frequency'] ?? ''));
+    $gardenStyle = trim((string) ($person['check_in_style'] ?? ''));
+  ?>
+  <?php if ($supports || $gardenFrequency !== '' || $gardenStyle !== ''): ?>
+    <details class="garden-fold">
+      <summary><h2><?= e(site_text('garden_support')) ?></h2></summary>
+      <?php if ($supports): ?><ul class="chips"><?php foreach ($supports as $choice): ?><li><?= e($choice) ?></li><?php endforeach; ?></ul><?php endif; ?>
+      <?php if ($gardenFrequency !== ''): ?><p><span class="soft"><?= e(site_text('garden_frequency')) ?></span><br><?= e($gardenFrequency) ?></p><?php endif; ?>
+      <?php if ($gardenStyle !== ''): ?><p><span class="soft"><?= e(site_text('garden_style')) ?></span><br><?= e($gardenStyle) ?></p><?php endif; ?>
+    </details>
+  <?php endif; ?>
+
+  <?php if (life_ready() && $lifeOutcomes): ?>
+    <details class="garden-fold">
+      <summary><h2><?= e(site_text('life_path_reflections')) ?></h2></summary>
+      <?php foreach ($lifeOutcomes as $outcome): ?>
+        <article class="card"><?= paragraphs((string) $outcome['body']) ?></article>
+      <?php endforeach; ?>
+    </details>
   <?php endif; ?>
 
   <?php if ($isSelf && conversations_ready()): ?>
@@ -147,23 +284,6 @@ $name = $person['display_name'] ?: site_text('garden_member');
       <?php endif; ?>
   <?php endif; ?>
 
-  <?php if (life_ready() && $lifeSeason !== ''): ?>
-    <h2><?= e(site_text('life_season_heading')) ?></h2>
-    <p><?= e($lifeSeason) ?></p>
-  <?php endif; ?>
-  <?php if (life_ready() && $lifeTrust): ?>
-    <h2><?= e(site_text('life_trust_heading')) ?></h2>
-    <ul class="list">
-      <?php foreach ($lifeTrust as $line): ?><li><?= e($line) ?></li><?php endforeach; ?>
-    </ul>
-  <?php endif; ?>
-  <?php if (life_ready() && $lifeOutcomes): ?>
-    <h2><?= e(site_text('life_path_reflections')) ?></h2>
-    <?php foreach ($lifeOutcomes as $outcome): ?>
-      <article class="card"><?= paragraphs((string) $outcome['body']) ?></article>
-    <?php endforeach; ?>
-  <?php endif; ?>
-
   <?php if ($isSelf && $matches): ?>
     <h2><?= e(site_text('garden_similar')) ?></h2>
     <?php foreach ($matches as $match): ?>
@@ -277,80 +397,6 @@ $name = $person['display_name'] ?: site_text('garden_member');
         <?php endif; ?>
       </article>
     <?php endforeach; ?>
-  <?php endif; ?>
-
-  <h2><?= e(site_text('garden_waypoints')) ?></h2>
-  <?php if (!$waypoints): ?><p class="soft"><?= e(site_text('empty_chair')) ?></p><?php else: ?>
-    <ul class="chips">
-      <?php foreach ($waypoints as $waypoint): ?>
-        <li><a href="<?= e(url('/waypoints/' . $waypoint['slug'])) ?>"><?= e($waypoint['title']) ?></a></li>
-      <?php endforeach; ?>
-    </ul>
-  <?php endif; ?>
-
-  <h2><?= e(site_text('garden_growing')) ?></h2>
-  <?php if (!$growing && !$planted): ?><p class="soft"><?= e(site_text('empty_planted')) ?></p><?php endif; ?>
-  <ul class="list">
-    <?php foreach ($planted as $seed): ?>
-      <li><a href="<?= e(url('/seeds/' . $seed['slug'])) ?>"><?= e($seed['title']) ?></a></li>
-    <?php endforeach; ?>
-    <?php foreach ($growing as $seed): ?>
-      <li>
-        <?= e($seed['title']) ?><?php if (life_ready()): ?> <span class="soft">· <?= e(life_seed_label((string) $seed['status'])) ?></span><?php elseif ($seed['status'] === 'resting'): ?> <span class="soft">· <?= e(site_text('garden_resting')) ?></span><?php endif; ?><?php if (!empty($seed['looking_for_support']) && ($seed['status'] ?? '') === 'active'): ?> <span class="soft">· <?= e(site_text('garden_open_help')) ?></span><?php endif; ?>
-        <?php if (!$isSelf && life_seed_accepts_support($seed, (int) $person['id'])): ?>
-          <?php $talkOffer = talk_offer($currentUser, (int) $person['id'], true, '/members/' . $person['id'], ['type' => 'seed', 'kind' => 'growing', 'id' => (int) $seed['id'], 'person' => 0], site_text('talk_offer')); include __DIR__ . '/../partials/talk-offer.php'; ?>
-        <?php endif; ?>
-      </li>
-    <?php endforeach; ?>
-  </ul>
-
-  <h2><?= e(site_text('garden_help')) ?></h2>
-  <?php if (!$helpRequests): ?><p class="soft"><?= e(site_text('empty_requests')) ?></p><?php else: ?>
-    <ul class="list">
-      <?php foreach ($helpRequests as $request): ?>
-        <li>
-          <?= e($request['title']) ?>
-          <?php if (!$isSelf && !(life_ready() && life_paused((int) $person['id'], 'pause_seed_support'))): ?>
-            <?php $talkOffer = talk_offer($currentUser, (int) $person['id'], true, '/members/' . $person['id'], ['type' => 'seed', 'kind' => 'help', 'id' => (int) $request['id'], 'person' => 0], site_text('talk_offer')); include __DIR__ . '/../partials/talk-offer.php'; ?>
-          <?php endif; ?>
-        </li>
-      <?php endforeach; ?>
-    </ul>
-  <?php endif; ?>
-
-  <h2><?= e(site_text('garden_offers')) ?></h2>
-  <?php if (!$helpOffers): ?><p class="soft"><?= e(site_text('empty_offers')) ?></p><?php else: ?>
-    <ul class="chips"><?php foreach ($helpOffers as $title): ?><li><?= e($title) ?></li><?php endforeach; ?></ul>
-  <?php endif; ?>
-
-  <h2><?= e(site_text('garden_support')) ?></h2>
-  <?php if (!$supports): ?><p class="soft"><?= e(site_text('empty_rhythm')) ?></p><?php else: ?>
-    <ul class="chips"><?php foreach ($supports as $choice): ?><li><?= e($choice) ?></li><?php endforeach; ?></ul>
-  <?php endif; ?>
-
-  <h2><?= e(site_text('garden_frequency')) ?></h2>
-  <p><?= e($person['contact_frequency'] ?: site_text('garden_frequency_any')) ?></p>
-
-  <h2><?= e(site_text('garden_style')) ?></h2>
-  <p><?= e($person['check_in_style'] ?: site_text('garden_style_any')) ?></p>
-
-  <h2><?= e(site_text('garden_stories')) ?></h2>
-  <?php if (!$stories): ?><p class="soft"><?= e(site_text('empty_stories')) ?></p><?php else: ?>
-    <ul class="list">
-      <?php foreach ($stories as $story): ?>
-        <li>
-          <a href="<?= e(url('/out-there/' . $story['id'])) ?>"><?= e($story['title']) ?></a>
-          <span class="soft"> · <?= e(nice_date($story['created_at'])) ?></span>
-          <?php if (!empty($story['hidden'])): ?><span class="soft"> · <?= e(site_text('garden_hidden')) ?></span><?php endif; ?>
-        </li>
-      <?php endforeach; ?>
-    </ul>
-  <?php endif; ?>
-
-  <?php if (!$isSelf && $currentUser): ?>
-    <?php $reach = function_exists('talk_pref_public_line') ? talk_pref_public_line($currentUser, (int) $person['id']) : ''; ?>
-    <?php if ($reach !== ''): ?><p><?= e($reach) ?></p><?php endif; ?>
-    <?php $talkOffer = talk_profile_offer($currentUser, (int) $person['id']); include __DIR__ . '/../partials/talk-offer.php'; ?>
   <?php endif; ?>
 
   <?php if ($isSelf && life_ready()): ?>
