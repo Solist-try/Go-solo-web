@@ -665,6 +665,19 @@ function talk_on_desk(array $conversation): bool
     return (int) ($conversation['closed'] ?? 0) === 1 || talk_reported((int) ($conversation['id'] ?? 0));
 }
 
+function talk_request_notice(string $type, string $name): string
+{
+    $keys = [
+        'seed' => 'talk_notice_seed',
+        'skill' => 'talk_notice_skill',
+        'story' => 'talk_notice_story',
+        'campfire' => 'talk_notice_campfire',
+        'waypoint' => 'talk_notice_waypoint',
+        'introduction' => 'talk_notice_introduction',
+    ];
+    return site_line($keys[$type] ?? 'talk_notice_request', ['name' => $name]);
+}
+
 function talk_context_heading(string $type): string
 {
     $keys = [
@@ -1105,7 +1118,7 @@ function page_talk_start(array $params): void
         flash(site_text('msg_talk_unavailable'));
         redirect($back);
     }
-    notify((int) $subject['other'], site_line('talk_notice_request', ['name' => display_name_of((int) $me['id'])]), '/conversations/' . $id);
+    notify((int) $subject['other'], talk_request_notice($fields['type'], display_name_of((int) $me['id'])), '/conversations/' . $id);
     log_activity((int) $me['id'], 'Sent a private conversation request');
     flash(site_text('msg_talk_request'));
     redirect('/conversations/' . $id);
@@ -1280,7 +1293,7 @@ function page_talk_send(array $params): void
     if ($action === 'decline' && $recipient) {
         talk_forget_notes($id);
         exec_sql('UPDATE conversations SET status = ? WHERE id = ?', ['declined', $id]);
-        notify((int) $conversation['opened_by'], site_text('talk_notice_closed'), $back);
+        notify((int) $conversation['opened_by'], site_line('talk_notice_closed', ['name' => display_name_of($mine)]), $back);
         log_activity($mine, 'Set a conversation request aside');
         if (!quiet_note_offer($mine, 'decline')) {
             flash(site_text('msg_talk_set_aside'));
@@ -1371,7 +1384,7 @@ function page_talk_send(array $params): void
             if (talk_status($conversation) === 'requested') {
                 talk_forget_notes($id);
                 exec_sql('UPDATE conversations SET status = ? WHERE id = ?', ['declined', $id]);
-                notify((int) $conversation['opened_by'] === $mine ? $other : (int) $conversation['opened_by'], site_text('talk_notice_closed'), $back);
+                notify((int) $conversation['opened_by'] === $mine ? $other : (int) $conversation['opened_by'], site_line('talk_notice_closed', ['name' => display_name_of($mine)]), $back);
             }
             log_activity($mine, 'Set private conversations aside with a member');
             flash(site_text('talk_paused_block'));
@@ -1517,7 +1530,7 @@ function desk_conversation_action(array $params): void
     if ($action === 'close') {
         exec_sql('UPDATE conversations SET closed = 1 WHERE id = ?', [$id]);
         foreach (talk_people($id) as $person) {
-            notify((int) $person['id'], site_text('talk_notice_resting'), '/conversations/' . $id);
+            notify((int) $person['id'], site_line('talk_notice_resting', ['name' => display_name_of((int) $actor['id'])]), '/conversations/' . $id);
         }
         log_activity((int) $actor['id'], 'Rested a private conversation');
     } elseif ($action === 'open') {

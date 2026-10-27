@@ -625,7 +625,13 @@ function valid_email(string $email): bool
 
 function display_name_of(int $userId): string
 {
-    $row = one('SELECT display_name FROM profiles WHERE user_id = ?', [$userId]);
+    if ($userId <= 0) {
+        return site_text('garden_member');
+    }
+    $row = one(
+        'SELECT p.display_name FROM users u LEFT JOIN profiles p ON p.user_id = u.id WHERE u.id = ?',
+        [$userId]
+    );
     $name = trim((string) ($row['display_name'] ?? ''));
-    return $name !== '' ? $name : 'A member';
+    return $name !== '' ? $name : site_text('garden_member');
 }

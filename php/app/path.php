@@ -344,8 +344,8 @@ function path_skill_post(array $params): void
                 (string) $fresh['note']
             );
             if ($chair['created']) {
-                notify($mine, site_text('path_room_opened'), '/conversations/' . $chair['id']);
-                notify($other, site_text('path_room_opened'), '/conversations/' . $chair['id']);
+                notify($mine, site_line('path_room_opened', ['name' => display_name_of($other)]), '/conversations/' . $chair['id']);
+                notify($other, site_line('path_room_opened', ['name' => display_name_of($mine)]), '/conversations/' . $chair['id']);
             }
         }
         flash(site_text('life_msg_status'));
@@ -353,7 +353,7 @@ function path_skill_post(array $params): void
     }
     if ($action === 'decline' && ((int) $link['consent_from'] !== 1 || (int) $link['consent_to'] !== 1)) {
         exec_sql('UPDATE skill_links SET archived = 1 WHERE id = ? AND archived = 0', [(int) $link['id']]);
-        notify($other, site_text('life_intro_closed_line'), '/profile');
+        notify($other, site_line('note_intro_closed', ['name' => display_name_of($mine)]), '/profile');
         flash(site_text('life_msg_status'));
         redirect('/profile');
     }
