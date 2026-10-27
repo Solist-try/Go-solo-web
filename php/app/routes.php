@@ -99,6 +99,7 @@ function route_table(): array
         $post('/growing', 'page_growing'),
         $post('/planted/remove', 'page_planted_remove'),
         $post('/notes', 'page_notes'),
+        ['GET', '/conversations', 'page_talk_home'],
         ['GET', '/conversations/new', 'page_talk_compose'],
         $post('/conversations', 'page_talk_start'),
         $post('/profile/conversations', 'page_talk_preference'),

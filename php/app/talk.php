@@ -243,6 +243,71 @@ function talk_can_reply(array $conversation, int $senderId): bool
     return true;
 }
 
+function talk_can_answer(array $conversation, int $senderId): bool
+{
+    if (talk_can_reply($conversation, $senderId)) {
+        return true;
+    }
+    if (talk_status($conversation) !== 'requested' || (int) ($conversation['opened_by'] ?? 0) === $senderId) {
+        return false;
+    }
+    if ((int) ($conversation['closed'] ?? 1) === 1) {
+        return false;
+    }
+    if (table_has_column('conversations', 'member_closed') && (int) ($conversation['member_closed'] ?? 0) === 1) {
+        return false;
+    }
+    if (!talk_participant((int) $conversation['id'], $senderId) || talk_held($senderId) || talk_pref($senderId) === 'none') {
+        return false;
+    }
+    $other = talk_other((int) $conversation['id'], $senderId);
+    if ($other <= 0 || talk_blocked($senderId, $other) || talk_held($other) || talk_pref($other) === 'none') {
+        return false;
+    }
+    return true;
+}
+
+function talk_can_draft(array $conversation, int $userId): bool
+{
+    if (talk_status($conversation) === 'requested' && (int) ($conversation['opened_by'] ?? 0) === $userId) {
+        return false;
+    }
+    return talk_can_answer($conversation, $userId);
+}
+
+function talk_message_body(string $html): string
+{
+    $clean = sanitize_writing($html, false);
+    $clean = preg_replace('#<(/?)h[1-6]\b[^>]*>#i', '<$1p>', $clean) ?? $clean;
+    return writing_is_empty($clean) ? '' : $clean;
+}
+
+function talk_plain_snippet(string $html): string
+{
+    $plain = trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($html), ENT_QUOTES, 'UTF-8')) ?? '');
+    return clip($plain, 90);
+}
+
+function talk_form_issue(int $conversationId): string
+{
+    $key = bin2hex(random_bytes(8));
+    if (!isset($_SESSION['talk_form']) || !is_array($_SESSION['talk_form'])) {
+        $_SESSION['talk_form'] = [];
+    }
+    $_SESSION['talk_form'][$conversationId] = $key;
+    if (count($_SESSION['talk_form']) > 20) {
+        $_SESSION['talk_form'] = array_slice($_SESSION['talk_form'], -20, null, true);
+    }
+    return $key;
+}
+
+function talk_form_consume(int $conversationId, string $key): bool
+{
+    $saved = (string) ($_SESSION['talk_form'][$conversationId] ?? '');
+    unset($_SESSION['talk_form'][$conversationId]);
+    return $key !== '' && $saved !== '' && hash_equals($saved, $key);
+}
+
 function talk_list(int $userId): array
 {
     if (!conversations_ready()) {
@@ -321,6 +386,123 @@ function talk_outgoing(int $userId): array
         [$userId, 'requested']
     );
     return talk_with_names($rows, $userId);
+}
+
+function talk_member_rows(int $userId, string $where, array $params): array
+{
+    if (!conversations_ready() || $userId <= 0) {
+        return [];
+    }
+    $rows = q(
+        'SELECT c.id, c.context_type, c.context_label, c.context_note, c.closed, c.created_at, c.status, c.opened_by
+         FROM conversations c
+         JOIN conversation_participants p ON p.conversation_id = c.id AND p.user_id = ?
+         WHERE ' . $where . '
+         ORDER BY c.id DESC',
+        array_merge([$userId], $params)
+    );
+    return talk_with_names($rows, $userId);
+}
+
+function talk_new_list(int $userId): array
+{
+    $quiet = table_has_column('conversations', 'member_closed') ? ' AND c.member_closed = 0' : '';
+    return talk_member_rows($userId, 'c.status = ? AND c.opened_by <> ?' . $quiet, ['requested', $userId]);
+}
+
+function talk_open_list(int $userId): array
+{
+    $quiet = ' AND c.closed = 0';
+    if (table_has_column('conversations', 'member_closed')) {
+        $quiet .= ' AND c.member_closed = 0';
+    }
+    return talk_member_rows($userId, 'c.status = ?' . $quiet, ['open']);
+}
+
+function talk_closed_list(int $userId): array
+{
+    $parts = ['c.status = ?', 'c.closed = 1'];
+    $params = ['declined'];
+    if (table_has_column('conversations', 'member_closed')) {
+        $parts[] = 'c.member_closed = 1';
+    }
+    return talk_member_rows($userId, '(' . implode(' OR ', $parts) . ')', $params);
+}
+
+function talk_drafts_ready(): bool
+{
+    static $ready = null;
+    if ($ready === null) {
+        $found = one(
+            'SELECT COUNT(*) AS n FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?',
+            ['conversation_drafts']
+        );
+        $ready = (int) ($found['n'] ?? 0) > 0;
+    }
+    return $ready;
+}
+
+function talk_draft(int $conversationId, int $userId): string
+{
+    if (!talk_drafts_ready() || $conversationId <= 0 || $userId <= 0) {
+        return '';
+    }
+    $row = one(
+        'SELECT body FROM conversation_drafts WHERE conversation_id = ? AND user_id = ?',
+        [$conversationId, $userId]
+    );
+    return (string) ($row['body'] ?? '');
+}
+
+function talk_draft_put(int $conversationId, int $userId, string $body): bool
+{
+    if (!talk_drafts_ready() || $conversationId <= 0 || $userId <= 0 || $body === '') {
+        return false;
+    }
+    exec_sql(
+        'INSERT INTO conversation_drafts (conversation_id, user_id, body, updated_at) VALUES (?, ?, ?, NOW())
+         ON DUPLICATE KEY UPDATE body = VALUES(body), updated_at = NOW()',
+        [$conversationId, $userId, $body]
+    );
+    return true;
+}
+
+function talk_release_archive(int $userId): void
+{
+    if ($userId <= 0 || !table_has_column('conversation_participants', 'archived')) {
+        return;
+    }
+    exec_sql('UPDATE conversation_participants SET archived = 0 WHERE user_id = ? AND archived = 1', [$userId]);
+}
+
+function talk_draft_clear(int $conversationId, int $userId): void
+{
+    if (!talk_drafts_ready() || $conversationId <= 0 || $userId <= 0) {
+        return;
+    }
+    exec_sql('DELETE FROM conversation_drafts WHERE conversation_id = ? AND user_id = ?', [$conversationId, $userId]);
+}
+
+function talk_draft_list(int $userId): array
+{
+    if (!talk_drafts_ready() || !conversations_ready() || $userId <= 0) {
+        return [];
+    }
+    $rows = q(
+        'SELECT c.id, c.context_type, c.context_label, c.created_at, d.body, d.updated_at
+         FROM conversation_drafts d
+         JOIN conversations c ON c.id = d.conversation_id
+         JOIN conversation_participants p ON p.conversation_id = c.id AND p.user_id = ?
+         WHERE d.user_id = ?
+         ORDER BY d.updated_at DESC, c.id DESC',
+        [$userId, $userId]
+    );
+    $named = talk_with_names($rows, $userId);
+    foreach ($named as $i => $row) {
+        $named[$i]['snippet'] = talk_plain_snippet((string) ($row['body'] ?? ''));
+        unset($named[$i]['body']);
+    }
+    return $named;
 }
 
 function talk_read_ready(): bool
@@ -985,6 +1167,24 @@ function quiet_note_take(int $userId): string
     return $key;
 }
 
+function page_talk_home(array $params): void
+{
+    $me = require_user();
+    if (!conversations_ready()) {
+        flash(site_text('msg_talk_unavailable'));
+        redirect('/profile');
+    }
+    $id = (int) $me['id'];
+    talk_release_archive($id);
+    view('talk/index', [
+        'incoming' => talk_new_list($id),
+        'openTalk' => talk_open_list($id),
+        'drafts' => talk_draft_list($id),
+        'closedTalk' => talk_closed_list($id),
+        'waiting' => talk_outgoing($id),
+    ]);
+}
+
 function page_talk(array $params): void
 {
     $me = require_user();
@@ -1019,6 +1219,8 @@ function page_talk(array $params): void
             'ended' => $ended,
         ];
     }
+    talk_release_archive($mine);
+    $life['archived'] = false;
     $messages = $status === 'declined' ? [] : talk_messages($id);
     talk_mark_seen($id, $mine, array_map(static fn (array $message): int => (int) $message['id'], $messages));
     $clear = $other > 0 && !talk_blocked($mine, $other) && !talk_held($mine) && !talk_held($other) && talk_pref($mine) !== 'none' && talk_pref($other) !== 'none';
@@ -1035,6 +1237,9 @@ function page_talk(array $params): void
         'people' => talk_people($id),
         'messages' => $messages,
         'canReply' => $canReply,
+        'canCompose' => talk_can_answer($conversation, $mine),
+        'draftBody' => talk_draft($id, $mine),
+        'formKey' => talk_form_issue($id),
         'canAccept' => $recipient && $clear,
         'canDecline' => $recipient,
         'canBlock' => $status === 'open' && talk_blocks_ready() && $other > 0 && !one('SELECT user_id FROM member_blocks WHERE user_id = ? AND blocked_id = ?', [$mine, $other]),
@@ -1056,6 +1261,9 @@ function page_talk_send(array $params): void
     $id = (int) $conversation['id'];
     $mine = (int) $me['id'];
     $action = (string) ($_POST['action'] ?? '');
+    if ($action === '' && (string) ($_POST['form_key'] ?? '') !== '') {
+        $action = 'send';
+    }
     $other = talk_other($id, $mine);
     $recipient = talk_status($conversation) === 'requested' && (int) $conversation['opened_by'] !== $mine;
     if ($action === 'later' && $recipient) {
@@ -1067,7 +1275,7 @@ function page_talk_send(array $params): void
         }
         log_activity($mine, 'Left a conversation request for later');
         flash(site_text('msg_talk_later'));
-        redirect(talk_not_now_ready() ? '/profile#later' : '/profile#requests');
+        redirect('/conversations#new');
     }
     if ($action === 'decline' && $recipient) {
         talk_forget_notes($id);
@@ -1077,7 +1285,43 @@ function page_talk_send(array $params): void
         if (!quiet_note_offer($mine, 'decline')) {
             flash(site_text('msg_talk_set_aside'));
         }
-        redirect('/profile#requests');
+        redirect('/conversations#closed');
+    }
+    if ($action === 'delete_draft') {
+        if (!talk_form_consume($id, (string) ($_POST['form_key'] ?? ''))) {
+            redirect($back);
+        }
+        talk_draft_clear($id, $mine);
+        flash(site_text('talk_draft_deleted'));
+        redirect($back);
+    }
+    if ($action === 'draft') {
+        if (!talk_form_consume($id, (string) ($_POST['form_key'] ?? ''))) {
+            redirect($back);
+        }
+        $draft = talk_message_body(writing_from_post());
+        if ($draft === '' || !talk_can_draft($conversation, $mine)) {
+            flash(site_text('msg_few_words'));
+            redirect($back);
+        }
+        if (!talk_draft_put($id, $mine, $draft)) {
+            flash(site_text('talk_draft_unavailable'));
+            redirect($back);
+        }
+        flash(site_text('talk_draft_saved'));
+        redirect($back);
+    }
+    if ($action === 'send' && !user_is_verified($me)) {
+        if (!talk_form_consume($id, (string) ($_POST['form_key'] ?? ''))) {
+            redirect($back);
+        }
+        $draft = talk_message_body(writing_from_post());
+        if ($draft !== '' && talk_can_draft($conversation, $mine) && !talk_draft_put($id, $mine, $draft)) {
+            flash(site_text('talk_draft_unavailable'));
+            redirect($back);
+        }
+        flash(site_text('msg_verify_first'));
+        redirect('/account');
     }
     if (!user_is_verified($me)) {
         flash(site_text('msg_verify_first'));
@@ -1134,37 +1378,44 @@ function page_talk_send(array $params): void
         }
         redirect($back);
     }
-    if (!talk_can_reply($conversation, $mine)) {
+    if ($action === 'send' && !talk_form_consume($id, (string) ($_POST['form_key'] ?? ''))) {
+        redirect($back);
+    }
+    if (!talk_can_answer($conversation, $mine)) {
         flash(site_text('msg_talk_unavailable'));
         redirect($back);
     }
-    $body = writing_from_post();
-    $alt = clip(post_text('image_alt', 255), 255);
-    $images = column_type_has('content_images', 'parent_type', 'conversation');
-    $upload = $images ? take_upload('image') : ['error' => null, 'path' => null];
-    if ($upload['error']) {
-        flash($upload['error']);
-        redirect($back);
-    }
-    if (writing_is_empty($body) && empty($upload['path'])) {
+    $body = talk_message_body(writing_from_post());
+    if ($body === '') {
         flash(site_text('msg_few_words'));
-        forget_upload($upload['path'] ?? null);
         redirect($back);
     }
-    $messageId = 0;
-    $failed = room_transaction(function () use ($me, $conversation, $body, $upload, $alt, &$messageId): void {
+    $openedNow = talk_status($conversation) === 'requested';
+    $failed = room_transaction(function () use ($me, $conversation, $body, $openedNow): void {
+        if ($openedNow) {
+            exec_sql(
+                'UPDATE conversations SET status = ? WHERE id = ? AND status = ?',
+                ['open', (int) $conversation['id'], 'requested']
+            );
+            if (talk_not_now_ready()) {
+                exec_sql('UPDATE conversation_participants SET not_now = 0 WHERE conversation_id = ?', [(int) $conversation['id']]);
+            }
+        }
         exec_sql(
             'INSERT INTO conversation_messages (conversation_id, user_id, body, created_at) VALUES (?, ?, ?, NOW())',
             [(int) $conversation['id'], (int) $me['id'], $body]
         );
-        $messageId = (int) db()->lastInsertId();
-        if (!empty($upload['path'])) {
-            remember_image((int) $me['id'], 'conversation', $messageId, (string) $upload['path'], $alt);
-        }
-    }, $upload['path'] ?? null);
+        talk_draft_clear((int) $conversation['id'], (int) $me['id']);
+    }, null);
     if ($failed) {
         flash($failed);
         redirect($back);
+    }
+    if ($openedNow && function_exists('life_skill_parts_open')) {
+        life_skill_parts_open($conversation);
+    }
+    if ($openedNow) {
+        log_activity($mine, 'Answered a private conversation');
     }
     if ($other > 0) {
         notify($other, site_line('talk_notice_note', ['name' => display_name_of($mine)]), $back);
