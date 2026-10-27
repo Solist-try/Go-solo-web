@@ -28,6 +28,24 @@ function talk_pref(int $userId): string
     return in_array($pref, ['anyone', 'context', 'none'], true) ? $pref : 'context';
 }
 
+function talk_pref_public_line(?array $me, int $otherId): string
+{
+    if (!$me || !conversations_ready() || $otherId <= 0 || (int) $me['id'] === $otherId) {
+        return '';
+    }
+    if (talk_blocked((int) $me['id'], $otherId) || talk_held($otherId) || talk_pref($otherId) === 'none' || talk_pair_declined((int) $me['id'], $otherId)) {
+        return '';
+    }
+    $pref = talk_pref($otherId);
+    if ($pref === 'anyone') {
+        return site_text('talk_pref_anyone');
+    }
+    if ($pref === 'context') {
+        return site_text('talk_pref_context');
+    }
+    return '';
+}
+
 function talk_choice_made(int $userId): bool
 {
     if (!table_has_column('profiles', 'conversations_choice_made') || $userId <= 0) {

@@ -227,7 +227,7 @@ function page_stories(array $params): void
     $pin = pin_ready() ? 's.pinned, s.hidden, ' : '';
     $order = pin_ready() ? 's.pinned DESC, s.pinned_at DESC, s.created_at DESC' : 's.created_at DESC';
     $stories = q(
-        "SELECT s.id, s.title, {$body}{$pin}s.what_happened, s.created_at, p.display_name
+        "SELECT s.id, s.user_id, s.title, {$body}{$pin}s.what_happened, s.created_at, p.display_name
          FROM stories s
          JOIN users u ON u.id = s.user_id AND u.status = 'active'
          LEFT JOIN profiles p ON p.user_id = u.id
@@ -292,7 +292,7 @@ function page_campfire(array $params): void
     $pin = pin_ready() ? 'c.pinned, c.hidden, ' : '';
     $order = pin_ready() ? 'c.pinned DESC, c.pinned_at DESC, c.created_at DESC' : 'c.created_at DESC';
     $posts = q(
-        "SELECT c.id, c.title, c.body, {$pin}c.created_at, p.display_name
+        "SELECT c.id, c.user_id, c.title, c.body, {$pin}c.created_at, p.display_name
          FROM campfire_posts c
          JOIN users u ON u.id = c.user_id AND u.status = 'active'
          LEFT JOIN profiles p ON p.user_id = u.id
@@ -628,9 +628,9 @@ function page_profile(array $params): void
 
 function page_member(array $params): void
 {
-    $user = current_user();
+    $user = require_user();
     $id = (int) $params['id'];
-    show_garden($id, $user && (int) $user['id'] === $id);
+    show_garden($id, (int) $user['id'] === $id);
 }
 
 function show_garden(int $id, bool $self): void
@@ -645,6 +645,9 @@ function show_garden(int $id, bool $self): void
     if (!$person || ($person['status'] !== 'active' && !$self && !is_steward())) {
         not_found();
         return;
+    }
+    if (!$self) {
+        unset($person['email']);
     }
     $storySql = 'SELECT id, title, created_at, hidden FROM stories WHERE user_id = ?';
     if (!$self && !is_steward()) {

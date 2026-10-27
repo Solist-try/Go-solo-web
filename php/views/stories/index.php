@@ -16,7 +16,9 @@
               'id' => (int) $welcome['id'],
               'href' => '/out-there/' . (int) $welcome['id'],
               'title' => (string) $welcome['title'],
-              'meta' => trim((string) ($welcome['display_name'] ?: site_text('garden_member'))) . ' · ' . nice_date((string) $welcome['created_at']),
+              'author_id' => (int) ($welcome['user_id'] ?? 0),
+              'author_name' => (string) ($welcome['display_name'] ?: site_text('garden_member')),
+              'meta' => nice_date((string) $welcome['created_at']),
               'excerpt' => story_excerpt($welcome),
           ];
           $pinType = 'story';
@@ -32,7 +34,7 @@
       <?php foreach ($stories as $story): ?>
         <article class="card">
           <h2><a href="<?= e(url('/out-there/' . $story['id'])) ?>"><?= e($story['title']) ?></a></h2>
-          <p class="soft"><?= e($story['display_name'] ?: site_text('garden_member')) ?> · <?= e(nice_date($story['created_at'])) ?></p>
+          <p class="soft"><?php if ((int) ($story['user_id'] ?? 0) > 0): ?><a href="<?= e(url('/members/' . $story['user_id'])) ?>"><?= e($story['display_name'] ?: site_text('garden_member')) ?></a><?php else: ?><?= e($story['display_name'] ?: site_text('garden_member')) ?><?php endif; ?> · <?= e(nice_date($story['created_at'])) ?></p>
           <p><?= e(story_excerpt($story)) ?></p>
         </article>
       <?php endforeach; ?>

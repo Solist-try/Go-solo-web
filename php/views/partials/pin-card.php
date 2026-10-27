@@ -11,7 +11,9 @@ $pinHide = (string) ($pinHide ?? 'pin_hide');
 <article class="card welcome">
   <p class="pin-mark"><span aria-hidden="true">📌</span> <?= e(site_text($pinKicker)) ?></p>
   <h2><a href="<?= e(url((string) $pin['href'])) ?>"><?= e((string) $pin['title']) ?></a></h2>
-  <?php if (trim((string) ($pin['meta'] ?? '')) !== ''): ?><p class="soft"><?= e((string) $pin['meta']) ?></p><?php endif; ?>
+  <?php if ((int) ($pin['author_id'] ?? 0) > 0): ?>
+    <p class="soft"><a href="<?= e(url('/members/' . (int) $pin['author_id'])) ?>"><?= e((string) ($pin['author_name'] ?: site_text('garden_member'))) ?></a><?php if (trim((string) ($pin['meta'] ?? '')) !== ''): ?> · <?= e((string) $pin['meta']) ?><?php endif; ?></p>
+  <?php elseif (trim((string) ($pin['meta'] ?? '')) !== ''): ?><p class="soft"><?= e((string) $pin['meta']) ?></p><?php endif; ?>
   <?php if (trim((string) ($pin['excerpt'] ?? '')) !== ''): ?><p><?= e((string) $pin['excerpt']) ?></p><?php endif; ?>
   <?php if (is_steward() && ($pinManage ?? '') !== ''): ?>
     <div class="row-actions">

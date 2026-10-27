@@ -60,7 +60,9 @@
               'id' => (int) $welcome['id'],
               'href' => '/waypoints/' . $waypoint['slug'] . '/discussions/' . (int) $welcome['id'],
               'title' => (string) $welcome['title'],
-              'meta' => trim((string) ($welcome['display_name'] ?: site_text('garden_member'))) . ' · ' . nice_date((string) $welcome['created_at']),
+              'author_id' => (int) ($welcome['user_id'] ?? 0),
+              'author_name' => (string) ($welcome['display_name'] ?: site_text('garden_member')),
+              'meta' => nice_date((string) $welcome['created_at']),
               'excerpt' => writing_plain((string) $welcome['body'], 220),
           ];
           $pinType = 'waypoint';
@@ -77,7 +79,7 @@
         <article class="card">
           <h3><a href="<?= e(url('/waypoints/' . $waypoint['slug'] . '/discussions/' . $discussion['id'])) ?>"><?= e($discussion['title']) ?></a></h3>
           <p class="soft">
-            <?= e($discussion['display_name'] ?: site_text('garden_member')) ?>
+            <?php if ((int) ($discussion['user_id'] ?? 0) > 0): ?><a href="<?= e(url('/members/' . $discussion['user_id'])) ?>"><?= e($discussion['display_name'] ?: site_text('garden_member')) ?></a><?php else: ?><?= e($discussion['display_name'] ?: site_text('garden_member')) ?><?php endif; ?>
             · <?= e(nice_date($discussion['created_at'])) ?>
             <?php if ((int) $discussion['replies'] > 0): ?> · <?= e((string) $discussion['replies']) ?> <?= e((int) $discussion['replies'] === 1 ? site_text('waypoints_note_one') : site_text('waypoints_note_many')) ?><?php endif; ?>
             <?php if (!empty($discussion['pinned']) && empty($welcome)): ?> · <?= e(site_text('pin_by')) ?><?php endif; ?>
