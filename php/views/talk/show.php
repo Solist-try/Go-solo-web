@@ -45,7 +45,7 @@ if ($shared === $label || (string) ($conversation['context_type'] ?? '') === 'me
 $life = $life ?? ['ready' => false];
 $showLife = $status === 'open' && !empty($life['ready']) && !$memberClosed && !$resting;
 ?>
-<section class="frame section narrow">
+<section class="frame section talk-sheet">
   <p class="kicker"><a href="<?= e(url($backHref)) ?>"><?= e(site_text($backLabel)) ?></a></p>
   <h1><?php if ($incoming && $askerId > 0): ?><a href="<?= e(url('/members/' . $askerId)) ?>"><?= e($askerName) ?></a><?php else: ?><?= e($heading) ?><?php endif; ?></h1>
   <?php if (!$incoming && $otherPerson): ?>
@@ -64,7 +64,7 @@ $showLife = $status === 'open' && !empty($life['ready']) && !$memberClosed && !$
   <?php if ($status !== 'declined' && !empty($messages)): ?>
     <div class="stack">
       <?php foreach ($messages as $message): ?>
-        <article class="card">
+        <article class="talk-note">
           <?php if (!$incoming): ?>
             <p class="soft"><?php if ((int) ($message['user_id'] ?? 0) > 0): ?><a href="<?= e(url('/members/' . $message['user_id'])) ?>"><?= e($message['display_name'] ?: site_text('garden_member')) ?></a><?php else: ?><?= e($message['display_name'] ?: site_text('garden_member')) ?><?php endif; ?> · <?= e(nice_date($message['created_at'])) ?></p>
           <?php endif; ?>

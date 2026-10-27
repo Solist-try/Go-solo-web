@@ -459,6 +459,7 @@
     "talk_with": "With {name}",
     "talk_start": "Start a Conversation",
     "talk_write": "Write message",
+    "talk_compose_note": "Take your time.",
     "talk_opening": "A short note",
     "talk_opening_hint": "A few words are enough.",
     "talk_send_request": "Send the request",

@@ -3,6 +3,9 @@ $editorMode = ($editor['mode'] ?? 'full') === 'compact' ? 'compact' : 'full';
 $editorAction = (string) ($editor['action'] ?? '');
 $editorEmbedded = !empty($editor['embedded']);
 $editorClass = 'editor' . ($editorMode === 'compact' ? ' editor-compact' : '');
+if (!empty($editor['letter'])) {
+    $editorClass .= ' editor-letter';
+}
 if (!empty($editor['workspace'])) {
     $editorClass .= ' editor-article';
 }

@@ -550,6 +550,7 @@ function content_groups(): array
             'talk_hello' => 'Say Hello',
             'talk_start' => 'Start a Conversation',
             'talk_write' => 'Write message',
+            'talk_compose_note' => 'Compose note',
             'talk_with' => 'With {name}',
             'talk_opening' => 'Short note',
             'talk_opening_hint' => 'Short note hint',
