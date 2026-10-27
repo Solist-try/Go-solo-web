@@ -29,6 +29,13 @@ if ($askerName === '') {
     $askerName = $askerId > 0 ? display_name_of($askerId) : site_text('garden_member');
 }
 $heading = $incoming ? $askerName : site_text('talk_heading');
+$otherPerson = null;
+foreach ($people as $person) {
+    if ((int) ($currentUser['id'] ?? 0) !== (int) $person['id']) {
+        $otherPerson = $person;
+        break;
+    }
+}
 $pageTitle = $heading . ' · ' . site_text('site_title');
 $label = trim((string) ($conversation['context_label'] ?? ''));
 $shared = trim((string) ($conversation['context_note'] ?? ''));
@@ -40,7 +47,10 @@ $showLife = $status === 'open' && !empty($life['ready']) && !$memberClosed && !$
 ?>
 <section class="frame section narrow">
   <p class="kicker"><a href="<?= e(url($backHref)) ?>"><?= e(site_text($backLabel)) ?></a></p>
-  <h1><?= e($heading) ?></h1>
+  <h1><?php if ($incoming && $askerId > 0): ?><a href="<?= e(url('/members/' . $askerId)) ?>"><?= e($askerName) ?></a><?php else: ?><?= e($heading) ?><?php endif; ?></h1>
+  <?php if (!$incoming && $otherPerson): ?>
+    <p><a href="<?= e(url('/members/' . $otherPerson['id'])) ?>"><?= e($otherPerson['display_name'] ?: site_text('garden_member')) ?></a></p>
+  <?php endif; ?>
   <?php if ($incoming): ?>
     <?php if ($label !== ''): ?><p><?= e($label) ?></p><?php endif; ?>
     <?php if ($shared !== ''): ?><?= paragraphs($shared) ?><?php endif; ?>
@@ -56,7 +66,7 @@ $showLife = $status === 'open' && !empty($life['ready']) && !$memberClosed && !$
       <?php foreach ($messages as $message): ?>
         <article class="card">
           <?php if (!$incoming): ?>
-            <p class="soft"><?= e($message['display_name'] ?: site_text('garden_member')) ?> · <?= e(nice_date($message['created_at'])) ?></p>
+            <p class="soft"><?php if ((int) ($message['user_id'] ?? 0) > 0): ?><a href="<?= e(url('/members/' . $message['user_id'])) ?>"><?= e($message['display_name'] ?: site_text('garden_member')) ?></a><?php else: ?><?= e($message['display_name'] ?: site_text('garden_member')) ?><?php endif; ?> · <?= e(nice_date($message['created_at'])) ?></p>
           <?php endif; ?>
           <?php if (trim((string) $message['body']) !== ''): ?><?= render_writing((string) $message['body']) ?><?php endif; ?>
           <?php $images = $message['images'] ?? []; include __DIR__ . '/../partials/photos.php'; ?>

@@ -851,6 +851,7 @@ function content_groups(): array
         'Garden & Account' => [
             'garden_kicker_mine' => 'My garden label',
             'garden_kicker_other' => 'Someone else\'s garden',
+            'garden_link' => 'Link to a garden',
             'garden_member' => 'Nameless member',
             'garden_bio' => 'Bio heading',
             'garden_similar' => 'Similar path heading',

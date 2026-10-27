@@ -6,7 +6,7 @@
       <?php foreach ($offers as $offer): ?>
         <li>
           <strong><?= e($offer['title']) ?></strong>
-          <span class="soft"> · <?= e($offer['display_name'] ?: site_text('garden_member')) ?><?php if (life_ready()): ?> · <?= e(life_skill_label((string) ($offer['listing_status'] ?? 'open'), life_skill_in_progress('offer', (int) $offer['id']))) ?><?php endif; ?></span>
+          <span class="soft"> · <?php if ((int) ($offer['user_id'] ?? 0) > 0): ?><a href="<?= e(url('/members/' . $offer['user_id'])) ?>"><?= e($offer['display_name'] ?: site_text('garden_member')) ?></a><?php else: ?><?= e($offer['display_name'] ?: site_text('garden_member')) ?><?php endif; ?><?php if (life_ready()): ?> · <?= e(life_skill_label((string) ($offer['listing_status'] ?? 'open'), life_skill_in_progress('offer', (int) $offer['id']))) ?><?php endif; ?></span>
           <?php if ($offer['detail']): ?><p><?= e($offer['detail']) ?></p><?php endif; ?>
           <?php if ($currentUser && (int) $offer['user_id'] !== (int) $currentUser['id'] && life_skill_accepts_interest($offer)): ?>
             <?php $talkOffer = talk_offer($currentUser, (int) $offer['user_id'], true, '/seeds/skill-swap', ['type' => 'skill', 'kind' => 'offer', 'id' => (int) $offer['id'], 'person' => 0], site_text('talk_interested')); include __DIR__ . '/../partials/talk-offer.php'; ?>
@@ -22,7 +22,7 @@
       <?php foreach ($requests as $request): ?>
         <li>
           <strong><?= e($request['title']) ?></strong>
-          <span class="soft"> · <?= e($request['display_name'] ?: site_text('garden_member')) ?><?php if (life_ready()): ?> · <?= e(life_skill_label((string) ($request['listing_status'] ?? 'open'), life_skill_in_progress('request', (int) $request['id']))) ?><?php endif; ?></span>
+          <span class="soft"> · <?php if ((int) ($request['user_id'] ?? 0) > 0): ?><a href="<?= e(url('/members/' . $request['user_id'])) ?>"><?= e($request['display_name'] ?: site_text('garden_member')) ?></a><?php else: ?><?= e($request['display_name'] ?: site_text('garden_member')) ?><?php endif; ?><?php if (life_ready()): ?> · <?= e(life_skill_label((string) ($request['listing_status'] ?? 'open'), life_skill_in_progress('request', (int) $request['id']))) ?><?php endif; ?></span>
           <?php if ($request['detail']): ?><p><?= e($request['detail']) ?></p><?php endif; ?>
           <?php if ($currentUser && (int) $request['user_id'] !== (int) $currentUser['id'] && life_skill_accepts_interest($request)): ?>
             <?php $talkOffer = talk_offer($currentUser, (int) $request['user_id'], true, '/seeds/skill-swap', ['type' => 'skill', 'kind' => 'request', 'id' => (int) $request['id'], 'person' => 0], site_text('talk_interested')); include __DIR__ . '/../partials/talk-offer.php'; ?>

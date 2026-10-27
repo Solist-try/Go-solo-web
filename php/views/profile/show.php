@@ -26,6 +26,14 @@ $name = $person['display_name'] ?: site_text('garden_member');
   <p class="path-culture"><?= e(site_text('path_culture')) ?></p>
   <?php if (function_exists('path_portrait')) { $portrait = path_portrait((int) $person['id'], $isSelf); include __DIR__ . '/../partials/path-portrait.php'; } ?>
 
+  <h2><?= e(site_text('garden_bio')) ?></h2>
+  <p class="soft"><?= e(site_text('path_bio_note')) ?></p>
+  <?php if (trim((string) $person['bio']) === ''): ?>
+    <p class="soft"><?= e(site_text('empty_bio')) ?></p>
+  <?php else: ?>
+    <?= paragraphs((string) $person['bio']) ?>
+  <?php endif; ?>
+
   <?php if ($isSelf && conversations_ready()): ?>
     <h2 id="communication"><?= e(site_text('talk_communication')) ?></h2>
     <p><?= e(site_text('talk_pref_intro')) ?></p>
@@ -137,8 +145,6 @@ $name = $person['display_name'] ?: site_text('garden_member');
           <button type="submit"><?= e(site_text('life_trust_save')) ?></button>
         </form>
       <?php endif; ?>
-  <?php elseif (!$isSelf): ?>
-    <?php $talkOffer = talk_profile_offer($currentUser, (int) $person['id']); include __DIR__ . '/../partials/talk-offer.php'; ?>
   <?php endif; ?>
 
   <?php if (life_ready() && $lifeSeason !== ''): ?>
@@ -328,14 +334,6 @@ $name = $person['display_name'] ?: site_text('garden_member');
   <h2><?= e(site_text('garden_style')) ?></h2>
   <p><?= e($person['check_in_style'] ?: site_text('garden_style_any')) ?></p>
 
-  <h2><?= e(site_text('garden_bio')) ?></h2>
-  <p class="soft"><?= e(site_text('path_bio_note')) ?></p>
-  <?php if (trim((string) $person['bio']) === ''): ?>
-    <p class="soft"><?= e(site_text('empty_bio')) ?></p>
-  <?php else: ?>
-    <?= paragraphs((string) $person['bio']) ?>
-  <?php endif; ?>
-
   <h2><?= e(site_text('garden_stories')) ?></h2>
   <?php if (!$stories): ?><p class="soft"><?= e(site_text('empty_stories')) ?></p><?php else: ?>
     <ul class="list">
@@ -347,6 +345,12 @@ $name = $person['display_name'] ?: site_text('garden_member');
         </li>
       <?php endforeach; ?>
     </ul>
+  <?php endif; ?>
+
+  <?php if (!$isSelf && $currentUser): ?>
+    <?php $reach = function_exists('talk_pref_public_line') ? talk_pref_public_line($currentUser, (int) $person['id']) : ''; ?>
+    <?php if ($reach !== ''): ?><p><?= e($reach) ?></p><?php endif; ?>
+    <?php $talkOffer = talk_profile_offer($currentUser, (int) $person['id']); include __DIR__ . '/../partials/talk-offer.php'; ?>
   <?php endif; ?>
 
   <?php if ($isSelf && life_ready()): ?>
