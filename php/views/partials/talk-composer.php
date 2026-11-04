@@ -13,7 +13,6 @@ $hasDraft = trim($draftBody) !== '';
         'body' => $draftBody,
         'body_label' => site_text('talk_write'),
         'body_name' => 'body',
-        'help' => site_text('talk_compose_note'),
     ];
     include __DIR__ . '/editor.php';
   ?>
