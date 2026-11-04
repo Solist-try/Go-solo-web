@@ -22,6 +22,7 @@ DROP TABLE IF EXISTS quiet_notes;
 DROP TABLE IF EXISTS notices;
 DROP TABLE IF EXISTS readings;
 DROP TABLE IF EXISTS reading_categories;
+DROP TABLE IF EXISTS contact_replies;
 DROP TABLE IF EXISTS contact_messages;
 DROP TABLE IF EXISTS moderator_notes;
 DROP TABLE IF EXISTS warnings;
@@ -418,11 +419,27 @@ CREATE TABLE contact_messages (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   name VARCHAR(80) NOT NULL,
   email VARCHAR(190) NOT NULL,
+  subject VARCHAR(160) NOT NULL DEFAULT '',
   body TEXT NOT NULL,
   status ENUM('unread', 'read', 'replied', 'archived') NOT NULL DEFAULT 'unread',
   created_at DATETIME NOT NULL,
   PRIMARY KEY (id),
   KEY contact_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE contact_replies (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  message_id INT UNSIGNED NOT NULL,
+  user_id INT UNSIGNED NOT NULL,
+  subject VARCHAR(180) NOT NULL DEFAULT '',
+  body MEDIUMTEXT NOT NULL,
+  sent_at DATETIME NULL,
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME NOT NULL,
+  PRIMARY KEY (id),
+  KEY contact_replies_message (message_id, sent_at),
+  CONSTRAINT contact_replies_message_fk FOREIGN KEY (message_id) REFERENCES contact_messages (id) ON DELETE CASCADE,
+  CONSTRAINT contact_replies_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE reading_categories (

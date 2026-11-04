@@ -12,6 +12,9 @@
         <?= csrf_field() ?>
         <label><span><?= e(site_text('contact_name')) ?></span><input type="text" name="name" maxlength="80" required autocomplete="off" value="<?= e($name ?? '') ?>"></label>
         <label><span><?= e(site_text('contact_email')) ?></span><input type="email" name="email" maxlength="190" required value="<?= e($email ?? '') ?>"></label>
+        <?php if (!empty($subjectReady)): ?>
+          <label><span><?= e(site_text('contact_subject')) ?></span><input type="text" name="subject" maxlength="160" required placeholder="<?= e(site_text('contact_subject_placeholder')) ?>" value="<?= e($subject ?? '') ?>"></label>
+        <?php endif; ?>
         <label><span><?= e(site_text('contact_note')) ?></span><textarea name="body" maxlength="4000" required><?= e($body ?? '') ?></textarea></label>
         <?php if (!empty($error)): ?><p class="error"><?= e($error) ?></p><?php endif; ?>
         <button type="submit"><?= e(site_text('cta_send_note')) ?></button>

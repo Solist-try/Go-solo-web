@@ -1293,15 +1293,74 @@ function desk_reading_delete(array $params): void
     redirect('/steward/reading');
 }
 
-function contact_status_label(string $status): string
+function contact_status_label(string $status, bool $sent = false): string
 {
     return match ($status) {
         'unread' => 'Unread',
         'read' => 'Read',
-        'replied' => 'Replied',
+        'replied' => $sent ? 'Replied' : site_text('contact_elsewhere'),
         'archived' => 'Archived',
         default => $status,
     };
+}
+
+function contact_subject_ready(): bool
+{
+    return table_has_column('contact_messages', 'subject');
+}
+
+function contact_reply_ready(): bool
+{
+    return table_has_column('contact_replies', 'sent_at');
+}
+
+function contact_sent_replies(int $messageId): array
+{
+    if ($messageId <= 0 || !contact_reply_ready()) {
+        return [];
+    }
+    return q(
+        'SELECT r.subject, r.body, r.sent_at, p.display_name
+         FROM contact_replies r
+         LEFT JOIN profiles p ON p.user_id = r.user_id
+         WHERE r.message_id = ? AND r.sent_at IS NOT NULL
+         ORDER BY r.sent_at, r.id',
+        [$messageId]
+    );
+}
+
+function contact_reply_draft(int $messageId): ?array
+{
+    if ($messageId <= 0 || !contact_reply_ready()) {
+        return null;
+    }
+    $row = one(
+        'SELECT id, subject, body FROM contact_replies WHERE message_id = ? AND sent_at IS NULL ORDER BY id DESC LIMIT 1',
+        [$messageId]
+    );
+    return $row ?: null;
+}
+
+function contact_reply_keep_draft(int $messageId, int $userId, string $subject, string $body): void
+{
+    $existing = one('SELECT id FROM contact_replies WHERE message_id = ? AND sent_at IS NULL ORDER BY id DESC LIMIT 1', [$messageId]);
+    if ($existing) {
+        exec_sql(
+            'UPDATE contact_replies SET user_id = ?, subject = ?, body = ?, updated_at = NOW() WHERE id = ?',
+            [$userId, $subject, $body, (int) $existing['id']]
+        );
+        return;
+    }
+    exec_sql(
+        'INSERT INTO contact_replies (message_id, user_id, subject, body, sent_at, created_at, updated_at) VALUES (?, ?, ?, ?, NULL, NOW(), NOW())',
+        [$messageId, $userId, $subject, $body]
+    );
+}
+
+function contact_reply_fallback_subject(string $subject): string
+{
+    $subject = trim(str_replace(["\r", "\n"], '', $subject));
+    return $subject === '' ? 'Re:' : 'Re: ' . $subject;
 }
 
 function contact_read_ready(): bool
@@ -1320,9 +1379,18 @@ function contact_mark_read(int $id): void
 function desk_messages(array $params): void
 {
     require_steward();
-    view('steward/messages', [
-        'messages' => q("SELECT id, name, status, created_at FROM contact_messages ORDER BY FIELD(status, 'unread', 'read', 'replied', 'archived'), id DESC LIMIT 200"),
-    ]);
+    if (contact_reply_ready()) {
+        $messages = q(
+            "SELECT m.id, m.name, m.status, m.created_at,
+                    EXISTS(SELECT 1 FROM contact_replies r WHERE r.message_id = m.id AND r.sent_at IS NOT NULL) AS sent_reply
+             FROM contact_messages m
+             ORDER BY FIELD(m.status, 'unread', 'read', 'replied', 'archived'), m.id DESC
+             LIMIT 200"
+        );
+    } else {
+        $messages = q("SELECT id, name, status, created_at, 0 AS sent_reply FROM contact_messages ORDER BY FIELD(status, 'unread', 'read', 'replied', 'archived'), id DESC LIMIT 200");
+    }
+    view('steward/messages', ['messages' => $messages]);
 }
 
 function desk_message(array $params): void
@@ -1340,7 +1408,17 @@ function desk_message(array $params): void
             $message['status'] = (string) $fresh['status'];
         }
     }
-    view('steward/message', ['message' => $message]);
+    $id = (int) $message['id'];
+    $replies = contact_sent_replies($id);
+    $draft = contact_reply_draft($id);
+    view('steward/message', [
+        'message' => $message,
+        'replies' => $replies,
+        'draft' => $draft,
+        'replyReady' => contact_reply_ready(),
+        'replySubject' => $draft ? (string) $draft['subject'] : contact_reply_fallback_subject((string) ($message['subject'] ?? '')),
+        'replyBody' => $draft ? (string) $draft['body'] : '',
+    ]);
 }
 
 function desk_message_save(array $params): void
@@ -1348,12 +1426,68 @@ function desk_message_save(array $params): void
     require_steward();
     $id = (int) $params['id'];
     $action = (string) ($_POST['action'] ?? '');
+    $message = one('SELECT * FROM contact_messages WHERE id = ?', [$id]);
+    if (!$message) {
+        not_found();
+        return;
+    }
     if ($action === 'delete') {
         exec_sql('DELETE FROM contact_messages WHERE id = ?', [$id]);
         flash('The note is deleted.');
         redirect('/steward/messages');
     }
-    $allowed = ['unread', 'replied', 'archived'];
+    if (contact_reply_ready() && in_array($action, ['send', 'draft', 'delete_draft'], true)) {
+        $me = current_user();
+        $userId = (int) ($me['id'] ?? 0);
+        if ($action === 'delete_draft') {
+            exec_sql('DELETE FROM contact_replies WHERE message_id = ? AND sent_at IS NULL', [$id]);
+            flash(site_text('contact_reply_gone'));
+            redirect('/steward/messages/' . $id);
+        }
+        $subject = clip(str_replace(["\r", "\n"], '', post_text('subject', 180)), 180);
+        $body = clip(post_text('body', 8000), 8000);
+        if ($action === 'draft') {
+            if ($subject === '' && $body === '') {
+                flash(site_text('contact_reply_empty'));
+                redirect('/steward/messages/' . $id);
+            }
+            contact_reply_keep_draft($id, $userId, $subject, $body);
+            flash(site_text('contact_reply_saved'));
+            redirect('/steward/messages/' . $id);
+        }
+        if ($subject === '' || $body === '') {
+            contact_reply_keep_draft($id, $userId, $subject, $body);
+            flash($subject === '' ? site_text('msg_contact_subject') : site_text('msg_contact_needs'));
+            redirect('/steward/messages/' . $id);
+        }
+        if (!email_send((string) $message['email'], $subject, $body)) {
+            contact_reply_keep_draft($id, $userId, $subject, $body);
+            flash(site_text('contact_reply_failed'));
+            redirect('/steward/messages/' . $id);
+        }
+        $draft = one('SELECT id FROM contact_replies WHERE message_id = ? AND sent_at IS NULL ORDER BY id DESC LIMIT 1', [$id]);
+        if ($draft) {
+            exec_sql(
+                'UPDATE contact_replies SET user_id = ?, subject = ?, body = ?, sent_at = NOW(), updated_at = NOW() WHERE id = ?',
+                [$userId, $subject, $body, (int) $draft['id']]
+            );
+            exec_sql('DELETE FROM contact_replies WHERE message_id = ? AND sent_at IS NULL AND id <> ?', [$id, (int) $draft['id']]);
+        } else {
+            exec_sql(
+                'INSERT INTO contact_replies (message_id, user_id, subject, body, sent_at, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW(), NOW())',
+                [$id, $userId, $subject, $body]
+            );
+        }
+        exec_sql("UPDATE contact_messages SET status = 'replied' WHERE id = ?", [$id]);
+        flash(site_text('contact_reply_sent_flash'));
+        redirect('/steward/messages/' . $id);
+    }
+    if ($action === 'elsewhere' || $action === 'replied') {
+        exec_sql("UPDATE contact_messages SET status = 'replied' WHERE id = ?", [$id]);
+        flash(site_text('contact_elsewhere_flash'));
+        redirect('/steward/messages/' . $id);
+    }
+    $allowed = ['unread', 'archived'];
     if (contact_read_ready()) {
         $allowed[] = 'read';
     }

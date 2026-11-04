@@ -332,6 +332,7 @@ input:focus, textarea:focus, select:focus {
   border-color: transparent;
 }
 textarea { min-height: 8rem; }
+textarea.reply-box { min-height: 16rem; max-width: 44rem; }
 .choices { display: grid; gap: 0.75rem; margin: 0 0 1rem; }
 .choices label {
   display: grid;

@@ -25,8 +25,10 @@ function page_contact(array $params): void
         'sent' => isset($_GET['sent']),
         'name' => '',
         'email' => '',
+        'subject' => '',
         'body' => '',
         'error' => '',
+        'subjectReady' => function_exists('contact_subject_ready') && contact_subject_ready(),
     ]);
 }
 
@@ -34,22 +36,39 @@ function page_contact_post(array $params): void
 {
     $name = clip(post_text('name', 80), 80);
     $email = strtolower(trim((string) ($_POST['email'] ?? '')));
+    $subjectReady = function_exists('contact_subject_ready') && contact_subject_ready();
+    $subject = $subjectReady ? clip(str_replace(["\r", "\n"], '', post_text('subject', 160)), 160) : '';
     $body = clip(post_text('body', 4000), 4000);
-    if ($name === '' || !valid_email($email) || $body === '') {
-        view('contact', [
-            'pageTitle' => site_text('contact_headline') . ' · ' . site_text('site_title'),
-            'sent' => false,
-            'name' => $name,
-            'email' => $email,
-            'body' => $body,
-            'error' => site_text('msg_contact_needs'),
-        ]);
+    $fields = [
+        'pageTitle' => site_text('contact_headline') . ' · ' . site_text('site_title'),
+        'sent' => false,
+        'name' => $name,
+        'email' => $email,
+        'subject' => $subject,
+        'body' => $body,
+        'subjectReady' => $subjectReady,
+    ];
+    if ($subjectReady && $subject === '') {
+        $fields['error'] = site_text('msg_contact_subject');
+        view('contact', $fields);
         return;
     }
-    exec_sql(
-        'INSERT INTO contact_messages (name, email, body, status, created_at) VALUES (?, ?, ?, ?, NOW())',
-        [$name, $email, $body, 'unread']
-    );
+    if ($name === '' || !valid_email($email) || $body === '') {
+        $fields['error'] = site_text('msg_contact_needs');
+        view('contact', $fields);
+        return;
+    }
+    if ($subjectReady) {
+        exec_sql(
+            'INSERT INTO contact_messages (name, email, subject, body, status, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
+            [$name, $email, $subject, $body, 'unread']
+        );
+    } else {
+        exec_sql(
+            'INSERT INTO contact_messages (name, email, body, status, created_at) VALUES (?, ?, ?, ?, NOW())',
+            [$name, $email, $body, 'unread']
+        );
+    }
     notify_stewards('A contact note is waiting.', '/steward/messages');
     redirect('/contact?sent=1');
 }
