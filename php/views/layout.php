@@ -11,6 +11,14 @@ $nav = [
     ['/contact', site_text('nav_contact')],
 ];
 $path = request_path();
+$fresh = ($currentUser && function_exists('section_nav')) ? section_nav((int) $currentUser['id'], $path) : [];
+$sectionOf = [
+    '/seeds' => 'seeds',
+    '/out-there' => 'out',
+    '/campfire' => 'campfire',
+    '/waypoints' => 'waypoints',
+    '/reading' => 'reading',
+];
 $bg = hex_color(site_text('color_background'), '#f7f5f2');
 $ink = hex_color(site_text('color_ink'), '#1a1a1a');
 $soft = hex_color(site_text('color_soft'), '#6b6b6b');
@@ -49,12 +57,15 @@ $logoImage = site_text('logo_image');
     <a class="logo" href="<?= e(url('/')) ?>"><?php if ($logoImage !== ''): ?><img src="<?= e(media($logoImage)) ?>" alt=""><?php endif; ?><?= e(site_text('logo_text')) ?></a>
     <nav class="nav" aria-label="Primary">
       <?php foreach ($nav as [$href, $label]): ?>
-        <a href="<?= e(url($href)) ?>"<?= $path === $href ? ' aria-current="page"' : '' ?>><?= e($label) ?></a>
+        <?php
+          $navClass = (($sectionOf[$href] ?? '') !== '' && !empty($fresh[$sectionOf[$href]])) ? ' class="is-fresh"' : '';
+          $navCurrent = $path === $href ? ' aria-current="page"' : '';
+        ?>
+        <a href="<?= e(url($href)) ?>"<?= $navCurrent ?><?= $navClass ?>><?= e($label) ?></a>
       <?php endforeach; ?>
       <?php if ($currentUser): ?>
-        <?php $unreadTalk = function_exists('talk_attention_total') ? talk_attention_total((int) $currentUser['id']) : 0; ?>
         <?php $talkHere = $path === '/conversations' || str_starts_with($path, '/conversations/'); ?>
-        <a href="<?= e(url('/conversations')) ?>"<?= $talkHere ? ' aria-current="page"' : '' ?>><?= e(site_text('nav_conversations')) ?><?php if ($unreadTalk > 0): ?> (<?= e((string) $unreadTalk) ?>)<?php endif; ?></a>
+        <a href="<?= e(url('/conversations')) ?>"<?= $talkHere ? ' aria-current="page"' : '' ?><?= !empty($fresh['conversations']) ? ' class="is-fresh"' : '' ?>><?= e(site_text('nav_conversations')) ?></a>
         <a href="<?= e(url('/profile')) ?>"<?= $path === '/profile' ? ' aria-current="page"' : '' ?>><?= e(site_text('nav_profile')) ?></a>
         <?php if (in_array($currentUser['role'], ['admin', 'moderator'], true)): ?>
           <a href="<?= e(url('/steward')) ?>"><?= e(site_text('nav_steward')) ?></a>

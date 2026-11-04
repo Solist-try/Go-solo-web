@@ -47,6 +47,7 @@ DROP TABLE IF EXISTS settings;
 DROP TABLE IF EXISTS password_resets;
 DROP TABLE IF EXISTS email_tokens;
 DROP TABLE IF EXISTS profiles;
+DROP TABLE IF EXISTS section_visits;
 DROP TABLE IF EXISTS users;
 
 SET FOREIGN_KEY_CHECKS = 1;
@@ -88,6 +89,14 @@ CREATE TABLE profiles (
   show_trust TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (user_id),
   CONSTRAINT profiles_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE section_visits (
+  user_id INT UNSIGNED NOT NULL,
+  section_key VARCHAR(20) NOT NULL,
+  visited_at DATETIME NOT NULL,
+  PRIMARY KEY (user_id, section_key),
+  CONSTRAINT section_visits_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE password_resets (

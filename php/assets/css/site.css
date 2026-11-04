@@ -52,6 +52,7 @@ p { margin: 0 0 0.9rem; }
   padding: 0.28rem 0.7rem;
 }
 .nav a:hover, .nav a[aria-current="page"] { background: var(--sage); color: var(--ink); }
+.nav a.is-fresh { font-weight: 700; }
 
 .hero { display: grid; gap: 2.4rem; padding: 2.4rem 0 1.2rem; }
 .hero h1 { font-size: clamp(2.6rem, 7vw, 4.4rem); margin: 0; }
