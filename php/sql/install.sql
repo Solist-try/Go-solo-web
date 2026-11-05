@@ -87,6 +87,7 @@ CREATE TABLE profiles (
   life_season_id INT UNSIGNED NULL,
   life_season_public TINYINT(1) NOT NULL DEFAULT 0,
   show_trust TINYINT(1) NOT NULL DEFAULT 1,
+  garden_visible TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (user_id),
   CONSTRAINT profiles_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -583,6 +584,7 @@ CREATE TABLE conversations (
   context_id INT UNSIGNED NOT NULL,
   context_label VARCHAR(160) NOT NULL DEFAULT '',
   context_note TEXT NOT NULL,
+  subject VARCHAR(180) NOT NULL DEFAULT '',
   opened_by INT UNSIGNED NOT NULL,
   status ENUM('requested', 'open', 'declined') NOT NULL DEFAULT 'open',
   closed TINYINT(1) NOT NULL DEFAULT 0,

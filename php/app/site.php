@@ -645,17 +645,49 @@ function page_profile(array $params): void
     show_garden((int) $user['id'], true);
 }
 
+function garden_visibility_ready(): bool
+{
+    return table_has_column('profiles', 'garden_visible');
+}
+
+function garden_is_visible(int $userId): bool
+{
+    if ($userId <= 0 || !garden_visibility_ready()) {
+        return true;
+    }
+    $row = one('SELECT garden_visible FROM profiles WHERE user_id = ?', [$userId]);
+    if (!$row) {
+        return true;
+    }
+    return (int) $row['garden_visible'] === 1;
+}
+
+function garden_visibility_save(int $userId): void
+{
+    if ($userId <= 0 || !garden_visibility_ready() || !isset($_POST['garden_visible'])) {
+        return;
+    }
+    $visible = (string) $_POST['garden_visible'] === 'hidden' ? 0 : 1;
+    exec_sql('UPDATE profiles SET garden_visible = ? WHERE user_id = ?', [$visible, $userId]);
+}
+
 function page_member(array $params): void
 {
     $user = require_user();
     $id = (int) $params['id'];
-    show_garden($id, (int) $user['id'] === $id);
+    $self = (int) $user['id'] === $id;
+    if (!$self && !is_steward() && !garden_is_visible($id)) {
+        not_found();
+        return;
+    }
+    show_garden($id, $self);
 }
 
 function show_garden(int $id, bool $self): void
 {
     $person = one(
-        'SELECT u.id, u.email, u.status, p.display_name, p.bio, p.location, p.avatar_path, p.contact_frequency, p.check_in_style, p.show_location
+        'SELECT u.id, u.email, u.status, p.display_name, p.bio, p.location, p.avatar_path, p.contact_frequency, p.check_in_style, p.show_location'
+        . (garden_visibility_ready() ? ', p.garden_visible' : '') . '
          FROM users u
          LEFT JOIN profiles p ON p.user_id = u.id
          WHERE u.id = ?',
@@ -843,6 +875,7 @@ function save_garden(int $userId, bool $withVisibility): void
             [$name, $bio, $location, $freq, $style, $userId]
         );
     }
+    garden_visibility_save($userId);
     replace_supports($userId, (array) ($_POST['support'] ?? []));
     replace_titles('help_requests', $userId, (array) ($_POST['help_request'] ?? []));
     replace_titles('help_offers', $userId, (array) ($_POST['help_offer'] ?? []));

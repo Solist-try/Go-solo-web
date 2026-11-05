@@ -46,13 +46,11 @@ $name = $person['display_name'] ?: site_text('garden_member');
 
   <?php if (!$isSelf && $currentUser): ?>
     <?php
-      $reach = function_exists('talk_pref_public_line') ? talk_pref_public_line($currentUser, (int) $person['id']) : '';
       $talkOffer = talk_profile_offer($currentUser, (int) $person['id']);
       $talkOffer['prominent'] = true;
     ?>
-    <?php if ($reach !== '' || ($talkOffer['mode'] ?? 'none') !== 'none'): ?>
+    <?php if (($talkOffer['mode'] ?? 'none') !== 'none'): ?>
       <div class="garden-start">
-        <?php if ($reach !== ''): ?><p><?= e($reach) ?></p><?php endif; ?>
         <?php include __DIR__ . '/../partials/talk-offer.php'; ?>
       </div>
     <?php endif; ?>
@@ -71,7 +69,7 @@ $name = $person['display_name'] ?: site_text('garden_member');
             <li>
               <?= e($seed['title']) ?><?php if (life_ready()): ?> <span class="soft">· <?= e(life_seed_label((string) $seed['status'])) ?></span><?php elseif ($seed['status'] === 'resting'): ?> <span class="soft">· <?= e(site_text('garden_resting')) ?></span><?php endif; ?><?php if (!empty($seed['looking_for_support']) && ($seed['status'] ?? '') === 'active'): ?> <span class="soft">· <?= e(site_text('garden_open_help')) ?></span><?php endif; ?>
               <?php if (!$isSelf && life_seed_accepts_support($seed, (int) $person['id'])): ?>
-                <?php $talkOffer = talk_offer($currentUser, (int) $person['id'], true, '/members/' . $person['id'], ['type' => 'seed', 'kind' => 'growing', 'id' => (int) $seed['id'], 'person' => 0], site_text('talk_offer')); include __DIR__ . '/../partials/talk-offer.php'; ?>
+                <?php $talkOffer = talk_offer($currentUser, (int) $person['id'], true, '/members/' . $person['id'], ['type' => 'seed', 'kind' => 'growing', 'id' => (int) $seed['id'], 'person' => 0], site_text('talk_start')); include __DIR__ . '/../partials/talk-offer.php'; ?>
               <?php endif; ?>
             </li>
           <?php endforeach; ?>
@@ -108,7 +106,7 @@ $name = $person['display_name'] ?: site_text('garden_member');
           <li>
             <?= e($request['title']) ?>
             <?php if (!$isSelf && !(life_ready() && life_paused((int) $person['id'], 'pause_seed_support'))): ?>
-              <?php $talkOffer = talk_offer($currentUser, (int) $person['id'], true, '/members/' . $person['id'], ['type' => 'seed', 'kind' => 'help', 'id' => (int) $request['id'], 'person' => 0], site_text('talk_offer')); include __DIR__ . '/../partials/talk-offer.php'; ?>
+              <?php $talkOffer = talk_offer($currentUser, (int) $person['id'], true, '/members/' . $person['id'], ['type' => 'seed', 'kind' => 'help', 'id' => (int) $request['id'], 'person' => 0], site_text('talk_start')); include __DIR__ . '/../partials/talk-offer.php'; ?>
             <?php endif; ?>
           </li>
         <?php endforeach; ?>
@@ -183,6 +181,7 @@ $name = $person['display_name'] ?: site_text('garden_member');
     <form method="post" action="<?= e(url('/profile/conversations')) ?>">
       <?= csrf_field() ?>
       <?php $talkSelected = talk_pref((int) $person['id']); include __DIR__ . '/../partials/talk-choices.php'; ?>
+      <?php $gardenVisible = !isset($person['garden_visible']) || (int) $person['garden_visible'] === 1; include __DIR__ . '/../partials/garden-visibility.php'; ?>
       <button type="submit"><?= e(site_text('talk_pref_save')) ?></button>
     </form>
     <?php if ($talkBlocks): ?>
