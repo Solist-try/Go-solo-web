@@ -6,6 +6,9 @@
   <?php $sitting = waypoint_sitting((string) $waypoint['slug'], $waypoint); ?>
   <?php if ($sitting !== ''): ?><p class="kicker"><?= e(site_text('waypoints_sit_label')) ?></p><p class="waypoint-idea"><?= e($sitting) ?></p><?php endif; ?>
   <div class="waypoint-copy"><?= paragraphs((string) $waypoint['description']) ?></div>
+  <?php if ($waypoint['cover_path']): ?>
+    <img class="photo waypoint-photo" src="<?= e(media($waypoint['cover_path'])) ?>" alt="<?= e($waypoint['title']) ?>">
+  <?php endif; ?>
   <?php if ($currentUser && empty($waypoint['archived'])): ?>
     <?php if ($joined): ?>
       <form method="post" action="<?= e(url('/waypoints/' . $waypoint['slug'] . '/leave')) ?>">
@@ -135,9 +138,6 @@
         </li>
       <?php endforeach; ?>
     </ul>
-  <?php endif; ?>
-  <?php if ($waypoint['cover_path']): ?>
-    <img class="photo waypoint-photo" src="<?= e(media($waypoint['cover_path'])) ?>" alt="">
   <?php endif; ?>
   </div>
 </section>

@@ -114,9 +114,6 @@ p { margin: 0 0 0.9rem; }
 .card.sage { background: var(--sage); }
 .card.clay, .card.gold { background: var(--clay); }
 .card.mist { background: var(--mist); }
-.card.waypoint { border-top: 3px solid var(--sage); }
-.card.waypoint .waypoint-idea { font-size: 1.2rem; margin: 0 0 0.7rem; }
-.card.waypoint .photo { width: min(100%, 14rem); height: 5.25rem; margin-top: 1.15rem; border-radius: 14px; object-fit: cover; }
 .card.welcome {
   background: #f3f6f4;
   border: 1px solid #e3ebe4;
@@ -222,6 +219,25 @@ a.card.sage:hover { background: var(--sage-hover); }
   letter-spacing: 0;
   color: var(--ink);
 }
+.waypoint-shelf h2 a { text-decoration: none; }
+.waypoint-shelf h2 a:hover { text-decoration: underline; text-underline-offset: 0.14em; }
+.waypoint-shelf .waypoint-description { margin-top: 0.85rem; max-width: 40rem; }
+.waypoint-shelf .waypoint-description p:last-child { margin-bottom: 0; }
+.waypoint-shelf h3 { margin: 1.45rem 0 0; font-size: 1.2rem; font-weight: 500; }
+.waypoint-shelf .shelf-action { margin-top: 1.35rem; }
+.waypoint-shelf .shelf-action p { margin: 0; }
+.reading-shelf.reading-reflections {
+  margin-top: 6.75rem;
+  padding-top: 2.75rem;
+  border-top: 1px solid var(--line);
+}
+.reading-shelf.reading-reflections .shelf-line,
+.reading-shelf.reading-reflections .shelf-frame {
+  color: var(--ink);
+  max-width: 40rem;
+}
+.reading-shelf.reading-reflections .shelf-frame { margin-top: 0.35rem; }
+.reading-shelf.reading-reflections .shelf-photo { max-width: 36rem; }
 .waypoint-page { max-width: 46rem; }
 .waypoint-page h1 { margin-bottom: 0.35rem; }
 .waypoint-idea {
@@ -248,11 +264,12 @@ a.card.sage:hover { background: var(--sage-hover); }
   color: var(--ink);
 }
 .waypoint-photo {
-  width: min(100%, 16rem);
-  height: 6.25rem;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
   object-fit: cover;
-  margin: 3.6rem 0 0;
-  border-radius: 16px;
+  margin: 1.5rem 0 1.6rem;
+  border-radius: 20px;
   box-shadow: none;
 }
 .support-photo {
