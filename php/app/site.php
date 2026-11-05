@@ -676,6 +676,15 @@ function garden_visibility_save(int $userId): void
     exec_sql('UPDATE profiles SET garden_visible = ? WHERE user_id = ?', [$visible, $userId]);
 }
 
+function page_paths(array $params): void
+{
+    $user = require_user();
+    view('paths/index', [
+        'pageTitle' => site_text('ground_paths_title') . ' · ' . site_text('site_title'),
+        'sections' => function_exists('ground_paths') ? ground_paths((int) $user['id']) : [],
+    ]);
+}
+
 function page_member(array $params): void
 {
     $user = require_user();
@@ -884,9 +893,6 @@ function save_garden(int $userId, bool $withVisibility): void
         );
     }
     garden_visibility_save($userId);
-    if (function_exists('ground_discoverable_save')) {
-        ground_discoverable_save($userId);
-    }
     replace_supports($userId, (array) ($_POST['support'] ?? []));
     replace_titles('help_requests', $userId, (array) ($_POST['help_request'] ?? []));
     replace_titles('help_offers', $userId, (array) ($_POST['help_offer'] ?? []));

@@ -72,6 +72,8 @@ function load_visible_parent(string $table, int $id): ?array
     if (!$row || !can_see_hidden($row) || !author_visible((int) $row['user_id'])) {
         return null;
     }
+    $name = one('SELECT display_name FROM profiles WHERE user_id = ?', [(int) $row['user_id']]);
+    $row['display_name'] = $name['display_name'] ?? '';
     return $row;
 }
 

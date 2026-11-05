@@ -3,7 +3,7 @@
   <p class="kicker"><a href="<?= e(url('/waypoints/' . $waypoint['slug'])) ?>"><?= e($waypoint['title']) ?></a></p>
   <h1><?= e($post['title']) ?></h1>
   <?php $pinRow = $post; $pinType = 'waypoint'; $pinBack = '/waypoints/' . $waypoint['slug'] . '/discussions/' . (int) $post['id']; $pinKicker = 'pin_start'; $pinHide = 'pin_hide'; include __DIR__ . '/../partials/pin-status.php'; ?>
-  <p class="soft"><a href="<?= e(url('/members/' . $post['user_id'])) ?>"><?= e($post['display_name'] ?: site_text('garden_member')) ?></a> · <?= e(nice_date($post['created_at'])) ?></p>
+  <p class="soft"><?= member_name((int) $post['user_id'], (string) ($post['display_name'] ?? '')) ?> · <?= e(nice_date($post['created_at'])) ?></p>
   <?php if ($currentUser && (int) $currentUser['id'] !== (int) $post['user_id']): ?>
     <?php $talkOffer = talk_offer($currentUser, (int) $post['user_id'], true, '/waypoints/' . $waypoint['slug'] . '/discussions/' . $post['id'], ['type' => 'waypoint', 'kind' => 'post', 'id' => (int) $post['id'], 'person' => (int) $post['user_id']], site_text('talk_start')); include __DIR__ . '/../partials/talk-offer.php'; ?>
   <?php endif; ?>

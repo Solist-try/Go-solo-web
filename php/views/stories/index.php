@@ -34,7 +34,7 @@
       <?php foreach ($stories as $story): ?>
         <article class="card">
           <h2><a href="<?= e(url('/out-there/' . $story['id'])) ?>"><?= e($story['title']) ?></a></h2>
-          <p class="soft"><?php if ((int) ($story['user_id'] ?? 0) > 0): ?><a href="<?= e(url('/members/' . $story['user_id'])) ?>"><?= e($story['display_name'] ?: site_text('garden_member')) ?></a><?php else: ?><?= e($story['display_name'] ?: site_text('garden_member')) ?><?php endif; ?> · <?= e(nice_date($story['created_at'])) ?></p>
+          <p class="soft"><?= member_name((int) ($story['user_id'] ?? 0), (string) ($story['display_name'] ?? '')) ?> · <?= e(nice_date($story['created_at'])) ?></p>
           <p><?= e(story_excerpt($story)) ?></p>
         </article>
       <?php endforeach; ?>

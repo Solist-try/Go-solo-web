@@ -44,8 +44,13 @@ $name = $person['display_name'] ?: site_text('garden_member');
     </div>
   <?php endif; ?>
 
-  <?php if ($isSelf && !empty($groundPeople)): ?>
-    <?php $groundTitle = 'ground_similar'; include __DIR__ . '/../partials/ground-people.php'; ?>
+  <?php if ($isSelf): ?>
+    <?php if (empty($groundPeople)): ?>
+      <h2><?= e(site_text('ground_similar')) ?></h2>
+    <?php else: ?>
+      <?php $groundTitle = 'ground_similar'; $groundHeading = true; include __DIR__ . '/../partials/ground-people.php'; ?>
+    <?php endif; ?>
+    <p><a href="<?= e(url('/paths')) ?>"><?= e(site_text('ground_who')) ?></a></p>
   <?php endif; ?>
 
   <?php if (!$isSelf && $currentUser): ?>
@@ -190,7 +195,6 @@ $name = $person['display_name'] ?: site_text('garden_member');
       <?= csrf_field() ?>
       <?php $talkSelected = talk_pref((int) $person['id']); include __DIR__ . '/../partials/talk-choices.php'; ?>
       <?php $gardenVisible = !isset($person['garden_visible']) || (int) $person['garden_visible'] === 1; include __DIR__ . '/../partials/garden-visibility.php'; ?>
-      <?php $discoverable = !isset($person['discoverable']) || (int) $person['discoverable'] === 1; include __DIR__ . '/../partials/ground-discover.php'; ?>
       <button type="submit"><?= e(site_text('talk_pref_save')) ?></button>
     </form>
     <?php if ($talkBlocks): ?>
@@ -297,7 +301,7 @@ $name = $person['display_name'] ?: site_text('garden_member');
     <?php foreach ($matches as $match): ?>
       <article class="card sage">
         <p><?= e(site_line('garden_match', ['name' => $match['other_name']])) ?></p>
-        <p><a href="<?= e(url('/members/' . $match['other_id'])) ?>"><?= e($match['other_name']) ?></a></p>
+        <p><?= member_name((int) $match['other_id'], (string) $match['other_name']) ?></p>
         <?php if (function_exists('path_portrait')) { $portrait = path_portrait((int) $match['other_id'], false); include __DIR__ . '/../partials/path-portrait.php'; } ?>
         <?php if ($match['note']): ?><p><?= e($match['note']) ?></p><?php endif; ?>
         <?php if (!empty($match['life'])): ?>
@@ -371,7 +375,7 @@ $name = $person['display_name'] ?: site_text('garden_member');
       <article class="card clay">
         <p><?= e(site_line('garden_skill_match', ['name' => $link['other_name']])) ?></p>
         <?php if ($link['title']): ?><p><?= e($link['title']) ?></p><?php endif; ?>
-        <p><a href="<?= e(url('/members/' . $link['other_id'])) ?>"><?= e($link['other_name']) ?></a></p>
+        <p><?= member_name((int) $link['other_id'], (string) $link['other_name']) ?></p>
         <?php if (!empty($link['portrait'])) { $portrait = $link['portrait']; include __DIR__ . '/../partials/path-portrait.php'; } ?>
         <?php if (!empty($link['status_label'])): ?><p><?= e((string) $link['status_label']) ?></p><?php endif; ?>
         <?php if (!empty($link['awaiting'])): ?><p class="soft"><?= e(site_text('path_skill_note')) ?></p><?php endif; ?>

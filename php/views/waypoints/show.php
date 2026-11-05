@@ -82,7 +82,7 @@
         <article class="card">
           <h3><a href="<?= e(url('/waypoints/' . $waypoint['slug'] . '/discussions/' . $discussion['id'])) ?>"><?= e($discussion['title']) ?></a></h3>
           <p class="soft">
-            <?php if ((int) ($discussion['user_id'] ?? 0) > 0): ?><a href="<?= e(url('/members/' . $discussion['user_id'])) ?>"><?= e($discussion['display_name'] ?: site_text('garden_member')) ?></a><?php else: ?><?= e($discussion['display_name'] ?: site_text('garden_member')) ?><?php endif; ?>
+            <?= member_name((int) ($discussion['user_id'] ?? 0), (string) ($discussion['display_name'] ?? '')) ?>
             · <?= e(nice_date($discussion['created_at'])) ?>
             <?php if ((int) $discussion['replies'] > 0): ?> · <?= e((string) $discussion['replies']) ?> <?= e((int) $discussion['replies'] === 1 ? site_text('waypoints_note_one') : site_text('waypoints_note_many')) ?><?php endif; ?>
             <?php if (!empty($discussion['pinned']) && empty($welcome)): ?> · <?= e(site_text('pin_by')) ?><?php endif; ?>
