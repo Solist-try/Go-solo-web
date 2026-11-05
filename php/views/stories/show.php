@@ -7,8 +7,8 @@
   <?php if ($currentUser && (int) $currentUser['id'] === (int) $story['user_id'] && life_ready()): ?>
     <?php $outcomeType = 'story'; $outcomeId = (int) $story['id']; $outcome = life_outcome_of((int) $currentUser['id'], 'story', (int) $story['id']); $back = '/out-there/' . (int) $story['id']; include __DIR__ . '/../partials/life-outcome.php'; ?>
   <?php endif; ?>
-  <?php if ($currentUser && (int) $currentUser['id'] !== (int) $story['user_id'] && talk_exchange('story', (int) $story['id'], (int) $currentUser['id'], (int) $story['user_id'])): ?>
-    <?php $talkOffer = talk_offer($currentUser, (int) $story['user_id'], true, '/out-there/' . $story['id'], ['type' => 'story', 'kind' => 'post', 'id' => (int) $story['id'], 'person' => (int) $story['user_id']], site_text('talk_hello')); include __DIR__ . '/../partials/talk-offer.php'; ?>
+  <?php if ($currentUser && (int) $currentUser['id'] !== (int) $story['user_id']): ?>
+    <?php $talkOffer = talk_offer($currentUser, (int) $story['user_id'], true, '/out-there/' . $story['id'], ['type' => 'story', 'kind' => 'post', 'id' => (int) $story['id'], 'person' => (int) $story['user_id']], site_text('talk_start')); include __DIR__ . '/../partials/talk-offer.php'; ?>
   <?php endif; ?>
   <?php $talkPost = ['type' => 'story', 'id' => (int) $story['id'], 'author' => (int) $story['user_id'], 'back' => '/out-there/' . $story['id']]; ?>
   <?php if (!empty($story['hidden'])): ?><p class="flash"><?= e(site_text('out_there_hidden')) ?></p><?php endif; ?>

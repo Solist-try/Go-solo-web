@@ -437,7 +437,8 @@ function talk_outgoing(int $userId): array
         return [];
     }
     $rows = q(
-        'SELECT c.id, c.context_type, c.context_label, c.created_at
+        'SELECT c.id, c.context_type, c.context_label, c.created_at'
+        . (table_has_column('conversations', 'subject') ? ', c.subject' : '') . '
          FROM conversations c
          WHERE c.opened_by = ? AND c.status = ?
            AND EXISTS (SELECT 1 FROM conversation_messages m WHERE m.conversation_id = c.id)
@@ -453,7 +454,8 @@ function talk_member_rows(int $userId, string $where, array $params): array
         return [];
     }
     $rows = q(
-        'SELECT c.id, c.context_type, c.context_label, c.context_note, c.closed, c.created_at, c.status, c.opened_by
+        'SELECT c.id, c.context_type, c.context_label, c.context_note, c.closed, c.created_at, c.status, c.opened_by'
+        . (table_has_column('conversations', 'subject') ? ', c.subject' : '') . '
          FROM conversations c
          JOIN conversation_participants p ON p.conversation_id = c.id AND p.user_id = ?
          WHERE ' . $where . '
@@ -552,7 +554,8 @@ function talk_draft_list(int $userId): array
         return [];
     }
     $rows = q(
-        'SELECT c.id, c.context_type, c.context_label, c.created_at, d.body, d.updated_at
+        'SELECT c.id, c.context_type, c.context_label, c.created_at, d.body, d.updated_at'
+        . (table_has_column('conversations', 'subject') ? ', c.subject' : '') . '
          FROM conversation_drafts d
          JOIN conversations c ON c.id = d.conversation_id
          JOIN conversation_participants p ON p.conversation_id = c.id AND p.user_id = ?
@@ -976,11 +979,18 @@ function talk_subject(string $type, string $kind, int $contextId, int $me, int $
         ];
     }
     if (in_array($type, ['campfire', 'story', 'waypoint'], true) && $kind === 'post') {
-        if ($personId <= 0 || $personId === $me || !talk_exchange($type, $contextId, $me, $personId)) {
+        if ($personId <= 0 || $personId === $me) {
             return null;
         }
         $table = talk_post_table($type);
-        $post = one("SELECT title FROM {$table} WHERE id = ?", [$contextId]);
+        $post = one("SELECT user_id, title FROM {$table} WHERE id = ?", [$contextId]);
+        if (!$post) {
+            return null;
+        }
+        $authorStart = $type !== 'campfire' && $personId === (int) $post['user_id'];
+        if (!$authorStart && !talk_exchange($type, $contextId, $me, $personId)) {
+            return null;
+        }
         return [
             'other' => $personId,
             'label' => (string) ($post['title'] ?? ''),
@@ -989,14 +999,14 @@ function talk_subject(string $type, string $kind, int $contextId, int $me, int $
         ];
     }
     if ($type === 'member' && $kind === '') {
-        if ($contextId === $me) {
+        if ($contextId === $me || (function_exists('garden_is_visible') && !garden_is_visible($contextId))) {
             return null;
         }
         $person = one('SELECT id FROM users WHERE id = ? AND status = ?', [$contextId, 'active']);
         if (!$person) {
             return null;
         }
-        return ['other' => $contextId, 'label' => '', 'note' => site_line('talk_line_hello', ['name' => $name]), 'verified' => false];
+        return ['other' => $contextId, 'label' => '', 'note' => site_line('talk_line_hello', ['name' => $name]), 'verified' => true];
     }
     return null;
 }
@@ -1069,11 +1079,14 @@ function talk_profile_offer(?array $me, int $otherId): array
             ];
         }
     }
+    if (function_exists('garden_is_visible') && !garden_is_visible($otherId)) {
+        return $empty;
+    }
     $shared = talk_shared_context((int) $me['id'], $otherId);
     if ($shared) {
         return talk_offer($me, $otherId, true, '/members/' . $otherId, $shared, site_text('talk_start'));
     }
-    return talk_offer($me, $otherId, false, '/members/' . $otherId, [
+    return talk_offer($me, $otherId, true, '/members/' . $otherId, [
         'type' => 'member',
         'kind' => '',
         'id' => $otherId,
@@ -1134,6 +1147,61 @@ function talk_pause_line(array $conversation, int $me): string
     return '';
 }
 
+function talk_posted_subject(): string
+{
+    $subject = trim(post_text('subject', 180));
+    $subject = preg_replace('/\s+/', ' ', $subject) ?? $subject;
+    return clip($subject, 180);
+}
+
+function talk_subject_save(int $conversationId, string $subject): void
+{
+    if ($conversationId <= 0 || !table_has_column('conversations', 'subject')) {
+        return;
+    }
+    exec_sql('UPDATE conversations SET subject = ? WHERE id = ?', [clip($subject, 180), $conversationId]);
+}
+
+function talk_hold_keep(array $fields, string $subject, string $body): void
+{
+    $_SESSION['talk_hold'] = [
+        'type' => (string) ($fields['type'] ?? ''),
+        'kind' => (string) ($fields['kind'] ?? ''),
+        'id' => (int) ($fields['id'] ?? 0),
+        'person' => (int) ($fields['person'] ?? 0),
+        'subject' => $subject,
+        'body' => $body,
+    ];
+}
+
+function talk_hold_take(array $fields): array
+{
+    $hold = $_SESSION['talk_hold'] ?? null;
+    unset($_SESSION['talk_hold']);
+    $empty = ['subject' => '', 'body' => ''];
+    if (!is_array($hold)) {
+        return $empty;
+    }
+    foreach (['type', 'kind', 'id', 'person'] as $key) {
+        if ((string) ($hold[$key] ?? '') !== (string) ($fields[$key] ?? '')) {
+            return $empty;
+        }
+    }
+    return [
+        'subject' => (string) ($hold['subject'] ?? ''),
+        'body' => (string) ($hold['body'] ?? ''),
+    ];
+}
+
+function talk_row_purpose(array $conversation): string
+{
+    $subject = trim((string) ($conversation['subject'] ?? ''));
+    if ($subject !== '') {
+        return $subject;
+    }
+    return trim((string) ($conversation['context_label'] ?? ''));
+}
+
 function page_talk_compose(array $params): void
 {
     $me = require_verified();
@@ -1159,11 +1227,24 @@ function page_talk_compose(array $params): void
     }
     $shellId = talk_shell_id($fields['type'], $fields['kind'], $fields['id'], (int) $me['id'], (int) $subject['other']);
     $draftBody = $shellId > 0 ? talk_draft($shellId, (int) $me['id']) : '';
+    $draftSubject = '';
+    if ($shellId > 0) {
+        $shell = talk_load($shellId);
+        $draftSubject = trim((string) ($shell['subject'] ?? ''));
+    }
+    $hold = talk_hold_take($fields);
+    if ($hold['body'] !== '') {
+        $draftBody = $hold['body'];
+    }
+    if ($hold['subject'] !== '') {
+        $draftSubject = $hold['subject'];
+    }
     view('talk/new', [
         'fields' => $fields,
         'subject' => $subject,
         'otherName' => display_name_of((int) $subject['other']),
         'draftBody' => $draftBody,
+        'draftSubject' => $draftSubject,
         'formKey' => talk_form_issue($shellId),
         'shellId' => $shellId,
     ]);
@@ -1216,7 +1297,14 @@ function page_talk_start(array $params): void
         redirect($again);
     }
     $opening = talk_message_body((string) ($_POST['body'] ?? ''));
+    $purpose = talk_posted_subject();
+    if ($action === 'send' && $purpose === '') {
+        talk_hold_keep($fields, '', $opening !== '' ? $opening : (string) ($_POST['body'] ?? ''));
+        flash(site_text('talk_subject_needs'));
+        redirect($again);
+    }
     if ($opening === '') {
+        talk_hold_keep($fields, $purpose, (string) ($_POST['body'] ?? ''));
         flash(site_text('msg_few_words'));
         redirect($again);
     }
@@ -1239,6 +1327,7 @@ function page_talk_start(array $params): void
             flash(site_text('talk_draft_unavailable'));
             redirect($again);
         }
+        talk_subject_save($id, $purpose);
         flash(site_text('talk_draft_saved'));
         redirect($again);
     }
@@ -1261,6 +1350,7 @@ function page_talk_start(array $params): void
         );
         talk_draft_clear($id, (int) $me['id']);
     }
+    talk_subject_save($id, $purpose);
     if ($id <= 0) {
         flash(site_text('msg_talk_unavailable'));
         redirect($back);
@@ -1629,6 +1719,7 @@ function page_talk_preference(array $params): void
         'UPDATE profiles SET conversations_pref = ?, conversations_choice_made = 1 WHERE user_id = ?',
         [$pref, (int) $user['id']]
     );
+    garden_visibility_save((int) $user['id']);
     log_activity((int) $user['id'], 'Updated a communication preference');
     flash(site_text('msg_talk_pref'));
     redirect('/profile#communication');
