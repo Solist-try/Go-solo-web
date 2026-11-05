@@ -37,18 +37,24 @@
       if ($alt === '') {
           $alt = (string) $category['title'];
       }
-      $shelfClass = 'reading-shelf' . ($image !== '' ? ' has-photo' : ' is-text');
-      if ($image !== '' && ((int) $index % 2) === 1) {
-          $shelfClass .= ' image-left';
-      }
       $place = trim((string) ($category['slug'] ?? ''));
+      $reflections = $place === 'reflections';
+      if ($reflections) {
+          $shelfClass = 'reading-shelf reading-reflections is-text';
+      } else {
+          $shelfClass = 'reading-shelf' . ($image !== '' ? ' has-photo' : ' is-text');
+          if ($image !== '' && ((int) $index % 2) === 1) {
+              $shelfClass .= ' image-left';
+          }
+      }
     ?>
     <article class="<?= e($shelfClass) ?>"<?= $place !== '' ? ' id="' . e($place) . '"' : '' ?>>
       <div class="shelf-copy">
         <h2><?= e($category['title']) ?></h2>
         <?php if (trim((string) $category['line']) !== ''): ?><p class="shelf-line"><?= e($category['line']) ?></p><?php endif; ?>
+        <?php if ($reflections): ?><p class="shelf-frame"><?= e(site_text('reading_reflections_frame')) ?></p><?php endif; ?>
         <?php if (!$category['articles']): ?>
-          <p class="soft"><?= e(site_text('empty_shelf')) ?></p>
+          <p class="soft"><?= e($reflections ? site_text('reading_reflections_empty') : site_text('empty_shelf')) ?></p>
         <?php else: ?>
           <div class="previews">
             <?php foreach ($category['articles'] as $article): ?>

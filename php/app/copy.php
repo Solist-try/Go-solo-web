@@ -259,6 +259,7 @@ function content_groups(): array
             'waypoints_hidden' => 'Hidden note',
             'waypoints_people_title' => 'People heading',
             'waypoints_sit_first' => 'Sit first',
+            'waypoints_sitting_here' => 'Already sitting',
             'waypoints_join_first' => 'Join first',
             'waypoints_guest_rest' => 'Guest sit line',
             'waypoints_note_one' => 'One note',
@@ -269,6 +270,8 @@ function content_groups(): array
         'Reading Room' => [
             'reading_title' => 'Title',
             'reading_intro' => 'Introduction',
+            'reading_reflections_frame' => 'Reflections framing',
+            'reading_reflections_empty' => 'Reflections waiting line',
         ],
         'Out There' => [
             'out_there_title' => 'Title',

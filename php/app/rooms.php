@@ -427,6 +427,70 @@ function can_speak_here(array $user, int $waypointId): bool
     return is_steward($user) || sits_with((int) $user['id'], $waypointId);
 }
 
+function waypoint_index_shelves(): array
+{
+    $waypoints = q('SELECT * FROM waypoints WHERE archived = 0 ORDER BY title');
+    $userId = (int) (current_user()['id'] ?? 0);
+    $joined = [];
+    if ($userId > 0 && $waypoints) {
+        foreach (q('SELECT waypoint_id FROM waypoint_members WHERE user_id = ?', [$userId]) as $row) {
+            $joined[(int) $row['waypoint_id']] = true;
+        }
+    }
+    $rooms = rooms_ready();
+    $featureReady = function_exists('waypoint_feature_ready') && waypoint_feature_ready();
+    foreach ($waypoints as $i => $waypoint) {
+        $id = (int) $waypoint['id'];
+        $waypoints[$i]['joined'] = !empty($joined[$id]);
+        $food = [];
+        $seen = [];
+        if ($featureReady) {
+            $featureId = (int) ($waypoint['featured_reading_id'] ?? 0);
+            if ($featureId > 0) {
+                $feature = one(
+                    'SELECT slug, title, standfirst FROM readings WHERE id = ? AND status = ?',
+                    [$featureId, 'published']
+                );
+                if ($feature) {
+                    $food[] = $feature;
+                    $seen[(string) $feature['slug']] = true;
+                }
+            }
+        }
+        $discussions = [];
+        if ($rooms) {
+            foreach (q(
+                'SELECT r.slug, r.title, r.standfirst
+                 FROM waypoint_readings wr
+                 JOIN readings r ON r.id = wr.reading_id AND r.status = ?
+                 WHERE wr.waypoint_id = ?
+                 ORDER BY wr.sort_order, r.title',
+                ['published', $id]
+            ) as $article) {
+                if (empty($seen[(string) $article['slug']])) {
+                    $food[] = $article;
+                    $seen[(string) $article['slug']] = true;
+                }
+            }
+            $discussions = q(
+                'SELECT id, title, body FROM waypoint_posts WHERE waypoint_id = ? AND hidden = 0 ORDER BY pinned DESC, created_at DESC LIMIT 3',
+                [$id]
+            );
+            foreach ($discussions as $n => $post) {
+                $discussions[$n]['excerpt'] = writing_plain((string) $post['body'], 140);
+            }
+        }
+        $intro = trim((string) ($waypoint['food_intro'] ?? ''));
+        if ($intro === '') {
+            $intro = trim(site_text('waypoints_food_intro'));
+        }
+        $waypoints[$i]['food'] = $food;
+        $waypoints[$i]['food_intro'] = $intro;
+        $waypoints[$i]['discussions'] = $discussions;
+    }
+    return $waypoints;
+}
+
 function room_waypoint(array $params): void
 {
     $waypoint = one('SELECT * FROM waypoints WHERE slug = ?', [$params['slug']]);

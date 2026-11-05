@@ -397,7 +397,7 @@ function make_report(int $reporter, string $type, int $target, string $back): vo
 function page_waypoints(array $params): void
 {
     view('waypoints/index', [
-        'waypoints' => q('SELECT * FROM waypoints WHERE archived = 0 ORDER BY title'),
+        'waypoints' => waypoint_index_shelves(),
     ]);
 }
 
