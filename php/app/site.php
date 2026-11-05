@@ -157,6 +157,7 @@ function page_seed(array $params): void
         'offers' => $offers,
         'requests' => $requests,
         'mySkills' => ($seed['slug'] === 'skill-swap' && $user && function_exists('life_my_skills')) ? life_my_skills((int) $user['id']) : [],
+        'groundPeople' => ($user && function_exists('ground_at_seed')) ? ground_at_seed((int) $user['id'], (int) $seed['id'], (string) $seed['title'], '/seeds/' . $seed['slug']) : [],
     ]);
 }
 
@@ -462,7 +463,11 @@ function page_reading_show(array $params): void
         not_found();
         return;
     }
-    view('reading/show', ['article' => $article]);
+    $reader = current_user();
+    view('reading/show', [
+        'article' => $article,
+        'groundPeople' => ($reader && function_exists('ground_at_reading')) ? ground_at_reading((int) $reader['id'], (int) $article['category_id'], (string) $article['category_title'], '/reading/' . $article['slug']) : [],
+    ]);
 }
 
 function page_join_form(array $params): void
@@ -687,7 +692,8 @@ function show_garden(int $id, bool $self): void
 {
     $person = one(
         'SELECT u.id, u.email, u.status, p.display_name, p.bio, p.location, p.avatar_path, p.contact_frequency, p.check_in_style, p.show_location'
-        . (garden_visibility_ready() ? ', p.garden_visible' : '') . '
+        . (garden_visibility_ready() ? ', p.garden_visible' : '')
+        . (function_exists('ground_discoverable_ready') && ground_discoverable_ready() ? ', p.discoverable' : '') . '
          FROM users u
          LEFT JOIN profiles p ON p.user_id = u.id
          WHERE u.id = ?',
@@ -792,6 +798,8 @@ function show_garden(int $id, bool $self): void
         'lifeTrust' => function_exists('life_trust_lines') ? life_trust_lines($id) : [],
         'lifeOutcomes' => function_exists('life_public_outcomes') ? life_public_outcomes($id) : [],
         'lifeSeason' => function_exists('life_season_label') ? life_season_label($id, !$self) : '',
+        'groundPeople' => ($self && function_exists('ground_like')) ? ground_like($id) : [],
+        'sharedGround' => (!$self && function_exists('ground_themes_with') && current_user()) ? ground_themes_with((int) current_user()['id'], $id) : [],
     ]);
 }
 
@@ -876,6 +884,9 @@ function save_garden(int $userId, bool $withVisibility): void
         );
     }
     garden_visibility_save($userId);
+    if (function_exists('ground_discoverable_save')) {
+        ground_discoverable_save($userId);
+    }
     replace_supports($userId, (array) ($_POST['support'] ?? []));
     replace_titles('help_requests', $userId, (array) ($_POST['help_request'] ?? []));
     replace_titles('help_offers', $userId, (array) ($_POST['help_offer'] ?? []));

@@ -88,6 +88,7 @@ CREATE TABLE profiles (
   life_season_public TINYINT(1) NOT NULL DEFAULT 0,
   show_trust TINYINT(1) NOT NULL DEFAULT 1,
   garden_visible TINYINT(1) NOT NULL DEFAULT 1,
+  discoverable TINYINT(1) NOT NULL DEFAULT 1,
   PRIMARY KEY (user_id),
   CONSTRAINT profiles_user_fk FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

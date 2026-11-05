@@ -127,17 +127,6 @@
     <p class="soft"><?= e(site_text('waypoints_join_first')) ?></p>
   <?php endif; ?>
 
-  <h2><?= e(site_text('waypoints_people_title')) ?></h2>
-  <?php if (!$people): ?>
-    <p class="soft"><?= e(site_text('empty_people')) ?></p>
-  <?php else: ?>
-    <ul class="list">
-      <?php foreach ($people as $person): ?>
-        <li>
-          <a href="<?= e(url('/members/' . $person['id'])) ?>"><?= e($person['display_name'] ?: site_text('garden_member')) ?></a>
-        </li>
-      <?php endforeach; ?>
-    </ul>
-  <?php endif; ?>
+  <?php $groundTitle = 'ground_who'; include __DIR__ . '/../partials/ground-people.php'; ?>
   </div>
 </section>

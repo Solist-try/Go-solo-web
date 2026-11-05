@@ -47,4 +47,5 @@
       <?php endif; ?>
     </div>
   <?php endif; ?>
+  <?php $groundTitle = 'ground_who'; include __DIR__ . '/../partials/ground-people.php'; ?>
 </section>
