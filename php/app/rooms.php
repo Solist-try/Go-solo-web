@@ -503,15 +503,9 @@ function room_waypoint(array $params): void
     if ($user) {
         $joined = sits_with((int) $user['id'], (int) $waypoint['id']);
     }
-    $people = q(
-        "SELECT u.id, p.display_name
-         FROM waypoint_members wm
-         JOIN users u ON u.id = wm.user_id AND u.status = 'active'
-         LEFT JOIN profiles p ON p.user_id = u.id
-         WHERE wm.waypoint_id = ?
-         ORDER BY p.display_name",
-        [(int) $waypoint['id']]
-    );
+    $groundPeople = ($user && function_exists('ground_at_waypoint'))
+        ? ground_at_waypoint((int) $user['id'], (int) $waypoint['id'], (string) $waypoint['title'], '/waypoints/' . $waypoint['slug'])
+        : [];
     $readings = [];
     $feature = null;
     $discussions = [];
@@ -558,7 +552,7 @@ function room_waypoint(array $params): void
     view('waypoints/show', [
         'waypoint' => $waypoint,
         'joined' => $joined,
-        'people' => $people,
+        'groundPeople' => $groundPeople,
         'readings' => $readings,
         'feature' => $feature,
         'discussions' => $arranged['rows'],

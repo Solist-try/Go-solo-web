@@ -9,5 +9,6 @@
     <img class="photo support-photo" src="<?= e(media($article['image_path'])) ?>" alt="">
   <?php endif; ?>
   <?= reading_render_body((string) $article['body'], (int) $article['id']) ?>
+  <?php $groundTitle = 'ground_who'; include __DIR__ . '/../partials/ground-people.php'; ?>
   </div>
 </section>

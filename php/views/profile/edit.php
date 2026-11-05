@@ -12,6 +12,7 @@
     <label><span><?= e(site_text('edit_location')) ?></span><input type="text" name="location" maxlength="120" value="<?= e($person['location'] ?? '') ?>"></label>
     <div class="checks"><label><input type="checkbox" name="show_location" value="1"<?= !empty($person['show_location']) ? ' checked' : '' ?>> <?= e(site_text('edit_show_location')) ?></label></div>
     <?php $gardenVisible = function_exists('garden_is_visible') ? garden_is_visible((int) ($person['id'] ?? 0)) : true; include __DIR__ . '/../partials/garden-visibility.php'; ?>
+    <?php $discoverable = function_exists('ground_is_discoverable') ? ground_is_discoverable((int) ($person['id'] ?? 0)) : true; include __DIR__ . '/../partials/ground-discover.php'; ?>
     <label><span><?= e(site_text('edit_photo')) ?></span><input type="file" name="avatar" accept="image/jpeg,image/png,image/webp,image/gif"></label>
     <?php if (!empty($person['avatar_path'])): ?>
       <label><input type="checkbox" name="remove_avatar" value="1"> <?= e(site_text('edit_remove_photo')) ?></label>

@@ -9,6 +9,7 @@ require __DIR__ . '/talk.php';
 require __DIR__ . '/life.php';
 require __DIR__ . '/pin.php';
 require __DIR__ . '/path.php';
+require __DIR__ . '/ground.php';
 
 dispatch();
 

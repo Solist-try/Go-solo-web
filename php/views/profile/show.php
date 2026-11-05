@@ -44,11 +44,19 @@ $name = $person['display_name'] ?: site_text('garden_member');
     </div>
   <?php endif; ?>
 
+  <?php if ($isSelf && !empty($groundPeople)): ?>
+    <?php $groundTitle = 'ground_similar'; include __DIR__ . '/../partials/ground-people.php'; ?>
+  <?php endif; ?>
+
   <?php if (!$isSelf && $currentUser): ?>
     <?php
       $talkOffer = talk_profile_offer($currentUser, (int) $person['id']);
       $talkOffer['prominent'] = true;
     ?>
+    <?php if (!empty($sharedGround)): ?>
+      <p class="kicker"><?= e(site_text('ground_common')) ?></p>
+      <p><?= e(implode(' · ', $sharedGround)) ?></p>
+    <?php endif; ?>
     <?php if (($talkOffer['mode'] ?? 'none') !== 'none'): ?>
       <div class="garden-start">
         <?php include __DIR__ . '/../partials/talk-offer.php'; ?>
@@ -182,6 +190,7 @@ $name = $person['display_name'] ?: site_text('garden_member');
       <?= csrf_field() ?>
       <?php $talkSelected = talk_pref((int) $person['id']); include __DIR__ . '/../partials/talk-choices.php'; ?>
       <?php $gardenVisible = !isset($person['garden_visible']) || (int) $person['garden_visible'] === 1; include __DIR__ . '/../partials/garden-visibility.php'; ?>
+      <?php $discoverable = !isset($person['discoverable']) || (int) $person['discoverable'] === 1; include __DIR__ . '/../partials/ground-discover.php'; ?>
       <button type="submit"><?= e(site_text('talk_pref_save')) ?></button>
     </form>
     <?php if ($talkBlocks): ?>
