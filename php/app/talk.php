@@ -1006,7 +1006,7 @@ function talk_subject(string $type, string $kind, int $contextId, int $me, int $
         if (!$person) {
             return null;
         }
-        return ['other' => $contextId, 'label' => '', 'note' => site_line('talk_line_hello', ['name' => $name]), 'verified' => true];
+        return ['other' => $contextId, 'label' => '', 'note' => '', 'verified' => true];
     }
     return null;
 }
@@ -1066,25 +1066,8 @@ function talk_profile_offer(?array $me, int $otherId): array
     if (!$me || !conversations_ready() || (int) $me['id'] === $otherId) {
         return $empty;
     }
-    $live = talk_latest_live((int) $me['id'], $otherId);
-    if ($live > 0) {
-        $row = talk_load($live);
-        $shell = $row && talk_status($row) === 'requested' && talk_message_count($live) === 0;
-        if ($row && !$shell) {
-            $open = talk_status($row) === 'open';
-            return [
-                'mode' => 'link',
-                'href' => '/conversations/' . $live,
-                'label' => site_text($open ? 'talk_heading' : 'talk_request_heading'),
-            ];
-        }
-    }
     if (function_exists('garden_is_visible') && !garden_is_visible($otherId)) {
         return $empty;
-    }
-    $shared = talk_shared_context((int) $me['id'], $otherId);
-    if ($shared) {
-        return talk_offer($me, $otherId, true, '/members/' . $otherId, $shared, site_text('talk_start'));
     }
     return talk_offer($me, $otherId, true, '/members/' . $otherId, [
         'type' => 'member',
@@ -1193,13 +1176,30 @@ function talk_hold_take(array $fields): array
     ];
 }
 
+function talk_origin_label(array $conversation): string
+{
+    $type = (string) ($conversation['context_type'] ?? '');
+    if (!in_array($type, ['seed', 'skill', 'introduction', 'waypoint', 'campfire', 'story'], true)) {
+        return '';
+    }
+    $label = trim((string) ($conversation['context_label'] ?? ''));
+    if ($label === '') {
+        return '';
+    }
+    $bare = talk_context_heading($type);
+    if ($bare !== '' && strcasecmp($label, $bare) === 0) {
+        return '';
+    }
+    return $label;
+}
+
 function talk_row_purpose(array $conversation): string
 {
     $subject = trim((string) ($conversation['subject'] ?? ''));
     if ($subject !== '') {
         return $subject;
     }
-    return trim((string) ($conversation['context_label'] ?? ''));
+    return talk_origin_label($conversation);
 }
 
 function page_talk_compose(array $params): void
