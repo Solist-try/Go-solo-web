@@ -43,7 +43,7 @@
       <?php foreach ($posts as $post): ?>
         <article class="card">
           <h2><a href="<?= e(url('/campfire/' . $post['id'])) ?>"><?= e($post['title']) ?></a></h2>
-          <p class="soft"><?php if ((int) ($post['user_id'] ?? 0) > 0): ?><a href="<?= e(url('/members/' . $post['user_id'])) ?>"><?= e($post['display_name'] ?: site_text('garden_member')) ?></a><?php else: ?><?= e($post['display_name'] ?: site_text('garden_member')) ?><?php endif; ?> · <?= e(nice_date($post['created_at'])) ?></p>
+          <p class="soft"><?= member_name((int) ($post['user_id'] ?? 0), (string) ($post['display_name'] ?? '')) ?> · <?= e(nice_date($post['created_at'])) ?></p>
           <p><?= e(writing_plain((string) $post['body'], 240)) ?></p>
         </article>
       <?php endforeach; ?>

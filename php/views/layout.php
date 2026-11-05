@@ -66,6 +66,7 @@ $logoImage = site_text('logo_image');
       <?php if ($currentUser): ?>
         <?php $talkHere = $path === '/conversations' || str_starts_with($path, '/conversations/'); ?>
         <a href="<?= e(url('/conversations')) ?>"<?= $talkHere ? ' aria-current="page"' : '' ?><?= !empty($fresh['conversations']) ? ' class="is-fresh"' : '' ?>><?= e(site_text('nav_conversations')) ?></a>
+        <a href="<?= e(url('/paths')) ?>"<?= $path === '/paths' ? ' aria-current="page"' : '' ?>><?= e(site_text('ground_nav')) ?></a>
         <a href="<?= e(url('/profile')) ?>"<?= $path === '/profile' ? ' aria-current="page"' : '' ?>><?= e(site_text('nav_profile')) ?></a>
         <?php if (in_array($currentUser['role'], ['admin', 'moderator'], true)): ?>
           <a href="<?= e(url('/steward')) ?>"><?= e(site_text('nav_steward')) ?></a>

@@ -1720,9 +1720,6 @@ function page_talk_preference(array $params): void
         [$pref, (int) $user['id']]
     );
     garden_visibility_save((int) $user['id']);
-    if (function_exists('ground_discoverable_save')) {
-        ground_discoverable_save((int) $user['id']);
-    }
     log_activity((int) $user['id'], 'Updated a communication preference');
     flash(site_text('msg_talk_pref'));
     redirect('/profile#communication');

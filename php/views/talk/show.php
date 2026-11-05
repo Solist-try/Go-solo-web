@@ -50,9 +50,9 @@ $showLife = $status === 'open' && !empty($life['ready']) && !$memberClosed && !$
 ?>
 <section class="frame section talk-sheet">
   <p class="kicker"><a href="<?= e(url($backHref)) ?>"><?= e(site_text($backLabel)) ?></a></p>
-  <h1><?php if ($incoming && $askerId > 0): ?><a href="<?= e(url('/members/' . $askerId)) ?>"><?= e($askerName) ?></a><?php else: ?><?= e($heading) ?><?php endif; ?></h1>
+  <h1><?php if ($incoming && $askerId > 0): ?><?= member_name($askerId, (string) $askerName) ?><?php else: ?><?= e($heading) ?><?php endif; ?></h1>
   <?php if (!$incoming && $otherPerson): ?>
-    <p><a href="<?= e(url('/members/' . $otherPerson['id'])) ?>"><?= e($otherPerson['display_name'] ?: site_text('garden_member')) ?></a></p>
+    <p><?= member_name((int) $otherPerson['id'], (string) ($otherPerson['display_name'] ?? '')) ?></p>
   <?php endif; ?>
   <?php if ($purpose !== ''): ?>
     <p class="kicker"><?= e(site_text('talk_subject')) ?></p>
@@ -76,7 +76,7 @@ $showLife = $status === 'open' && !empty($life['ready']) && !$memberClosed && !$
       <?php foreach ($messages as $message): ?>
         <article class="talk-note">
           <?php if (!$incoming): ?>
-            <p class="soft"><?php if ((int) ($message['user_id'] ?? 0) > 0): ?><a href="<?= e(url('/members/' . $message['user_id'])) ?>"><?= e($message['display_name'] ?: site_text('garden_member')) ?></a><?php else: ?><?= e($message['display_name'] ?: site_text('garden_member')) ?><?php endif; ?> · <?= e(nice_date($message['created_at'])) ?></p>
+            <p class="soft"><?= member_name((int) ($message['user_id'] ?? 0), (string) ($message['display_name'] ?? '')) ?> · <?= e(nice_date($message['created_at'])) ?></p>
           <?php endif; ?>
           <?php if (trim((string) $message['body']) !== ''): ?><?= render_writing((string) $message['body']) ?><?php endif; ?>
           <?php $images = $message['images'] ?? []; include __DIR__ . '/../partials/photos.php'; ?>

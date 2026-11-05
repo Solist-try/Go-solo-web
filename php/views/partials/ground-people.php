@@ -1,5 +1,7 @@
 <?php if (!empty($groundPeople)): ?>
-  <h2><?= e(site_text($groundTitle ?? 'ground_who')) ?></h2>
+  <?php if ($groundHeading ?? true): ?>
+    <h2><?= e(site_text($groundTitle ?? 'ground_who')) ?></h2>
+  <?php endif; ?>
   <?php foreach ($groundPeople as $ground): ?>
     <article class="card">
       <h3><a href="<?= e(url('/members/' . $ground['id'])) ?>"><?= e($ground['name']) ?></a></h3>

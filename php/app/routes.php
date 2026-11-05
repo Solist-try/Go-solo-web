@@ -80,6 +80,7 @@ function route_table(): array
         ['GET', '/waypoints/{slug}', 'page_waypoint'],
         $post('/waypoints/{slug}/join', 'page_waypoint_join'),
         $post('/waypoints/{slug}/leave', 'page_waypoint_leave'),
+        ['GET', '/paths', 'page_paths'],
         ['GET', '/reading', 'page_reading'],
         ['GET', '/reading/{slug}', 'page_reading_show'],
         ['GET', '/join', 'page_join_form'],
