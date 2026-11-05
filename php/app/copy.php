@@ -574,6 +574,8 @@ function content_groups(): array
             'talk_hello' => 'Say Hello',
             'talk_start' => 'Start a Conversation',
             'talk_subject' => 'Subject',
+            'talk_started_from' => 'Started from',
+            'talk_generic' => 'Conversation',
             'talk_subject_placeholder' => 'Subject placeholder',
             'talk_subject_needs' => 'Subject missing',
             'talk_cancel' => 'Cancel',

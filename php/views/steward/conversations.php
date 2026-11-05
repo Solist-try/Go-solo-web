@@ -8,7 +8,8 @@
 <?php endif; ?>
 <?php foreach ($rows as $row): ?>
   <article class="card">
-    <p class="kicker"><?= e((string) $row['context_type']) ?><?php if ($row['context_label']): ?> · <?= e((string) $row['context_label']) ?><?php endif; ?></p>
+    <?php $origin = talk_origin_label($row); $purpose = trim((string) ($row['subject'] ?? '')); ?>
+    <p class="kicker"><?php if ($origin !== ''): ?><?= e(site_text('talk_started_from')) ?> · <?= e($origin) ?><?php else: ?><?= e(site_text('talk_generic')) ?><?php endif; ?><?php if ($purpose !== ''): ?> · <?= e($purpose) ?><?php endif; ?></p>
     <p>
       <?php foreach ($row['people'] as $i => $person): ?>
         <?php if ($i > 0): ?> · <?php endif; ?><?= e($person['display_name'] ?: 'A member') ?>

@@ -1,7 +1,8 @@
 <?php $pageTitle = 'Conversation · Steward Desk'; $desk = 'conversations'; include __DIR__ . '/open.php'; ?>
 <p><a href="<?= e(url('/steward/conversations')) ?>">Private conversations</a></p>
-<h1><?= e((string) $conversation['context_label'] ?: 'Private conversation') ?></h1>
-<p class="soft"><?= e((string) $conversation['context_type']) ?> · <?= e(nice_date($conversation['created_at'])) ?><?php if ((int) $conversation['closed'] === 1): ?> · resting<?php endif; ?></p>
+<?php $origin = talk_origin_label($conversation); $purpose = trim((string) ($conversation['subject'] ?? '')); ?>
+<h1><?= e($purpose !== '' ? $purpose : ($origin !== '' ? $origin : site_text('talk_generic'))) ?></h1>
+<p class="soft"><?php if ($origin !== ''): ?><?= e(site_text('talk_started_from')) ?> · <?= e($origin) ?> · <?php endif; ?><?= e(nice_date($conversation['created_at'])) ?><?php if ((int) $conversation['closed'] === 1): ?> · resting<?php endif; ?></p>
 <h2>Participants</h2>
 <ul class="list">
   <?php foreach ($people as $person): ?>

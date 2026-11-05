@@ -38,12 +38,11 @@ foreach ($people as $person) {
 }
 $pageTitle = $heading . ' · ' . site_text('site_title');
 $purpose = trim((string) ($conversation['subject'] ?? ''));
-$label = trim((string) ($conversation['context_label'] ?? ''));
-if ($purpose !== '' && $label === $purpose) {
-    $label = '';
-}
-$shared = trim((string) ($conversation['context_note'] ?? ''));
-if ($shared === $label || (string) ($conversation['context_type'] ?? '') === 'member') {
+$origin = talk_origin_label($conversation);
+$shared = (string) ($conversation['context_type'] ?? '') === 'introduction'
+    ? trim((string) ($conversation['context_note'] ?? ''))
+    : '';
+if ($shared === $origin) {
     $shared = '';
 }
 $life = $life ?? ['ready' => false];
@@ -55,13 +54,19 @@ $showLife = $status === 'open' && !empty($life['ready']) && !$memberClosed && !$
   <?php if (!$incoming && $otherPerson): ?>
     <p><a href="<?= e(url('/members/' . $otherPerson['id'])) ?>"><?= e($otherPerson['display_name'] ?: site_text('garden_member')) ?></a></p>
   <?php endif; ?>
-  <?php if ($purpose !== ''): ?><p><?= e($purpose) ?></p><?php endif; ?>
+  <?php if ($purpose !== ''): ?>
+    <p class="kicker"><?= e(site_text('talk_subject')) ?></p>
+    <p><?= e($purpose) ?></p>
+  <?php elseif ($origin === ''): ?>
+    <p><?= e(site_text('talk_generic')) ?></p>
+  <?php endif; ?>
+  <?php if ($origin !== '' && $status !== 'declined'): ?>
+    <p class="kicker"><?= e(site_text('talk_started_from')) ?></p>
+    <p><?= e($origin) ?></p>
+  <?php endif; ?>
+  <?php if ($shared !== ''): ?><?= paragraphs($shared) ?><?php endif; ?>
   <?php if ($incoming): ?>
-    <?php if ($label !== ''): ?><p><?= e($label) ?></p><?php endif; ?>
-    <?php if ($shared !== ''): ?><?= paragraphs($shared) ?><?php endif; ?>
     <p class="soft"><?= e(site_line('talk_received', ['date' => nice_date((string) $conversation['created_at'])])) ?></p>
-  <?php elseif ($label !== '' && $status !== 'declined'): ?>
-    <p class="soft"><?= e($label) ?></p>
   <?php endif; ?>
   <?php if (!empty($pauseLine) && !$incoming): ?>
     <p class="soft"><?= e($pauseLine) ?></p>

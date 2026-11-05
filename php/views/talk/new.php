@@ -7,11 +7,10 @@ $draftBody = (string) ($draftBody ?? '');
   <p class="kicker"><a href="<?= e(url($fields['back'])) ?>"><?= e(site_text('talk_active')) ?></a></p>
   <h1><?= e(site_text('talk_start')) ?></h1>
   <p><?= e(site_line('talk_with', ['name' => $otherName])) ?></p>
-  <?php if ((string) $fields['type'] !== 'member'): ?>
-    <p class="kicker"><?= e(talk_context_heading((string) $fields['type'])) ?></p>
-  <?php endif; ?>
-  <?php if (trim((string) $subject['label']) !== ''): ?>
-    <p><?= e((string) $subject['label']) ?></p>
+  <?php $origin = talk_origin_label(['context_type' => (string) $fields['type'], 'context_label' => (string) ($subject['label'] ?? '')]); ?>
+  <?php if ($origin !== ''): ?>
+    <p class="kicker"><?= e(site_text('talk_started_from')) ?></p>
+    <p><?= e($origin) ?></p>
   <?php endif; ?>
   <?php if ($fields['type'] === 'introduction'): ?>
     <p><?= e(site_text('talk_because')) ?></p>
